@@ -1,73 +1,27 @@
-# React + TypeScript + Vite
+# curfew
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+a chrome extension that blocks distracting websites and helps you stay locked in.
 
-Currently, two official plugins are available:
+## features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **block websites & keywords** — add sites and keywords to your blocklist. curfew intercepts navigation and shows a friendly block screen instead.
+- **interventions** — before proceeding to a blocked site, curfew asks you to complete a short mindfulness exercise (breathing, hold, slide). pick your favorites.
+- **strict sessions** — start a timer where you can't access any blocked sites. no bypass, no excuses.
+- **grace period** — need a quick break? curfew lets you through for 5 minutes. after that, the block comes back automatically.
+- **schedules** — set recurring windows when blocking is active automatically.
+- **overlay mode** — instead of redirecting to a separate block page, curfew can overlay the block screen on top of the site itself.
+- **usage analytics** — see how much time you spend on each site with a pie chart breakdown.
+- **light & dark themes** — follows your system preference or pick manually.
 
-## React Compiler
+## building
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```sh
+npm run build    # tsc → vite → copy assets
+npm run dev      # vite dev server
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+output goes to `dist/`. load that folder as an unpacked extension in `chrome://extensions`.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## stack
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+chrome extension manifest v3, react, typescript, tailwind css v4, vite.
