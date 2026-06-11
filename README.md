@@ -30,11 +30,6 @@ chrome extension manifest v3, react, typescript, tailwind css v4, vite.
 
 ## product images
 
-<img width="500" height="775" alt="home page" src="https://github.com/user-attachments/assets/55d9d953-f8aa-47c0-b5a1-56933e96b8ad" />
-*extension's homepage*
+<img width="1920" height="1080" alt="1" src="https://github.com/user-attachments/assets/079cb2e7-126c-4611-b562-e63d6a767051" />
 
-<img width="500" height="775" alt="add/remove websites" src="https://github.com/user-attachments/assets/decb8b0f-535b-46a9-8107-e34480590005" />
-*add or remove websites*
-
-<img width="1100" height="550" alt="block page" src="https://github.com/user-attachments/assets/8b9ef24e-475e-4a26-b574-f7606722e23e" />
-*website during downtime*
+<img width="1920" height="1080" alt="2" src="https://github.com/user-attachments/assets/77d4e2ed-94da-4521-a08b-09b73b495ae4" />
