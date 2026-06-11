@@ -1,0 +1,86 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --color-curfew-50: #F0ECE4;
+  --color-curfew-100: #E1D7C8;
+  --color-curfew-200: #D5C9B6;
+  --color-curfew-300: #C0B8A8;
+  --color-curfew-400: #B0A695;
+  --color-curfew-500: #C0B8A8;
+  --color-curfew-600: #B0A695;
+  --color-curfew-700: #A09686;
+  --color-curfew-800: #908070;
+  --color-curfew-900: #807060;
+
+  --color-surface: #FDFBF7;
+  --color-surface-secondary: #EFEAE2;
+  --color-surface-tertiary: #E5DDD3;
+  --color-border: #DDD5CB;
+  --color-text-primary: #4A3E3D;
+  --color-text-secondary: #6B5E58;
+  --color-text-muted: #7A6E67;
+  --color-accent: #8B7E74;
+  --color-menu-item-bg: #EFEAE2;
+  --color-menu-item-text: #4A3E3D;
+  --color-circle-low: #EFEAE2;
+  --color-circle-med: #B0A695;
+  --color-circle-high: #4A3E3D;
+  --color-checkbox-checked-bg: #4A3E3D;
+  --color-checkbox-checked-tick: #FDFBF7;
+  --color-checkbox-unchecked-bg: #D8D1C5;
+  --color-border-muted: #D8D1C5;
+}
+
+.dark {
+  --color-curfew-50: #3D352E;
+  --color-curfew-100: #4D4339;
+  --color-curfew-200: #5D5349;
+  --color-curfew-300: #7A6B5B;
+  --color-curfew-400: #8A7B6B;
+  --color-curfew-500: #9A8B7B;
+  --color-curfew-600: #8A7B6B;
+  --color-curfew-700: #7A6B5B;
+  --color-curfew-800: #6A5B4B;
+  --color-curfew-900: #5A4B3B;
+
+  --color-surface: #1A1715;
+  --color-surface-secondary: #2D2824;
+  --color-surface-tertiary: #3D352E;
+  --color-border: #4D4339;
+  --color-text-primary: #F3EEEA;
+  --color-text-secondary: #D5CEC6;
+  --color-text-muted: #A89C8E;
+  --color-accent: #8B7E74;
+  --color-menu-item-bg: #2D2824;
+  --color-menu-item-text: #F3EEEA;
+  --color-circle-low: #2D2824;
+  --color-circle-med: #8B7E74;
+  --color-circle-high: #F3EEEA;
+  --color-checkbox-checked-bg: #F3EEEA;
+  --color-checkbox-checked-tick: #2D2824;
+  --color-checkbox-unchecked-bg: #1A1715;
+  --color-border-muted: #3D3631;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+.display {
+  font-family: 'Sora', sans-serif;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-text-muted) transparent;
+}
+
+@keyframes curfew-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
