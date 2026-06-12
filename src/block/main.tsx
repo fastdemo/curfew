@@ -25,6 +25,7 @@ function BlockPage() {
   const [openTabId, setOpenTabId] = useState<number | null>(null)
   const [originalUrl, setOriginalUrl] = useState('')
   const [theme, setTheme] = useState('light')
+  const [canProceed, setCanProceed] = useState(true)
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -35,6 +36,7 @@ function BlockPage() {
       const domainName = getDomainFromUrl(url)
       setDomain(domainName)
       setUsageStats(storage.usageStats)
+      setCanProceed(storage.selectedInterventions.length > 0)
 
       const today = new Date().toISOString().slice(0, 10)
       const domainStats = storage.usageStats[domainName]
@@ -129,7 +131,7 @@ function BlockPage() {
     if (!dom || !originalUrl) return
     const result = await chrome.storage.local.get('bypasses')
     const bypasses = (result.bypasses as { [domain: string]: number }) || {}
-    bypasses[dom] = Date.now() + 5 * 60 * 1000
+    bypasses[dom] = Date.now() + 60 * 1000
     await chrome.storage.local.set({ bypasses })
     window.location.href = originalUrl
   }
@@ -142,6 +144,7 @@ function BlockPage() {
       usageStats={usageStats}
       onCloseTab={handleCloseTab}
       onProceed={handleProceed}
+      canProceed={canProceed}
     />
   )
 }

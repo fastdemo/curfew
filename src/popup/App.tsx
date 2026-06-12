@@ -1,15 +1,22 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useStorage } from '../hooks/useStorage'
 import { useTimer } from '../hooks/useTimer'
 import { getDomainFromUrl } from '../lib/interventions'
+import { getSettings } from '../lib/storage'
 import BottomNav from './BottomNav'
 import HomeTab from './HomeTab'
 import BlockedListTab from './BlockedListTab'
 import StrictSessionTab from './StrictSessionTab'
 import ScheduleTab from './ScheduleTab'
 import SettingsTab from './SettingsTab'
+import PinOverlay from './PinOverlay'
 
 export type TabId = 'home' | 'blocked' | 'strict' | 'schedule' | 'settings'
+
+type PinOverlayKind =
+  | { type: 'setup' }
+  | { type: 'verify-end-session' }
+  | { type: 'verify-disable-pin' }
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>('home')
@@ -17,6 +24,7 @@ export default function App() {
   const { now, getRemaining, formatTime } = useTimer()
   const [isHovered, setIsHovered] = useState(false)
   const [activeDomain, setActiveDomain] = useState('')
+  const [pinOverlay, setPinOverlay] = useState<PinOverlayKind | null>(null)
 
   useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
@@ -66,6 +74,97 @@ export default function App() {
     }
   }, [storage.settings.theme])
 
+  /* ── PIN overlay callbacks ── */
+
+  const hidePinOverlay = useCallback(() => setPinOverlay(null), [])
+
+  const handleEndSessionRequest = useCallback(() => {
+    getSettings().then(settings => {
+      if (settings.requirePin && settings.pinHash) {
+        setPinOverlay({ type: 'verify-end-session' })
+      } else {
+        storage.update({ strictSession: { isActive: false, startTime: 0, endTime: 0 } })
+        chrome.runtime.sendMessage({ type: 'CURFEW_RELOAD_BLOCKED_TABS' })
+      }
+    })
+  }, [storage])
+
+  const handleRequirePinToggle = useCallback(() => {
+    if (storage.settings.requirePin) {
+      setPinOverlay({ type: 'verify-disable-pin' })
+    } else {
+      if (storage.settings.pinHash) {
+        storage.update({ settings: { ...storage.settings, requirePin: true } })
+      } else {
+        setPinOverlay({ type: 'setup' })
+      }
+    }
+  }, [storage])
+
+  const handleSetupComplete = useCallback(async (pin: string) => {
+    await storage.update({
+      settings: { ...storage.settings, pinHash: pin, requirePin: true },
+    })
+    setPinOverlay(null)
+  }, [storage])
+
+  const handleVerifyEndSession = useCallback(async () => {
+    setPinOverlay(null)
+    await storage.update({
+      strictSession: { isActive: false, startTime: 0, endTime: 0 },
+    })
+    chrome.runtime.sendMessage({ type: 'CURFEW_RELOAD_BLOCKED_TABS' })
+  }, [storage])
+
+  const handleVerifyDisablePin = useCallback(async () => {
+    setPinOverlay(null)
+    await storage.update({
+      settings: { ...storage.settings, requirePin: false },
+    })
+  }, [storage])
+
+  /* ── PinOverlay renderer ── */
+
+  const renderPinOverlay = () => {
+    if (!pinOverlay) return null
+
+    if (pinOverlay.type === 'setup') {
+      return (
+        <PinOverlay
+          mode="setup"
+          onSetupComplete={handleSetupComplete}
+          onCancel={hidePinOverlay}
+        />
+      )
+    }
+
+    if (pinOverlay.type === 'verify-end-session') {
+      return (
+        <PinOverlay
+          mode="verify"
+          pinHash={storage.settings.pinHash}
+          prompt="enter pin to disable focus session"
+          onVerified={handleVerifyEndSession}
+          onCancel={hidePinOverlay}
+        />
+      )
+    }
+
+    if (pinOverlay.type === 'verify-disable-pin') {
+      return (
+        <PinOverlay
+          mode="verify"
+          pinHash={storage.settings.pinHash}
+          prompt="enter pin to disable protection"
+          onVerified={handleVerifyDisablePin}
+          onCancel={hidePinOverlay}
+        />
+      )
+    }
+
+    return null
+  }
+
   const renderTab = () => {
     switch (activeTab) {
       case 'home':
@@ -73,16 +172,16 @@ export default function App() {
       case 'blocked':
         return <BlockedListTab storage={storage} />
       case 'strict':
-        return <StrictSessionTab storage={storage} />
+        return <StrictSessionTab storage={storage} onEndSession={handleEndSessionRequest} />
       case 'schedule':
         return <ScheduleTab storage={storage} />
       case 'settings':
-        return <SettingsTab storage={storage} />
+        return <SettingsTab storage={storage} onRequirePinToggle={handleRequirePinToggle} />
     }
   }
 
   return (
-    <div className="flex flex-col h-[600px]">
+    <div className="flex flex-col h-[600px]" style={{ position: 'relative' }}>
       <div className="flex-1 overflow-y-auto px-4 pt-4 pb-2">
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px', paddingLeft: '4px', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -123,6 +222,7 @@ export default function App() {
       <div className="shrink-0">
         <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
       </div>
+      {renderPinOverlay()}
     </div>
   )
 }

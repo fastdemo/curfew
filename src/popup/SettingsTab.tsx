@@ -2,10 +2,15 @@ import { ChromeStorage } from '../types'
 
 interface SettingsTabProps {
   storage: ChromeStorage & { loading: boolean; update: (p: Partial<ChromeStorage>) => Promise<void> }
+  onRequirePinToggle?: () => void
 }
 
-export default function SettingsTab({ storage }: SettingsTabProps) {
+export default function SettingsTab({ storage, onRequirePinToggle }: SettingsTabProps) {
   const toggleSetting = async (key: 'overlayMode' | 'requirePin' | 'confirmTurnOff') => {
+    if (key === 'requirePin') {
+      onRequirePinToggle?.()
+      return
+    }
     await storage.update({
       settings: { ...storage.settings, [key]: !storage.settings[key] },
     })

@@ -11,9 +11,10 @@ interface BlockScreenProps {
   usageStats: Record<string, { date: string; timeSpent: number }[]>
   onCloseTab: () => void
   onProceed: (domain: string) => void
+  canProceed?: boolean
 }
 
-export default function BlockScreen({ domain, interventionId, timeSpent, usageStats, onCloseTab, onProceed }: BlockScreenProps) {
+export default function BlockScreen({ domain, interventionId, timeSpent, usageStats, onCloseTab, onProceed, canProceed = true }: BlockScreenProps) {
   const [showIntervention, setShowIntervention] = useState(false)
   const [completed, setCompleted] = useState(false)
 
@@ -60,7 +61,14 @@ export default function BlockScreen({ domain, interventionId, timeSpent, usageSt
           you have spent <strong style={{ color: 'var(--color-text-primary)', fontWeight: 700 }}>{timeDisplay}</strong> on <strong style={{ color: 'var(--color-text-primary)', fontWeight: 700 }}>{domain}</strong> today.
         </p>
 
-        {!showIntervention ? (
+        {!canProceed ? (
+          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+            <AnalyticsPie highlightDomain={domain} />
+            <button onClick={onCloseTab} style={{ ...btnBase, backgroundColor: 'var(--color-surface-secondary)', color: 'var(--color-text-primary)', marginTop: '24px' }}>
+              close tab
+            </button>
+          </div>
+        ) : !showIntervention ? (
           <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
             <AnalyticsPie highlightDomain={domain} />
             <div style={{ ...btnWrap, marginTop: '24px' }}>

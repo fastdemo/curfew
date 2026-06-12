@@ -4,11 +4,12 @@ import { useTimer } from '../hooks/useTimer'
 
 interface StrictSessionTabProps {
   storage: ChromeStorage & { loading: boolean; update: (p: Partial<ChromeStorage>) => Promise<void> }
+  onEndSession?: () => void
 }
 
 const DURATIONS_MINUTES = [1, 10, 20, 30, 60, 120, 180, 240]
 
-export default function StrictSessionTab({ storage }: StrictSessionTabProps) {
+export default function StrictSessionTab({ storage, onEndSession }: StrictSessionTabProps) {
   const { now, getRemaining, formatTime } = useTimer()
 
   const isActive = storage.strictSession.isActive && now < storage.strictSession.endTime
@@ -121,9 +122,23 @@ export default function StrictSessionTab({ storage }: StrictSessionTabProps) {
             </span>
           </div>
 
-          <p style={{ fontSize: '12px', fontWeight: 400, color: 'var(--color-text-muted)', margin: 0 }}>
-            this session cannot be disabled until it expires.
-          </p>
+          <button
+            onClick={() => onEndSession?.()}
+            style={{
+              marginTop: '8px',
+              padding: '10px 20px',
+              borderRadius: '12px',
+              border: 'none',
+              background: 'var(--color-surface-tertiary)',
+              color: 'var(--color-text-muted)',
+              fontFamily: "'Sora', sans-serif",
+              fontSize: '13px',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            end session
+          </button>
         </div>
       ) : (
         <>

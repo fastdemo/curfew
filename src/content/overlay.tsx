@@ -64,10 +64,12 @@ function OverlayApp({ url }: { url: string }) {
   const [interventionId, setInterventionId] = useState('instant')
   const [timeSpent, setTimeSpent] = useState(0)
   const [usageStats, setUsageStats] = useState<Record<string, { date: string; timeSpent: number }[]>>({})
+  const [canProceed, setCanProceed] = useState(true)
 
   useEffect(() => {
     getStorage().then(storage => {
       setUsageStats(storage.usageStats)
+      setCanProceed(storage.selectedInterventions.length > 0)
       const today = new Date().toISOString().slice(0, 10)
       const domainStats = storage.usageStats[domain]
       const todayEntry = domainStats?.find((e: any) => e.date === today)
@@ -96,7 +98,7 @@ function OverlayApp({ url }: { url: string }) {
   const handleProceed = async (dom: string) => {
     const result = await chrome.storage.local.get('bypasses')
     const bypasses = (result.bypasses as { [domain: string]: number }) || {}
-    bypasses[dom] = Date.now() + 5 * 60 * 1000
+    bypasses[dom] = Date.now() + 60 * 1000
     await chrome.storage.local.set({ bypasses })
     cleanupOverlay()
     window.location.href = `https://${dom}`
@@ -110,6 +112,7 @@ function OverlayApp({ url }: { url: string }) {
       usageStats={usageStats}
       onCloseTab={handleCloseTab}
       onProceed={handleProceed}
+      canProceed={canProceed}
     />
   )
 }
