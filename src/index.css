@@ -80,21 +80,17 @@ body {
   font-family: 'Sora', sans-serif;
 }
 
+/* Hide scrollbar layout box across all elements */
 * {
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-border-muted) transparent;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
-*::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-*::-webkit-scrollbar-thumb {
-  background: var(--color-border-muted);
-  border-radius: 9999px;
-}
-*::-webkit-scrollbar-track {
-  background: transparent;
+::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
 }
 
 button:focus-visible,

@@ -12,7 +12,7 @@ export default function FooterNav({ activeTab, onTabChange }: FooterNavProps) {
   const theme = useTheme()
   return (
     <nav
-      className="flex shrink-0 items-center justify-around px-4"
+      className="flex shrink-0 items-center justify-around px-3"
       style={{
         height: '56px',
         backgroundColor: theme.background,

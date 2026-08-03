@@ -26,26 +26,32 @@ export default function Header({ blocking, timerLabel, timerMode, showTimer }: H
 
   return (
     <header
-      className="relative flex shrink-0 items-center justify-between px-4"
+      className="relative flex shrink-0 items-center justify-between px-3"
       style={{
         height: '48px',
         backgroundColor: theme.background,
         borderBottom: `1px solid ${theme.borderSoft}`,
       }}
     >
-      <div className="flex items-center gap-2.5">
+      <button
+        type="button"
+        onClick={() => chrome.tabs.create({ url: 'https://github.com/fastdemo/curfew' })}
+        className="flex cursor-pointer items-center gap-[0.3rem] rounded-lg focus-visible:outline-none"
+        aria-label="open curfew on github"
+        title="open curfew on github"
+      >
         <img
           src={chrome.runtime.getURL('icons/anko128.png')}
           alt="Curfew"
-          className="h-7 w-7 rounded-full"
+          className="h-7 w-7 rounded-full transition-transform duration-200 ease-in-out hover:scale-110 hover:rotate-6"
         />
         <h1
-          className="text-base font-bold tracking-tight"
-          style={{ color: theme.textPrimary, fontFamily: "'Sora', sans-serif" }}
+          className="text-base font-bold text-text-primary transition-colors duration-200 ease-in-out hover:text-accent"
+          style={{ fontFamily: "'Sora', sans-serif" }}
         >
           curfew
         </h1>
-      </div>
+      </button>
       <StatusPill label={statusLabel} tone={tone} dot />
     </header>
   )

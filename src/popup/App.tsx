@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useStorage } from '../hooks/useStorage'
 import { useTimer } from '../hooks/useTimer'
 import { getDomainFromUrl, isScheduleActive } from '../lib/interventions'
@@ -27,6 +27,11 @@ export default function App() {
   const { now, getRemaining, formatTime } = useTimer()
   const [activeDomain, setActiveDomain] = useState('')
   const [pinOverlay, setPinOverlay] = useState<PinOverlayKind | null>(null)
+  const mainRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    mainRef.current?.scrollTo({ top: 0 })
+  }, [activeTab])
 
   useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
@@ -230,7 +235,7 @@ export default function App() {
   return (
     <div
       style={{
-        width: '360px',
+        width: '336px',
         height: '520px',
         overflow: 'hidden',
         display: 'flex',
@@ -245,13 +250,21 @@ export default function App() {
         timerLabel={timerLabel}
       />
       <main
+        ref={mainRef}
         style={{
           flex: 1,
+          minHeight: 0,
+          width: '100%',
           overflowY: 'auto',
-          padding: '14px 16px 30px',
+          overflowX: 'hidden',
+          overscrollBehavior: 'contain',
         }}
       >
-        {renderTab()}
+        <div className="w-full mx-auto max-w-full px-3 flex flex-col gap-3">
+          <div style={{ padding: '14px 0 12px' }}>
+            {renderTab()}
+          </div>
+        </div>
       </main>
       <FooterNav activeTab={activeTab} onTabChange={setActiveTab} />
       {renderPinOverlay()}

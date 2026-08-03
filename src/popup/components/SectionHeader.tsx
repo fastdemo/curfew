@@ -10,7 +10,7 @@ export default function SectionHeader({ title, subtitle }: SectionHeaderProps) {
   return (
     <div className="flex flex-col gap-1 mb-1.5 text-left">
       <h2
-        className="text-[11px] font-semibold"
+        className="text-xs font-semibold tracking-wide"
         style={{ color: theme.textTertiary }}
       >
         {title}
