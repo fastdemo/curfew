@@ -5,6 +5,7 @@ import '../index.css'
 import { getStorage } from '../lib/storage'
 import { getRandomIntervention, getDomainFromUrl } from '../lib/interventions'
 import { useState, useEffect } from 'react'
+import { ThemeProvider } from '../lib/ThemeProvider'
 
 function applyTheme(theme: string) {
   const root = document.documentElement
@@ -17,30 +18,26 @@ function applyTheme(theme: string) {
   }
 }
 
-function BlockPage() {
+export function BlockPage() {
   const [domain, setDomain] = useState('')
   const [interventionId, setInterventionId] = useState('')
   const [timeSpent, setTimeSpent] = useState(0)
   const [usageStats, setUsageStats] = useState<Record<string, { date: string; timeSpent: number }[]>>({})
   const [openTabId, setOpenTabId] = useState<number | null>(null)
-  const [originalUrl, setOriginalUrl] = useState('')
+  const [originalUrl] = useState(() => new URLSearchParams(window.location.search).get('url') || '')
   const [theme, setTheme] = useState('light')
   const [canProceed, setCanProceed] = useState(true)
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const url = params.get('url') || ''
-    setOriginalUrl(url)
-
     getStorage().then(storage => {
-      const domainName = getDomainFromUrl(url)
+      const domainName = getDomainFromUrl(originalUrl)
       setDomain(domainName)
       setUsageStats(storage.usageStats)
       setCanProceed(storage.selectedInterventions.length > 0)
 
       const today = new Date().toISOString().slice(0, 10)
       const domainStats = storage.usageStats[domainName]
-      const todayEntry = domainStats?.find((e: any) => e.date === today)
+      const todayEntry = domainStats?.find((e: { date: string; timeSpent: number }) => e.date === today)
       setTimeSpent(todayEntry?.timeSpent || 0)
 
       const picked = getRandomIntervention(storage.selectedInterventions)
@@ -53,7 +50,7 @@ function BlockPage() {
     chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
       if (tabs[0]?.id) setOpenTabId(tabs[0].id)
     })
-  }, [])
+  }, [originalUrl])
 
   useEffect(() => {
     if (theme !== 'system') return
@@ -71,7 +68,7 @@ function BlockPage() {
       const storage = await getStorage()
       const today = new Date().toISOString().slice(0, 10)
       const domainStats = storage.usageStats[domain]
-      const todayEntry = domainStats?.find((e: any) => e.date === today)
+      const todayEntry = domainStats?.find((e: { date: string; timeSpent: number }) => e.date === today)
       setTimeSpent(todayEntry?.timeSpent || 0)
     }, 1000)
     return () => clearInterval(interval)
@@ -153,7 +150,9 @@ const rootEl = document.getElementById('root')
 if (rootEl) {
   ReactDOM.createRoot(rootEl).render(
     <React.StrictMode>
-      <BlockPage />
+      <ThemeProvider>
+        <BlockPage />
+      </ThemeProvider>
     </React.StrictMode>
   )
 }

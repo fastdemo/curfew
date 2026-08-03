@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { verifyPin, MAX_PIN_LENGTH } from '../lib/pin'
 
 interface PinOverlayProps {
   mode: 'setup' | 'verify'
@@ -34,6 +35,17 @@ export default function PinOverlay({ mode, pinHash = '', prompt, onVerified, onS
     shakeTimer.current = setTimeout(() => setIsShaking(false), 500)
   }
 
+  const attemptVerify = async (input: string) => {
+    if (!input) return
+    const ok = await verifyPin(input, pinHash)
+    if (ok) {
+      setIsVerified(true)
+      verifyTimer.current = setTimeout(() => onVerified?.(), 300)
+    } else {
+      triggerShake()
+    }
+  }
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (mode === 'setup' && step === 'create') {
       const input = e.target.value.replace(/\D/g, '')
@@ -54,16 +66,8 @@ export default function PinOverlay({ mode, pinHash = '', prompt, onVerified, onS
       }
     } else if (mode === 'verify') {
       const input = e.target.value.replace(/\D/g, '')
-      if (input.length > (pinHash.length || 4)) return
+      if (input.length > MAX_PIN_LENGTH) return
       setValue(input)
-      if (input.length === (pinHash.length || 4)) {
-        if (input === pinHash) {
-          setIsVerified(true)
-          verifyTimer.current = setTimeout(() => onVerified?.(), 300)
-        } else {
-          triggerShake()
-        }
-      }
     }
   }
 
@@ -80,6 +84,9 @@ export default function PinOverlay({ mode, pinHash = '', prompt, onVerified, onS
     if (e.key === 'Escape') onCancel()
     if (e.key === 'Enter' && mode === 'setup' && step === 'create') {
       handleCreateSubmit()
+    }
+    if (e.key === 'Enter' && mode === 'verify') {
+      attemptVerify(value)
     }
   }
 
@@ -130,7 +137,7 @@ export default function PinOverlay({ mode, pinHash = '', prompt, onVerified, onS
           value={step === 'confirm' ? confirmValue : value}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          maxLength={mode === 'setup' ? 10 : (pinHash.length || 4)}
+          maxLength={mode === 'setup' ? 10 : MAX_PIN_LENGTH}
           style={{
             width: '160px',
             padding: '12px 16px',
@@ -157,7 +164,7 @@ export default function PinOverlay({ mode, pinHash = '', prompt, onVerified, onS
               borderRadius: '12px',
               border: 'none',
               background: 'var(--color-accent)',
-              color: '#F3EEEA',
+              color: 'var(--color-on-accent)',
               fontFamily: "'Sora', sans-serif",
               fontSize: '14px',
               fontWeight: 600,

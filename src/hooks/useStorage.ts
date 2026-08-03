@@ -17,7 +17,7 @@ export function useStorage() {
         const next = { ...prev }
         for (const [key, { newValue }] of Object.entries(changes)) {
           if (key in next) {
-            ;(next as any)[key] = newValue
+            Object.assign(next, { [key]: newValue })
           }
         }
         return next

@@ -14,7 +14,7 @@ interface BlockScreenProps {
   canProceed?: boolean
 }
 
-export default function BlockScreen({ domain, interventionId, timeSpent, usageStats, onCloseTab, onProceed, canProceed = true }: BlockScreenProps) {
+export default function BlockScreen({ domain, interventionId, timeSpent, onCloseTab, onProceed, canProceed = true }: BlockScreenProps) {
   const [showIntervention, setShowIntervention] = useState(false)
   const [completed, setCompleted] = useState(false)
 
@@ -72,7 +72,7 @@ export default function BlockScreen({ domain, interventionId, timeSpent, usageSt
           <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
             <AnalyticsPie highlightDomain={domain} />
             <div style={{ ...btnWrap, marginTop: '24px' }}>
-              <button onClick={handleContinue} style={{ ...btnBase, backgroundColor: 'var(--color-accent)', color: '#F3EEEA' }}>
+              <button onClick={handleContinue} style={{ ...btnBase, backgroundColor: 'var(--color-accent)', color: 'var(--color-on-accent)' }}>
                 let me continue
               </button>
               <button onClick={onCloseTab} style={{ ...btnBase, backgroundColor: 'var(--color-surface-secondary)', color: 'var(--color-text-primary)' }}>
@@ -82,7 +82,7 @@ export default function BlockScreen({ domain, interventionId, timeSpent, usageSt
           </div>
         ) : isInstant ? (
           <div style={{ ...btnWrap, marginTop: '24px' }}>
-            <button onClick={() => onProceed(domain)} style={{ ...btnBase, backgroundColor: 'var(--color-accent)', color: '#F3EEEA' }}>
+            <button onClick={() => onProceed(domain)} style={{ ...btnBase, backgroundColor: 'var(--color-accent)', color: 'var(--color-on-accent)' }}>
               proceed to {domain}
             </button>
             <button onClick={onCloseTab} style={{ ...btnBase, backgroundColor: 'var(--color-surface-secondary)', color: 'var(--color-text-primary)' }}>
@@ -97,7 +97,7 @@ export default function BlockScreen({ domain, interventionId, timeSpent, usageSt
 
             <div style={{ ...btnWrap, marginTop: '24px' }}>
               {completed && (
-                <button onClick={() => onProceed(domain)} style={{ ...btnBase, backgroundColor: 'var(--color-accent)', color: '#F3EEEA' }}>
+                <button onClick={() => onProceed(domain)} style={{ ...btnBase, backgroundColor: 'var(--color-accent)', color: 'var(--color-on-accent)' }}>
                   proceed to {domain}
                 </button>
               )}

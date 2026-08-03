@@ -97,7 +97,7 @@ export default function AnalyticsPie({ highlightDomain }: AnalyticsPieProps) {
               border: 'none',
               cursor: 'pointer',
               backgroundColor: timeRange === range ? 'var(--color-accent)' : 'transparent',
-              color: timeRange === range ? '#F3EEEA' : 'var(--color-text-muted)',
+              color: timeRange === range ? 'var(--color-on-accent)' : 'var(--color-text-muted)',
               transition: 'all 0.2s',
             }}
           >

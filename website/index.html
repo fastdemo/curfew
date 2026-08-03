@@ -18,16 +18,16 @@
 
     :root {
       --color-bg: #FDFBF7;
-      --color-surface: #EFEAE2;
-      --color-surface-hover: #E5DDD3;
-      --color-text: #4A3E3D;
-      --color-text-secondary: #6B5E58;
-      --color-muted: #7A6E67;
+      --color-surface: #F3EFEA;
+      --color-surface-hover: color-mix(in srgb, var(--color-surface) 80%, var(--color-border));
+      --color-text: #1A1715;
+      --color-text-secondary: #6B635A;
+      --color-muted: #6B635A;
       --color-accent: #8B7E74;
-      --color-accent-hover: #7A6A5A;
-      --color-border: #DDD5CB;
+      --color-accent-hover: color-mix(in srgb, var(--color-accent) 78%, var(--color-text));
+      --color-border: #D8D1C5;
       --color-donut-a: var(--color-accent);
-      --color-donut-b: #4A3E3D;
+      --color-donut-b: var(--color-text);
       --color-donut-c: var(--color-muted);
       --color-donut-d: var(--color-border);
       --color-donut-e: var(--color-surface-hover);
@@ -43,19 +43,19 @@
 
     .dark {
       --color-bg: #1A1715;
-      --color-surface: #2D2824;
-      --color-surface-hover: #3D352E;
-      --color-text: #F3EEEA;
-      --color-text-secondary: #D5CEC6;
-      --color-muted: #B0A695;
+      --color-surface: #2A2623;
+      --color-surface-hover: color-mix(in srgb, var(--color-surface) 80%, var(--color-border));
+      --color-text: #FDFBF7;
+      --color-text-secondary: #9E958C;
+      --color-muted: #9E958C;
       --color-accent: #8B7E74;
-      --color-accent-hover: #9A8B7B;
-      --color-border: #4D4339;
+      --color-accent-hover: color-mix(in srgb, var(--color-accent) 78%, var(--color-text));
+      --color-border: #3D3631;
       --color-donut-a: var(--color-accent);
-      --color-donut-b: #F3EEEA;
-      --color-donut-c: #B0A695;
-      --color-donut-d: #5D5349;
-      --color-donut-e: #3D352E;
+      --color-donut-b: var(--color-text);
+      --color-donut-c: var(--color-muted);
+      --color-donut-d: var(--color-border);
+      --color-donut-e: var(--color-surface-hover);
     }
 
     html {
@@ -193,7 +193,7 @@
 
     .btn-primary {
       background: var(--color-accent);
-      color: #F3EEEA;
+      color: var(--color-bg);
     }
 
     .btn-primary:hover {
@@ -387,7 +387,7 @@
       padding: 6px 16px;
       border-radius: var(--radius-full);
       background: var(--color-accent);
-      color: #F3EEEA;
+      color: var(--color-bg);
       font-weight: 500;
     }
 
@@ -660,7 +660,7 @@
       z-index: 200;
       padding: 8px 16px;
       background: var(--color-accent);
-      color: #F3EEEA;
+      color: var(--color-bg);
       border-radius: var(--radius-sm);
       font-family: var(--font-body);
       font-size: 14px;

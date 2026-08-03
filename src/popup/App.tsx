@@ -1,9 +1,11 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useStorage } from '../hooks/useStorage'
 import { useTimer } from '../hooks/useTimer'
-import { getDomainFromUrl } from '../lib/interventions'
+import { getDomainFromUrl, isScheduleActive } from '../lib/interventions'
 import { getSettings } from '../lib/storage'
-import BottomNav from './BottomNav'
+import { hashPin } from '../lib/pin'
+import Header from './components/Header'
+import FooterNav from './components/FooterNav'
 import HomeTab from './HomeTab'
 import BlockedListTab from './BlockedListTab'
 import StrictSessionTab from './StrictSessionTab'
@@ -17,12 +19,12 @@ type PinOverlayKind =
   | { type: 'setup' }
   | { type: 'verify-end-session' }
   | { type: 'verify-disable-pin' }
+  | { type: 'verify-disable-master' }
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>('home')
   const storage = useStorage()
   const { now, getRemaining, formatTime } = useTimer()
-  const [isHovered, setIsHovered] = useState(false)
   const [activeDomain, setActiveDomain] = useState('')
   const [pinOverlay, setPinOverlay] = useState<PinOverlayKind | null>(null)
 
@@ -41,6 +43,11 @@ export default function App() {
   const strictRemaining = getRemaining(storage.strictSession.endTime)
   const isStrictLive = isStrictActive && strictRemaining > 0
 
+  const blocking = useMemo(
+    () => storage.masterToggle || isStrictLive || isScheduleActive(storage.schedules),
+    [storage.masterToggle, isStrictLive, storage.schedules]
+  )
+
   const graceEndTime = activeDomain ? storage.bypasses?.[activeDomain] : 0
   const hasGracePeriod = !!graceEndTime && graceEndTime > now
   const graceRemaining = hasGracePeriod ? graceEndTime - now : 0
@@ -48,7 +55,6 @@ export default function App() {
   const showTimer = isStrictLive || (hasGracePeriod && graceRemaining > 0)
   const timerMode = isStrictLive ? 'strict' : 'bypass'
   const timerLabel = isStrictLive ? formatTime(strictRemaining) : formatTime(graceRemaining)
-  const timerHoverLabel = isStrictLive ? `locked for ${timerLabel}` : `unlocked for ${timerLabel}`
 
   useEffect(() => {
     const theme = storage.settings.theme
@@ -78,16 +84,23 @@ export default function App() {
 
   const hidePinOverlay = useCallback(() => setPinOverlay(null), [])
 
+  const endStrictSession = useCallback(() => {
+    getSettings().then(settings => {
+      if (settings.confirmTurnOff && !window.confirm('End the strict focus session?')) return
+      storage.update({ strictSession: { isActive: false, startTime: 0, endTime: 0 } })
+      chrome.runtime.sendMessage({ type: 'CURFEW_RELOAD_BLOCKED_TABS' })
+    })
+  }, [storage])
+
   const handleEndSessionRequest = useCallback(() => {
     getSettings().then(settings => {
       if (settings.requirePin && settings.pinHash) {
         setPinOverlay({ type: 'verify-end-session' })
       } else {
-        storage.update({ strictSession: { isActive: false, startTime: 0, endTime: 0 } })
-        chrome.runtime.sendMessage({ type: 'CURFEW_RELOAD_BLOCKED_TABS' })
+        endStrictSession()
       }
     })
-  }, [storage])
+  }, [endStrictSession])
 
   const handleRequirePinToggle = useCallback(() => {
     if (storage.settings.requirePin) {
@@ -103,18 +116,15 @@ export default function App() {
 
   const handleSetupComplete = useCallback(async (pin: string) => {
     await storage.update({
-      settings: { ...storage.settings, pinHash: pin, requirePin: true },
+      settings: { ...storage.settings, pinHash: await hashPin(pin), requirePin: true },
     })
     setPinOverlay(null)
   }, [storage])
 
-  const handleVerifyEndSession = useCallback(async () => {
+  const handleVerifyEndSession = useCallback(() => {
     setPinOverlay(null)
-    await storage.update({
-      strictSession: { isActive: false, startTime: 0, endTime: 0 },
-    })
-    chrome.runtime.sendMessage({ type: 'CURFEW_RELOAD_BLOCKED_TABS' })
-  }, [storage])
+    endStrictSession()
+  }, [endStrictSession])
 
   const handleVerifyDisablePin = useCallback(async () => {
     setPinOverlay(null)
@@ -122,6 +132,31 @@ export default function App() {
       settings: { ...storage.settings, requirePin: false },
     })
   }, [storage])
+
+  const disableMaster = useCallback(() => {
+    getSettings().then(settings => {
+      if (settings.confirmTurnOff && !window.confirm('Turn off focus mode?')) return
+      storage.update({ masterToggle: false })
+    })
+  }, [storage])
+
+  const handleToggleMaster = useCallback(async () => {
+    if (storage.strictSession.isActive && now < storage.strictSession.endTime) return
+
+    const enable = !storage.masterToggle
+    if (enable) {
+      await storage.update({ masterToggle: true })
+      chrome.runtime.sendMessage({ type: 'CURFEW_RELOAD_BLOCKED_TABS' })
+      return
+    }
+
+    const settings = await getSettings()
+    if (settings.requirePin && settings.pinHash) {
+      setPinOverlay({ type: 'verify-disable-master' })
+      return
+    }
+    disableMaster()
+  }, [storage, now, disableMaster])
 
   /* ── PinOverlay renderer ── */
 
@@ -162,13 +197,25 @@ export default function App() {
       )
     }
 
+    if (pinOverlay.type === 'verify-disable-master') {
+      return (
+        <PinOverlay
+          mode="verify"
+          pinHash={storage.settings.pinHash}
+          prompt="enter pin to turn off focus mode"
+          onVerified={disableMaster}
+          onCancel={hidePinOverlay}
+        />
+      )
+    }
+
     return null
   }
 
   const renderTab = () => {
     switch (activeTab) {
       case 'home':
-        return <HomeTab storage={storage} />
+        return <HomeTab storage={storage} onToggleMaster={handleToggleMaster} />
       case 'blocked':
         return <BlockedListTab storage={storage} />
       case 'strict':
@@ -181,47 +228,32 @@ export default function App() {
   }
 
   return (
-    <div className="flex flex-col h-[600px]" style={{ position: 'relative' }}>
-      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-2">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px', paddingLeft: '4px', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <img
-              src={chrome.runtime.getURL('icons/anko128.png')}
-              alt="Logo"
-              style={{ width: '48px', height: '48px', objectFit: 'contain' }}
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = 'anko128.png'
-              }}
-            />
-            <h1 style={{ fontFamily: "'Sora', sans-serif", fontSize: '24px', fontWeight: '800', color: 'var(--color-text-primary)', margin: 0 }}>
-              curfew
-            </h1>
-          </div>
-          {showTimer && (
-            <div
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-              style={{
-                fontFamily: "'Sora', sans-serif",
-                fontSize: '13px',
-                fontWeight: 600,
-                padding: '4px 12px',
-                borderRadius: '9999px',
-                whiteSpace: 'nowrap',
-                background: timerMode === 'strict' ? 'var(--color-surface-secondary)' : 'var(--color-accent)',
-                color: timerMode === 'strict' ? 'var(--color-accent)' : '#1A1715',
-                transition: 'all 0.2s ease-in-out',
-              }}
-            >
-              {isHovered ? timerHoverLabel : timerLabel}
-            </div>
-          )}
-        </div>
+    <div
+      style={{
+        width: '360px',
+        height: '520px',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'relative',
+      }}
+    >
+      <Header
+        blocking={blocking}
+        showTimer={showTimer}
+        timerMode={timerMode}
+        timerLabel={timerLabel}
+      />
+      <main
+        style={{
+          flex: 1,
+          overflowY: 'auto',
+          padding: '14px 16px 30px',
+        }}
+      >
         {renderTab()}
-      </div>
-      <div className="shrink-0">
-        <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
-      </div>
+      </main>
+      <FooterNav activeTab={activeTab} onTabChange={setActiveTab} />
       {renderPinOverlay()}
     </div>
   )

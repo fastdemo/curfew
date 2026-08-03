@@ -8,9 +8,7 @@
     "tabs",
     "webNavigation",
     "alarms",
-    "scripting",
-    "declarativeNetRequest",
-    "declarativeNetRequestFeedback"
+    "scripting"
   ],
   "host_permissions": ["<all_urls>"],
   "action": {

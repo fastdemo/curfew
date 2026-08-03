@@ -24,7 +24,7 @@ export async function getBlockedItems(): Promise<BlockedItem[]> {
 }
 
 export async function addBlockedItem(item: BlockedItem): Promise<void> {
-  const items = await getBlockedItems()
+  const items = [...(await getBlockedItems())]
   items.push(item)
   await chrome.storage.local.set({ blockedItems: items })
 }
@@ -49,7 +49,7 @@ export async function getSchedules(): Promise<Schedule[]> {
 }
 
 export async function addSchedule(schedule: Schedule): Promise<void> {
-  const schedules = await getSchedules()
+  const schedules = [...(await getSchedules())]
   schedules.push(schedule)
   await chrome.storage.local.set({ schedules })
 }
@@ -92,15 +92,20 @@ export async function getUsageStats(): Promise<ChromeStorage['usageStats']> {
   return (usageStats as ChromeStorage['usageStats']) ?? DEFAULT_STORAGE.usageStats
 }
 
-export async function trackDomainUsage(domain: string, ms: number): Promise<void> {
-  const stats = await getUsageStats()
-  const today = new Date().toISOString().slice(0, 10)
-  if (!stats[domain]) stats[domain] = []
-  const todayEntry = stats[domain].find(e => e.date === today)
-  if (todayEntry) {
-    todayEntry.timeSpent += ms
-  } else {
-    stats[domain].push({ date: today, timeSpent: ms })
-  }
-  await chrome.storage.local.set({ usageStats: stats })
+let trackQueue: Promise<void> = Promise.resolve()
+
+export function trackDomainUsage(domain: string, ms: number): Promise<void> {
+  trackQueue = trackQueue.then(async () => {
+    const stats = structuredClone(await getUsageStats())
+    const today = new Date().toISOString().slice(0, 10)
+    if (!stats[domain]) stats[domain] = []
+    const todayEntry = stats[domain].find(e => e.date === today)
+    if (todayEntry) {
+      todayEntry.timeSpent += ms
+    } else {
+      stats[domain].push({ date: today, timeSpent: ms })
+    }
+    await chrome.storage.local.set({ usageStats: stats })
+  })
+  return trackQueue
 }

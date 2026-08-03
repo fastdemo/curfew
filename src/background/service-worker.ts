@@ -43,8 +43,6 @@ async function reblockExpiredBypasses() {
   for (const d of expiredDomains) delete cleaned[d]
   await chrome.storage.local.set({ bypasses: cleaned })
 
-  const storage = await getStorage()
-  const strictActive = storage.strictSession.isActive && now < storage.strictSession.endTime
   chrome.tabs.query({}, tabs => {
     tabs.forEach(tab => {
       if (tab.id && tab.url) {
@@ -63,8 +61,9 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
   updateActiveTab(activeInfo.tabId)
 })
 
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (tabId === activeTabId && changeInfo.url) {
+    await tickTracking()
     if (tab.url && tab.url.startsWith('http')) {
       activeDomain = getDomainFromUrl(tab.url)
     } else {
@@ -73,9 +72,9 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   }
 })
 
-chrome.windows.onFocusChanged.addListener((windowId) => {
+chrome.windows.onFocusChanged.addListener(async (windowId) => {
   if (windowId === chrome.windows.WINDOW_ID_NONE) {
-    tickTracking()
+    await tickTracking()
     activeDomain = null
     activeTabId = null
   } else {
@@ -84,6 +83,16 @@ chrome.windows.onFocusChanged.addListener((windowId) => {
     })
   }
 })
+
+async function reblockTabIfNeeded(storage: Awaited<ReturnType<typeof getStorage>>) {
+  const strictActive = storage.strictSession.isActive && Date.now() < storage.strictSession.endTime
+  const tabs = await chrome.tabs.query({})
+  for (const tab of tabs) {
+    if (tab.id && tab.url && shouldBlockUrl(tab.url, storage.blockedItems, strictActive ? undefined : storage.bypasses)) {
+      await handleNavigation(tab.id, tab.url)
+    }
+  }
+}
 
 async function handleNavigation(tabId: number, url: string | undefined) {
   if (!url || !url.startsWith('http')) return
@@ -136,41 +145,26 @@ chrome.webNavigation.onBeforeNavigate.addListener((details) => {
   }
 })
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.type === 'CURFEW_UNBLOCK') {
-    chrome.tabs.update(message.tabId, { url: message.url })
-    sendResponse({ success: true })
-  }
-  if (message.type === 'CURFEW_CHECK_BLOCKED') {
-    getStorage().then(storage => {
-      const blocked = shouldBlockUrl(message.url, storage.blockedItems, storage.bypasses)
-      sendResponse({ blocked })
-    })
-    return true
-  }
-  if (message.type === 'CURFEW_TRACK_USAGE') {
-    trackDomainUsage(message.domain, message.ms)
-  }
+chrome.runtime.onMessage.addListener((message, sender) => {
   if (message.type === 'CURFEW_RELOAD_BLOCKED_TABS') {
-    getStorage().then(storage => {
-      const strictActive = storage.strictSession.isActive && Date.now() < storage.strictSession.endTime
-      chrome.tabs.query({}, tabs => {
-        tabs.forEach(tab => {
-          if (tab.id && tab.url && shouldBlockUrl(tab.url, storage.blockedItems, strictActive ? undefined : storage.bypasses)) {
-            handleNavigation(tab.id, tab.url)
-          }
-        })
-      })
-    })
+    getStorage().then(reblockTabIfNeeded)
+    return
   }
   if (message.type === 'CURFEW_CLOSE_CURRENT_TAB') {
     if (sender.tab?.id) {
       chrome.tabs.remove(sender.tab.id)
     }
+    return
   }
 })
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
+  if (alarm.name === 'curfew-tracking') {
+    await tickTracking()
+    reblockExpiredBypasses()
+    return
+  }
+
   if (alarm.name === 'curfew-strict-session') {
     const storage = await getStorage()
     if (storage.strictSession.isActive && Date.now() >= storage.strictSession.endTime) {
@@ -182,9 +176,11 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 
   if (alarm.name === 'curfew-schedule-check') {
     const storage = await getStorage()
-    if (!storage.masterToggle && !storage.strictSession.isActive) {
+    if (!storage.strictSession.isActive) {
       const active = isScheduleActive(storage.schedules)
-      if (!active && storage.masterToggle) {
+      if (active) {
+        reblockTabIfNeeded(storage)
+      } else if (storage.masterToggle) {
         await chrome.storage.local.set({ masterToggle: false })
       }
     }
@@ -246,6 +242,14 @@ async function checkStrictSessionOnStart() {
 
 async function initOnWake() {
   await checkStrictSessionOnStart()
+
+  const existing = await chrome.alarms.get('curfew-tracking')
+  if (!existing) {
+    chrome.alarms.create('curfew-tracking', {
+      delayInMinutes: 1,
+      periodInMinutes: 1,
+    })
+  }
 
   const storage = await getStorage()
   if (storage.schedules.length > 0) {

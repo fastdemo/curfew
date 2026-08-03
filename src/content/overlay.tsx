@@ -3,24 +3,40 @@ import { createRoot, type Root } from 'react-dom/client'
 import { useState, useEffect } from 'react'
 import { getStorage } from '../lib/storage'
 import { getRandomIntervention, getDomainFromUrl } from '../lib/interventions'
+import { cssVarsFor } from '../lib/theme'
 import BlockScreen from '../block/BlockScreen'
 
 let shadowHost: HTMLDivElement | null = null
 let timeInterval: ReturnType<typeof setInterval> | null = null
 let reactRoot: Root | null = null
+let themeStyle: HTMLStyleElement | null = null
+
+function overlayThemeCss(theme: 'light' | 'dark' | 'system') {
+  const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+  const resolved: 'light' | 'dark' = theme === 'dark' || (theme === 'system' && systemDark) ? 'dark' : 'light'
+  return `
+    :host {
+      ${cssVarsFor(resolved)}
+    }
+  `
+}
 
 chrome.runtime.onMessage.addListener((message) => {
   if (message.type === 'CURFEW_SHOW_OVERLAY') {
     if (shadowHost) return
     showOverlay(message.url)
   }
-  if (message.type === 'CURFEW_HIDE_OVERLAY') {
-    cleanupOverlay()
-  }
 })
 
 chrome.storage.onChanged.addListener((changes) => {
   if (!shadowHost) return
+
+  if (changes.settings) {
+    const theme = (changes.settings.newValue as { theme: 'light' | 'dark' | 'system' } | undefined)?.theme
+    if (theme && themeStyle) {
+      themeStyle.textContent = overlayThemeCss(theme)
+    }
+  }
 
   if (changes.masterToggle && changes.masterToggle.newValue === false) {
     cleanupOverlay()
@@ -56,11 +72,12 @@ function cleanupOverlay() {
   }
   shadowHost?.remove()
   shadowHost = null
+  themeStyle = null
 }
 
-function OverlayApp({ url }: { url: string }) {
+export function OverlayApp({ url }: { url: string }) {
   const domain = getDomainFromUrl(url)
-  const [domain_, setDomain_] = useState(domain)
+  const domain_ = domain
   const [interventionId, setInterventionId] = useState('instant')
   const [timeSpent, setTimeSpent] = useState(0)
   const [usageStats, setUsageStats] = useState<Record<string, { date: string; timeSpent: number }[]>>({})
@@ -72,7 +89,7 @@ function OverlayApp({ url }: { url: string }) {
       setCanProceed(storage.selectedInterventions.length > 0)
       const today = new Date().toISOString().slice(0, 10)
       const domainStats = storage.usageStats[domain]
-      const todayEntry = domainStats?.find((e: any) => e.date === today)
+      const todayEntry = domainStats?.find((e: { date: string; timeSpent: number }) => e.date === today)
       setTimeSpent(todayEntry?.timeSpent || 0)
       const picked = getRandomIntervention(storage.selectedInterventions)
       setInterventionId(picked.id)
@@ -85,7 +102,7 @@ function OverlayApp({ url }: { url: string }) {
       const storage = await getStorage()
       const today = new Date().toISOString().slice(0, 10)
       const domainStats = storage.usageStats[domain]
-      const todayEntry = domainStats?.find((e: any) => e.date === today)
+      const todayEntry = domainStats?.find((e: { date: string; timeSpent: number }) => e.date === today)
       setTimeSpent(todayEntry?.timeSpent || 0)
     }, 1000)
     return () => clearInterval(interval)
@@ -95,13 +112,13 @@ function OverlayApp({ url }: { url: string }) {
     chrome.runtime.sendMessage({ type: 'CURFEW_CLOSE_CURRENT_TAB' })
   }
 
-  const handleProceed = async (dom: string) => {
+  const handleProceed = async () => {
     const result = await chrome.storage.local.get('bypasses')
     const bypasses = (result.bypasses as { [domain: string]: number }) || {}
-    bypasses[dom] = Date.now() + 60 * 1000
+    bypasses[domain] = Date.now() + 60 * 1000
     await chrome.storage.local.set({ bypasses })
     cleanupOverlay()
-    window.location.href = `https://${dom}`
+    window.location.reload()
   }
 
   return (
@@ -123,7 +140,10 @@ function showOverlay(url: string) {
 
   const shadow = shadowHost.attachShadow({ mode: 'closed' })
 
-  const isDark = document.documentElement.classList.contains('dark')
+  getStorage().then(storage => {
+    if (!shadowHost || !themeStyle) return
+    themeStyle.textContent = overlayThemeCss(storage.settings.theme)
+  })
 
   const resetStyle = document.createElement('style')
   resetStyle.textContent = `
@@ -133,24 +153,8 @@ function showOverlay(url: string) {
   `
   shadow.appendChild(resetStyle)
 
-  const themeStyle = document.createElement('style')
-  themeStyle.textContent = `
-    :host {
-      --color-surface: ${isDark ? '#1A1715' : '#FDFBF7'};
-      --color-surface-secondary: ${isDark ? '#2D2824' : '#EFEAE2'};
-      --color-surface-tertiary: ${isDark ? '#3D352E' : '#E5DDD3'};
-      --color-border: ${isDark ? '#4D4339' : '#DDD5CB'};
-      --color-text-primary: ${isDark ? '#F3EEEA' : '#4A3E3D'};
-      --color-text-secondary: ${isDark ? '#D5CEC6' : '#6B5E58'};
-      --color-text-muted: ${isDark ? '#A89C8E' : '#7A6E67'};
-      --color-accent: #8B7E74;
-      --color-menu-item-bg: ${isDark ? '#2D2824' : '#EFEAE2'};
-      --color-menu-item-text: ${isDark ? '#F3EEEA' : '#4A3E3D'};
-      --color-circle-low: ${isDark ? '#2D2824' : '#EFEAE2'};
-      --color-circle-med: ${isDark ? '#8B7E74' : '#B0A695'};
-      --color-circle-high: ${isDark ? '#F3EEEA' : '#4A3E3D'};
-    }
-  `
+  themeStyle = document.createElement('style')
+  themeStyle.textContent = overlayThemeCss('system')
   shadow.appendChild(themeStyle)
 
   const mountPoint = document.createElement('div')
