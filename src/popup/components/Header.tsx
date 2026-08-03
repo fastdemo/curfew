@@ -14,13 +14,13 @@ export default function Header({ blocking, timerLabel, timerMode, showTimer }: H
   let statusLabel: string
   let tone: PillTone
   if (showTimer && timerMode === 'strict') {
-    statusLabel = `Locked · ${timerLabel}`
+    statusLabel = `locked · ${timerLabel}`
     tone = 'success'
   } else if (showTimer && timerMode === 'bypass') {
-    statusLabel = `Bypass · ${timerLabel}`
+    statusLabel = `bypass · ${timerLabel}`
     tone = 'accent'
   } else {
-    statusLabel = blocking ? 'Active' : 'Idle'
+    statusLabel = blocking ? 'active' : 'idle'
     tone = blocking ? 'success' : 'muted'
   }
 

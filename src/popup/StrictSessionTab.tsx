@@ -17,10 +17,10 @@ interface DurationOption {
 }
 
 const DURATIONS: DurationOption[] = [
-  { min: 1, label: '1 min', sub: 'Quick Reset' },
-  { min: 10, label: '10 min', sub: 'Coffee Break' },
-  { min: 20, label: '20 min', sub: 'Deep Focus' },
-  { min: 30, label: '30 min', sub: 'Full Session' },
+  { min: 1, label: '1 min', sub: 'quick reset' },
+  { min: 10, label: '10 min', sub: 'coffee break' },
+  { min: 20, label: '20 min', sub: 'deep focus' },
+  { min: 30, label: '30 min', sub: 'full session' },
 ]
 
 export default function StrictSessionTab({ storage, onEndSession }: StrictSessionTabProps) {
@@ -60,7 +60,7 @@ export default function StrictSessionTab({ storage, onEndSession }: StrictSessio
   return (
     <div className="flex flex-col gap-3">
       <section>
-        <SectionHeader title="Strict session" subtitle="Nothing gets through until the timer ends" />
+        <SectionHeader title="strict session" subtitle="nothing gets through until the timer ends" />
         <div
           className="flex items-center justify-between rounded-xl px-4 py-3.5"
           style={{ backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}` }}
@@ -73,13 +73,13 @@ export default function StrictSessionTab({ storage, onEndSession }: StrictSessio
               <LockIcon size={18} color={theme.textPrimary} />
             </span>
             <div className="flex flex-col text-left">
-              <span className="text-sm font-medium leading-tight" style={{ color: theme.textPrimary }}>Blocked List</span>
+              <span className="text-sm font-medium leading-tight" style={{ color: theme.textPrimary }}>blocked list</span>
               <span className="text-xs leading-tight mt-0.5" style={{ color: theme.textSecondary }}>
                 {websiteCount} site{websiteCount !== 1 ? 's' : ''} · {keywordCount} keyword{keywordCount !== 1 ? 's' : ''} locked
               </span>
             </div>
           </div>
-          <StatusPill label={hasItems ? 'Ready' : 'Empty'} tone={hasItems ? 'success' : 'muted'} />
+          <StatusPill label={hasItems ? 'ready' : 'empty'} tone={hasItems ? 'success' : 'muted'} />
         </div>
       </section>
 
@@ -119,7 +119,7 @@ export default function StrictSessionTab({ storage, onEndSession }: StrictSessio
               style={{ width: 8, height: 8, backgroundColor: theme.success }}
             />
             <span className="text-sm font-semibold" style={{ color: theme.textPrimary }}>
-              Strict session is active
+              strict session is active
             </span>
           </div>
 
@@ -129,12 +129,12 @@ export default function StrictSessionTab({ storage, onEndSession }: StrictSessio
             className="w-full rounded-xl py-3 text-sm font-semibold transition-colors duration-150"
             style={{ backgroundColor: theme.accent, color: theme.onAccent }}
           >
-            End Session
+            end session
           </button>
         </div>
       ) : (
         <section className="flex flex-col gap-2.5">
-          <SectionHeader title="Pick a duration" subtitle="How long should the strict session last?" />
+          <SectionHeader title="pick a duration" subtitle="how long should the strict session last?" />
           <div className="grid grid-cols-2 gap-2.5">
             {DURATIONS.map(option => {
               const selected = selectedMin === option.min
@@ -167,7 +167,7 @@ export default function StrictSessionTab({ storage, onEndSession }: StrictSessio
 
           {!hasItems && (
             <p className="text-xs" style={{ color: theme.textSecondary }}>
-              Add items to your blocked list to start a strict session.
+              add items to your blocked list to start a strict session.
             </p>
           )}
 
@@ -183,7 +183,7 @@ export default function StrictSessionTab({ storage, onEndSession }: StrictSessio
               cursor: hasItems ? 'pointer' : 'not-allowed',
             }}
           >
-            Start Strict Session
+            start strict session
           </button>
         </section>
       )}

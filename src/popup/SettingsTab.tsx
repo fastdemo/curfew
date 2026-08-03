@@ -33,27 +33,27 @@ export default function SettingsTab({ storage, onRequirePinToggle }: SettingsTab
     {
       key: 'overlayMode' as const,
       icon: <LayersIcon size={18} color={theme.textPrimary} />,
-      title: 'Overlay Mode',
-      subtitle: 'Show an overlay on blocked sites instead of a new page',
+      title: 'overlay mode',
+      subtitle: 'show an overlay on blocked sites instead of a new page',
     },
     {
       key: 'requirePin' as const,
       icon: <PinIcon size={18} color={theme.textPrimary} />,
-      title: 'PIN Protection',
-      subtitle: 'Require a PIN before turning off focus mode',
+      title: 'pin protection',
+      subtitle: 'require a pin before turning off focus mode',
     },
     {
       key: 'confirmTurnOff' as const,
       icon: <CheckIcon size={18} color={theme.textPrimary} />,
-      title: 'Confirmation Prompt',
-      subtitle: 'Confirm before turning off focus mode',
+      title: 'confirmation prompt',
+      subtitle: 'confirm before turning off focus mode',
     },
   ]
 
   return (
     <div className="flex flex-col gap-3">
       <section className="flex flex-col gap-2.5">
-        <SectionHeader title="General" />
+        <SectionHeader title="general" />
         <div
           className="overflow-hidden rounded-xl"
           style={{ backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}` }}
@@ -85,14 +85,14 @@ export default function SettingsTab({ storage, onRequirePinToggle }: SettingsTab
       </section>
 
       <section className="flex flex-col gap-2.5">
-        <SectionHeader title="Theme" subtitle="Choose how Curfew looks" />
+        <SectionHeader title="theme" subtitle="choose how curfew looks" />
         <SegmentedControl
           value={storage.settings.theme}
           onChange={setTheme}
           options={[
-            { value: 'system', label: 'System', icon: <MonitorIcon size={16} color={theme.textTertiary} /> },
-            { value: 'light', label: 'Light', icon: <SunIcon size={16} color={theme.textTertiary} /> },
-            { value: 'dark', label: 'Dark', icon: <MoonIcon size={16} color={theme.textTertiary} /> },
+            { value: 'system', label: 'system', icon: <MonitorIcon size={16} color={theme.textTertiary} /> },
+            { value: 'light', label: 'light', icon: <SunIcon size={16} color={theme.textTertiary} /> },
+            { value: 'dark', label: 'dark', icon: <MoonIcon size={16} color={theme.textTertiary} /> },
           ]}
         />
       </section>

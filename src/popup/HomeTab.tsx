@@ -14,10 +14,6 @@ interface HomeTabProps {
   onToggleMaster: () => void
 }
 
-function toTitleCase(value: string): string {
-  return value.replace(/\b\w/g, c => c.toUpperCase())
-}
-
 function formatTime(time: string): string {
   const [h, m] = time.split(':').map(Number)
   const ampm = h >= 12 ? 'pm' : 'am'
@@ -47,8 +43,8 @@ export default function HomeTab({ storage, onToggleMaster }: HomeTabProps) {
     <div className="flex flex-col gap-3">
       <RowItem
         icon={<BoltIcon size={18} color={theme.textPrimary} />}
-        title="Quick Focus"
-        subtitle="Pause or enable site restrictions"
+        title="quick focus"
+        subtitle="pause or enable site restrictions"
         right={
           <Toggle
             checked={storage.masterToggle || isStrictActive}
@@ -59,7 +55,7 @@ export default function HomeTab({ storage, onToggleMaster }: HomeTabProps) {
       />
 
       <section>
-        <SectionHeader title="Status" />
+        <SectionHeader title="status" />
         <div
           className="overflow-hidden rounded-xl"
           style={{ backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}` }}
@@ -67,27 +63,27 @@ export default function HomeTab({ storage, onToggleMaster }: HomeTabProps) {
           <RowItem
             variant="flat"
             icon={<CalendarIcon size={18} color={theme.textSecondary} />}
-            title={activeSchedule ? toTitleCase(activeSchedule.name) : 'No Active Schedule'}
+            title={activeSchedule ? activeSchedule.name : 'no active schedule'}
             subtitle={
               activeSchedule
                 ? `${formatTime(activeSchedule.startTime)} – ${formatTime(activeSchedule.endTime)}`
-                : 'Nothing scheduled right now'
+                : 'nothing scheduled right now'
             }
-            right={<StatusPill label={scheduleActive ? 'Active' : 'Disabled'} tone={scheduleActive ? 'success' : 'muted'} />}
+            right={<StatusPill label={scheduleActive ? 'active' : 'disabled'} tone={scheduleActive ? 'success' : 'muted'} />}
           />
           <RowItem
             variant="flat"
             divider
             icon={<ShieldIcon size={18} color={theme.textSecondary} />}
-            title={blocking ? 'Blocking Active' : 'Not Blocking'}
-            subtitle={blocking ? 'Distracting sites are locked' : 'All sites are accessible'}
-            right={<StatusPill label={blocking ? 'Active' : 'Idle'} tone={blocking ? 'success' : 'muted'} />}
+            title={blocking ? 'blocking active' : 'not blocking'}
+            subtitle={blocking ? 'distracting sites are locked' : 'all sites are accessible'}
+            right={<StatusPill label={blocking ? 'active' : 'idle'} tone={blocking ? 'success' : 'muted'} />}
           />
         </div>
       </section>
 
       <section>
-        <SectionHeader title="Interventions" subtitle="Tap to choose how blocked sites are handled" />
+        <SectionHeader title="interventions" subtitle="tap to choose how blocked sites are handled" />
         <div
           className="overflow-hidden rounded-xl"
           style={{ backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}` }}
@@ -98,7 +94,7 @@ export default function HomeTab({ storage, onToggleMaster }: HomeTabProps) {
               <InterventionOption
                 key={intervention.id}
                 icon={<InterventionIcon id={intervention.id} />}
-                title={toTitleCase(intervention.title)}
+                title={intervention.title}
                 time={intervention.time}
                 selected={selected}
                 divider={i > 0}

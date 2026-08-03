@@ -71,7 +71,7 @@ export default function ScheduleTab({ storage }: ScheduleTabProps) {
   return (
     <div className="flex flex-col gap-3">
       <section className="flex flex-col gap-2.5">
-        <SectionHeader title="Schedule" subtitle="Auto turn on focus mode at set times" />
+        <SectionHeader title="schedule" subtitle="auto turn on focus mode at set times" />
 
         {empty && (
           <div className="flex flex-col items-center gap-3 rounded-xl px-6 py-10 text-center"
@@ -84,10 +84,10 @@ export default function ScheduleTab({ storage }: ScheduleTabProps) {
             </span>
             <div className="flex flex-col gap-1">
               <span className="text-sm font-semibold" style={{ color: theme.textPrimary }}>
-                No Active Schedules
+                no active schedules
               </span>
               <span className="text-xs leading-relaxed" style={{ color: theme.textSecondary }}>
-                Automation turns on focus mode at specified times.
+                automation turns on focus mode at specified times.
               </span>
             </div>
           </div>
@@ -136,7 +136,7 @@ export default function ScheduleTab({ storage }: ScheduleTabProps) {
             className="rounded-xl py-3 text-sm font-semibold transition-colors duration-150"
             style={{ backgroundColor: theme.accent, color: theme.onAccent }}
           >
-            + Add Schedule
+            + add schedule
           </button>
         )}
 
@@ -151,7 +151,7 @@ export default function ScheduleTab({ storage }: ScheduleTabProps) {
               border: `1px dashed ${theme.borderMuted}`,
             }}
           >
-            + Add Schedule
+            + add schedule
           </button>
         )}
 
@@ -164,13 +164,13 @@ export default function ScheduleTab({ storage }: ScheduleTabProps) {
               type="text"
               value={name}
               onChange={e => setName(e.target.value)}
-              placeholder="Session name"
+              placeholder="session name"
               className="w-full rounded-lg px-3.5 py-2.5 text-sm outline-none"
               style={{ backgroundColor: theme.background, color: theme.textPrimary }}
             />
             <div className="flex gap-2.5">
               <div className="flex-1">
-                <label className="mb-1 block text-xs font-medium" style={{ color: theme.textSecondary }}>Start</label>
+                <label className="mb-1 block text-xs font-medium" style={{ color: theme.textSecondary }}>start</label>
                 <input
                   type="time"
                   value={startTime}
@@ -180,7 +180,7 @@ export default function ScheduleTab({ storage }: ScheduleTabProps) {
                 />
               </div>
               <div className="flex-1">
-                <label className="mb-1 block text-xs font-medium" style={{ color: theme.textSecondary }}>End</label>
+                <label className="mb-1 block text-xs font-medium" style={{ color: theme.textSecondary }}>end</label>
                 <input
                   type="time"
                   value={endTime}
@@ -191,7 +191,7 @@ export default function ScheduleTab({ storage }: ScheduleTabProps) {
               </div>
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium" style={{ color: theme.textSecondary }}>Days</label>
+              <label className="mb-1.5 block text-xs font-medium" style={{ color: theme.textSecondary }}>days</label>
               <div className="flex gap-1.5">
                 {DAYS_SHORT.map((day, i) => {
                   const active = days.includes(i)
@@ -219,7 +219,7 @@ export default function ScheduleTab({ storage }: ScheduleTabProps) {
                 className="flex-1 rounded-xl py-2.5 text-sm font-medium transition-colors duration-150"
                 style={{ backgroundColor: theme.background, color: theme.textSecondary }}
               >
-                Cancel
+                cancel
               </button>
               <button
                 type="button"
@@ -227,7 +227,7 @@ export default function ScheduleTab({ storage }: ScheduleTabProps) {
                 className="flex-1 rounded-xl py-2.5 text-sm font-semibold transition-colors duration-150"
                 style={{ backgroundColor: theme.accent, color: theme.onAccent }}
               >
-                Save
+                save
               </button>
             </div>
           </div>

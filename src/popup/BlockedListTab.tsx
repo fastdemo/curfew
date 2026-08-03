@@ -7,11 +7,11 @@ import Chip from './components/Chip'
 import SegmentedControl from './components/SegmentedControl'
 
 const CATEGORIES: Record<string, string[]> = {
-  'Social Media': ['facebook.com', 'x.com', 'instagram.com', 'tiktok.com', 'linkedin.com', 'reddit.com', 'pinterest.com', 'snapchat.com', 'threads.net', 'discord.com', 'twitch.tv', 'whatsapp.com', 'bsky.app'],
-  Entertainment: ['youtube.com', 'netflix.com', 'hulu.com', 'spotify.com', 'disneyplus.com', 'crunchyroll.com', 'twitch.tv', 'vimeo.com', 'soundcloud.com', 'peacocktv.com', 'plex.tv'],
-  'E-Commerce': ['amazon.com', 'ebay.com', 'walmart.com', 'target.com', 'bestbuy.com', 'etsy.com', 'aliexpress.com', 'newegg.com', 'homedepot.com', 'ikea.com', 'costco.com', 'nike.com', 'temu.com'],
-  Gaming: ['roblox.com', 'steampowered.com', 'epicgames.com', 'ign.com', 'polygon.com', 'gamespot.com', 'nintendo.com', 'playstation.com', 'xbox.com', 'minecraft.net', 'chess.com'],
-  News: ['cnn.com', 'nytimes.com', 'bbc.com', 'theguardian.com', 'foxnews.com', 'reuters.com', 'bloomberg.com', 'forbes.com', 'wsj.com', 'nbcnews.com', 'washingtonpost.com', 'npr.org'],
+  'social media': ['facebook.com', 'x.com', 'instagram.com', 'tiktok.com', 'linkedin.com', 'reddit.com', 'pinterest.com', 'snapchat.com', 'threads.net', 'discord.com', 'twitch.tv', 'whatsapp.com', 'bsky.app'],
+  entertainment: ['youtube.com', 'netflix.com', 'hulu.com', 'spotify.com', 'disneyplus.com', 'crunchyroll.com', 'twitch.tv', 'vimeo.com', 'soundcloud.com', 'peacocktv.com', 'plex.tv'],
+  'e-commerce': ['amazon.com', 'ebay.com', 'walmart.com', 'target.com', 'bestbuy.com', 'etsy.com', 'aliexpress.com', 'newegg.com', 'homedepot.com', 'ikea.com', 'costco.com', 'nike.com', 'temu.com'],
+  gaming: ['roblox.com', 'steampowered.com', 'epicgames.com', 'ign.com', 'polygon.com', 'gamespot.com', 'nintendo.com', 'playstation.com', 'xbox.com', 'minecraft.net', 'chess.com'],
+  news: ['cnn.com', 'nytimes.com', 'bbc.com', 'theguardian.com', 'foxnews.com', 'reuters.com', 'bloomberg.com', 'forbes.com', 'wsj.com', 'nbcnews.com', 'washingtonpost.com', 'npr.org'],
 }
 
 function isDuplicate(items: BlockedItem[], type: BlockedItem['type'], value: string): boolean {
@@ -66,13 +66,13 @@ export default function BlockedListTab({ storage }: BlockedListTabProps) {
   return (
     <div className="flex flex-col gap-3">
       <section className="flex flex-col gap-2.5">
-        <SectionHeader title="Add to blocked list" />
+        <SectionHeader title="add to blocked list" />
         <SegmentedControl
           value={inputType}
           onChange={setInputType}
           options={[
-            { value: 'website', label: 'Website' },
-            { value: 'keyword', label: 'Keyword' },
+            { value: 'website', label: 'website' },
+            { value: 'keyword', label: 'keyword' },
           ]}
         />
         <div
@@ -103,7 +103,7 @@ export default function BlockedListTab({ storage }: BlockedListTabProps) {
       </section>
 
       <section className="flex flex-col gap-2.5">
-        <SectionHeader title="Quick add" subtitle="Tap a category to browse sites" />
+        <SectionHeader title="quick add" subtitle="tap a category to browse sites" />
         <div className="flex flex-wrap gap-2">
           {Object.keys(CATEGORIES).map(cat => (
             <Chip
@@ -134,16 +134,16 @@ export default function BlockedListTab({ storage }: BlockedListTabProps) {
       </section>
 
       <section className="flex flex-col gap-2.5">
-        <SectionHeader title={`Blocked items (${storage.blockedItems.length})`} />
+        <SectionHeader title={`blocked items (${storage.blockedItems.length})`} />
         {storage.blockedItems.length === 0 ? (
           <div
             className="flex flex-col items-center gap-2 rounded-xl px-4 py-8 text-center"
             style={{ backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}` }}
           >
             <span className="text-2xl" style={{ color: theme.textTertiary }}>🗒</span>
-            <p className="text-sm font-medium" style={{ color: theme.textPrimary }}>Nothing blocked yet</p>
+            <p className="text-sm font-medium" style={{ color: theme.textPrimary }}>nothing blocked yet</p>
             <p className="text-xs" style={{ color: theme.textSecondary }}>
-              Add a website or keyword above to get started.
+              add a website or keyword above to get started.
             </p>
           </div>
         ) : (
