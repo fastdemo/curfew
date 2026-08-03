@@ -263,7 +263,7 @@ export default function BlockScreen({ domain, interventionId, timeSpent, usageSt
           minHeight: '100vh',
           width: '100%',
           background: WARM_BG,
-          backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px)',
+          backgroundImage: 'radial-gradient(color-mix(in srgb, var(--color-text-tertiary) 20%, transparent) 1px, transparent 1px)',
           backgroundSize: '28px 28px',
           display: 'flex',
           flexDirection: 'column',
