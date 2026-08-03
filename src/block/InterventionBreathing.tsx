@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { WARM_TEXT_SECONDARY, WARM_ACCENT, WARM_CARD } from './palette'
 
 interface InterventionBreathingProps {
   onComplete: () => void
@@ -44,13 +45,13 @@ export default function InterventionBreathing({ onComplete }: InterventionBreath
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}>
-      <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)' }}>follow the breath (19s)</p>
+      <p style={{ fontSize: '14px', color: WARM_TEXT_SECONDARY }}>follow the breath (19s)</p>
 
       <div style={{ position: 'relative' }}>
         <div
           style={{
             width: '128px', height: '128px', borderRadius: '50%',
-            background: 'linear-gradient(135deg, var(--color-accent), var(--color-surface-secondary))',
+            background: `linear-gradient(135deg, ${WARM_ACCENT}, ${WARM_CARD})`,
             transition: 'all 4000ms ease-in-out',
             transform: phase === 'inhale' ? 'scale(1)' : phase === 'exhale' ? 'scale(0.6)' : 'scale(1)',
             opacity: phase === 'hold' ? 0.8 : 1,
@@ -69,7 +70,7 @@ export default function InterventionBreathing({ onComplete }: InterventionBreath
         </div>
       </div>
 
-      <p style={{ fontSize: '18px', fontWeight: 500, color: 'var(--color-accent)' }}>
+      <p style={{ fontSize: '18px', fontWeight: 500, color: WARM_ACCENT }}>
         {phaseLabel[phase]}
       </p>
     </div>

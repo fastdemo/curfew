@@ -1,11 +1,17 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { ChromeStorage } from '../types'
+import { WARM_CARD, WARM_BORDER, WARM_SURFACE, WARM_TEXT_PRIMARY, WARM_TEXT_SECONDARY, WARM_TEXT_TERTIARY, WARM_ACCENT, WARM_ON_ACCENT } from '../block/palette'
 
 type TimeRange = 'today' | 'week' | 'month'
 
 interface AnalyticsPieProps {
   highlightDomain?: string
 }
+
+const SIZE = 148
+const STROKE = 11
+const RADIUS = (SIZE - STROKE) / 2
+const CIRCUMFERENCE = 2 * Math.PI * RADIUS
 
 export default function AnalyticsPie({ highlightDomain }: AnalyticsPieProps) {
   const [timeRange, setTimeRange] = useState<TimeRange>('today')
@@ -100,13 +106,9 @@ export default function AnalyticsPie({ highlightDomain }: AnalyticsPieProps) {
     return `${h}h ${m}m`
   }
 
-  const getCircleColor = (siteTime: number, totalTime: number) => {
-    if (totalTime === 0 || siteTime === 0) return 'var(--color-circle-low)'
-    const ratio = siteTime / totalTime
-    if (ratio > 0.5) return 'var(--color-circle-high)'
-    if (ratio > 0.1) return 'var(--color-circle-med)'
-    return 'var(--color-circle-low)'
-  }
+  const faviconFor = (domain: string) => `https://www.google.com/s2/favicons?domain=${domain}&sz=32`
+
+  const dashOffset = CIRCUMFERENCE * (1 - animatedPct / 100)
 
   return (
     <>
@@ -116,58 +118,100 @@ export default function AnalyticsPie({ highlightDomain }: AnalyticsPieProps) {
           to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', width: '300px' }}>
-      <div style={{ display: 'flex', gap: '8px', padding: '4px', backgroundColor: 'var(--color-surface-secondary)', borderRadius: '12px', width: 'fit-content', margin: '0 auto', alignItems: 'center' }}>
-        {(['today', 'week', 'month'] as TimeRange[]).map(range => (
-          <button
-            key={range}
-            onClick={() => setTimeRange(range)}
-            style={{
-              padding: '6px 16px',
-              borderRadius: '10px',
-              fontSize: '13px',
-              fontWeight: timeRange === range ? 600 : 500,
-              border: 'none',
-              cursor: 'pointer',
-              backgroundColor: timeRange === range ? 'var(--color-accent)' : 'transparent',
-              color: timeRange === range ? 'var(--color-on-accent)' : 'var(--color-text-muted)',
-              transition: 'all 0.2s',
-            }}
-          >
-            {range === 'today' ? 'today' : range === 'week' ? 'this week' : 'this month'}
-          </button>
-        ))}
-      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', width: '100%' }}>
 
-      <div style={{
-        width: '120px',
-        height: '120px',
-        borderRadius: '50%',
-        background: `conic-gradient(var(--color-accent) 0% ${animatedPct}%, var(--color-surface-secondary) ${animatedPct}% 100%)`,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        boxShadow: 'inset 0 0 0 16px var(--color-surface)',
-      }}>
-        <span style={{ fontFamily: "'Sora', sans-serif", fontSize: '16px', fontWeight: 'bold', color: 'var(--color-text-primary)' }}>
-          {Math.round(animatedPct)}%
-        </span>
-      </div>
+        <div style={{ display: 'flex', gap: '4px', padding: '4px', backgroundColor: WARM_SURFACE, border: `1px solid ${WARM_BORDER}`, borderRadius: '12px', width: 'fit-content', margin: '0 auto', alignItems: 'center' }}>
+          {(['today', 'week', 'month'] as TimeRange[]).map(range => (
+            <button
+              key={range}
+              onClick={() => setTimeRange(range)}
+              style={{
+                padding: '6px 14px',
+                borderRadius: '9px',
+                fontSize: '12.5px',
+                fontWeight: timeRange === range ? 600 : 500,
+                border: 'none',
+                cursor: 'pointer',
+                backgroundColor: timeRange === range ? WARM_ACCENT : 'transparent',
+                color: timeRange === range ? WARM_ON_ACCENT : WARM_TEXT_TERTIARY,
+                transition: 'all 0.2s',
+                fontFamily: 'inherit',
+              }}
+            >
+              {range === 'today' ? 'today' : range === 'week' ? 'this week' : 'this month'}
+            </button>
+          ))}
+        </div>
 
-      <div key={timeRange} style={{ display: 'flex', flexDirection: 'column', gap: '2px', width: '100%', maxWidth: '240px', animation: 'curfew-fade-slide 0.3s ease-out' }}>
-        {data.length === 0 ? (
-          <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', textAlign: 'center' }}>no usage data yet</p>
-        ) : (
-          data.map((entry) => (
-            <div key={entry.domain} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '2px 0' }}>
-              <span style={{ width: '10px', height: '10px', borderRadius: '50%', flexShrink: 0, background: getCircleColor(entry.time, totalTrackedTime) }} />
-              <span style={{ color: 'var(--color-text-secondary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.domain}</span>
-              <span style={{ color: 'var(--color-text-muted)' }}>{formatTime(entry.time)}</span>
-            </div>
-          ))
-        )}
+        <div style={{ position: 'relative', width: SIZE, height: SIZE, flexShrink: 0 }}>
+          <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} style={{ transform: 'rotate(-90deg)' }}>
+            <circle
+              cx={SIZE / 2}
+              cy={SIZE / 2}
+              r={RADIUS}
+              fill="none"
+              stroke={WARM_BORDER}
+              strokeWidth={STROKE}
+            />
+            <circle
+              cx={SIZE / 2}
+              cy={SIZE / 2}
+              r={RADIUS}
+              fill="none"
+              stroke={WARM_ACCENT}
+              strokeWidth={STROKE}
+              strokeLinecap="round"
+              strokeDasharray={CIRCUMFERENCE}
+              strokeDashoffset={dashOffset}
+              style={{ transition: 'stroke-dashoffset 0.1s linear' }}
+            />
+          </svg>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px' }}>
+            <span style={{ fontSize: '26px', fontWeight: 800, color: WARM_TEXT_PRIMARY, fontFamily: 'inherit', lineHeight: 1 }}>
+              {Math.round(animatedPct)}%
+            </span>
+            <span style={{ fontSize: '11px', color: WARM_TEXT_TERTIARY }}>
+              of screen time
+            </span>
+          </div>
+        </div>
+
+        <div key={timeRange} style={{ display: 'flex', flexDirection: 'column', gap: '2px', width: '100%', animation: 'curfew-fade-slide 0.3s ease-out' }}>
+          {data.length === 0 ? (
+            <p style={{ fontSize: '12px', color: WARM_TEXT_TERTIARY, textAlign: 'center', margin: 0 }}>no usage data yet</p>
+          ) : (
+            data.map((entry) => {
+              const isHighlighted = entry.domain === highlightDomain
+              return (
+                <div key={entry.domain} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '7px 0', borderBottom: `1px solid ${WARM_BORDER}` }}>
+                  <img
+                    src={faviconFor(entry.domain)}
+                    alt=""
+                    width={16}
+                    height={16}
+                    style={{ width: '16px', height: '16px', borderRadius: '4px', flexShrink: 0 }}
+                  />
+                  <span style={{ color: isHighlighted ? WARM_TEXT_PRIMARY : WARM_TEXT_SECONDARY, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '13px', fontWeight: isHighlighted ? 600 : 400 }}>
+                    {entry.domain}
+                  </span>
+                  <span style={{
+                    color: isHighlighted ? WARM_ON_ACCENT : WARM_TEXT_SECONDARY,
+                    fontSize: '12px',
+                    fontWeight: isHighlighted ? 600 : 500,
+                    backgroundColor: isHighlighted ? WARM_ACCENT : WARM_SURFACE,
+                    border: `1px solid ${isHighlighted ? WARM_ACCENT : WARM_BORDER}`,
+                    padding: '2px 10px',
+                    borderRadius: '999px',
+                    flexShrink: 0,
+                  }}>
+                    {formatTime(entry.time)}
+                  </span>
+                </div>
+              )
+            })
+          )}
+        </div>
       </div>
-    </div>
     </>
   )
 }

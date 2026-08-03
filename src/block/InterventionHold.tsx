@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { WARM_BORDER, WARM_SURFACE, WARM_TEXT_SECONDARY, WARM_ACCENT, WARM_TEXT_TERTIARY } from './palette'
 
 interface InterventionHoldProps {
   onComplete: () => void
@@ -52,7 +53,7 @@ export default function InterventionHold({ onComplete }: InterventionHoldProps) 
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-      <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)' }}>hold the button for 8 seconds</p>
+      <p style={{ fontSize: '14px', color: WARM_TEXT_SECONDARY }}>hold the button for 8 seconds</p>
       <div
         style={{ position: 'relative', cursor: 'pointer', userSelect: 'none' }}
         onMouseDown={handleMouseDown}
@@ -62,9 +63,9 @@ export default function InterventionHold({ onComplete }: InterventionHoldProps) 
         onTouchEnd={handleMouseUp}
       >
         <svg width="140" height="140" viewBox="0 0 140 140">
-          <circle cx="70" cy="70" r="60" fill="none" stroke="var(--color-surface-tertiary)" strokeWidth="6" />
+          <circle cx="70" cy="70" r="60" fill="none" stroke={WARM_SURFACE} strokeWidth="6" />
           <circle
-            cx="70" cy="70" r="60" fill="none" stroke="var(--color-accent)" strokeWidth="6"
+            cx="70" cy="70" r="60" fill="none" stroke={WARM_ACCENT} strokeWidth="6"
             strokeDasharray={circumference}
             strokeDashoffset={offset}
             strokeLinecap="round"
@@ -75,7 +76,7 @@ export default function InterventionHold({ onComplete }: InterventionHoldProps) 
         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <svg
             width="40" height="40" viewBox="0 0 24 24" fill="none"
-            stroke={holding ? 'var(--color-accent)' : 'var(--color-text-muted)'} strokeWidth={2}
+            stroke={holding ? WARM_ACCENT : WARM_TEXT_TERTIARY} strokeWidth={2}
             style={{ transition: 'color 0.2s' }}
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
