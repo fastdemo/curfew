@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { ChromeStorage } from '../types'
 
 type TimeRange = 'today' | 'week' | 'month'
@@ -10,6 +10,8 @@ interface AnalyticsPieProps {
 export default function AnalyticsPie({ highlightDomain }: AnalyticsPieProps) {
   const [timeRange, setTimeRange] = useState<TimeRange>('today')
   const [stats, setStats] = useState<ChromeStorage['usageStats']>({})
+  const [animatedPct, setAnimatedPct] = useState(0)
+  const animRef = useRef<number | null>(null)
 
   useEffect(() => {
     chrome.storage.local.get('usageStats', (result) => {
@@ -66,6 +68,30 @@ export default function AnalyticsPie({ highlightDomain }: AnalyticsPieProps) {
 
   const percentage = totalTrackedTime > 0 ? (currentDomainTime / totalTrackedTime) * 100 : 0
 
+  useEffect(() => {
+    if (animRef.current !== null) cancelAnimationFrame(animRef.current)
+    const from = animatedPct
+    const to = percentage
+    const start = performance.now()
+    const duration = 450
+    const easeOut = (t: number) => 1 - Math.pow(1 - t, 3)
+    const tick = (now: number) => {
+      const t = Math.min((now - start) / duration, 1)
+      setAnimatedPct(from + (to - from) * easeOut(t))
+      if (t < 1) animRef.current = requestAnimationFrame(tick)
+      else animRef.current = null
+    }
+    animRef.current = requestAnimationFrame(tick)
+    return () => {
+      if (animRef.current !== null) cancelAnimationFrame(animRef.current)
+      animRef.current = null
+    }
+  }, [percentage, timeRange])
+
+  useEffect(() => () => {
+    if (animRef.current !== null) cancelAnimationFrame(animRef.current)
+  }, [])
+
   const formatTime = (ms: number) => {
     const mins = Math.floor(ms / 60000)
     if (mins < 60) return `${mins}m`
@@ -83,6 +109,13 @@ export default function AnalyticsPie({ highlightDomain }: AnalyticsPieProps) {
   }
 
   return (
+    <>
+      <style>{`
+        @keyframes curfew-fade-slide {
+          from { opacity: 0; transform: translateY(4px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', width: '300px' }}>
       <div style={{ display: 'flex', gap: '8px', padding: '4px', backgroundColor: 'var(--color-surface-secondary)', borderRadius: '12px', width: 'fit-content', margin: '0 auto', alignItems: 'center' }}>
         {(['today', 'week', 'month'] as TimeRange[]).map(range => (
@@ -110,18 +143,18 @@ export default function AnalyticsPie({ highlightDomain }: AnalyticsPieProps) {
         width: '120px',
         height: '120px',
         borderRadius: '50%',
-        background: `conic-gradient(var(--color-accent) 0% ${percentage}%, var(--color-surface-secondary) ${percentage}% 100%)`,
+        background: `conic-gradient(var(--color-accent) 0% ${animatedPct}%, var(--color-surface-secondary) ${animatedPct}% 100%)`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         boxShadow: 'inset 0 0 0 16px var(--color-surface)',
       }}>
         <span style={{ fontFamily: "'Sora', sans-serif", fontSize: '16px', fontWeight: 'bold', color: 'var(--color-text-primary)' }}>
-          {Math.round(percentage)}%
+          {Math.round(animatedPct)}%
         </span>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', width: '100%', maxWidth: '240px' }}>
+      <div key={timeRange} style={{ display: 'flex', flexDirection: 'column', gap: '2px', width: '100%', maxWidth: '240px', animation: 'curfew-fade-slide 0.3s ease-out' }}>
         {data.length === 0 ? (
           <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', textAlign: 'center' }}>no usage data yet</p>
         ) : (
@@ -135,5 +168,6 @@ export default function AnalyticsPie({ highlightDomain }: AnalyticsPieProps) {
         )}
       </div>
     </div>
+    </>
   )
 }
