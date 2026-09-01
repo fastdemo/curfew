@@ -136,7 +136,7 @@ export default function BlockedListTab({ storage }: BlockedListTabProps) {
 
       <section className="flex flex-col" style={{ gap: '8px' }}>
         <SectionHeader title="quick add" subtitle="tap a category to browse sites" />
-        <div className="flex flex-wrap" style={{ gap: '6px' }}>
+        <div className="flex flex-wrap" style={{ gap: '8px' }}>
           {Object.keys(CATEGORIES).map(cat => (
             <Chip
               key={cat}
@@ -148,7 +148,7 @@ export default function BlockedListTab({ storage }: BlockedListTabProps) {
         </div>
 
         {selectedCategory && (
-          <div className="flex flex-wrap" style={{ gap: '6px' }}>
+          <div className="flex flex-wrap" style={{ gap: '8px' }}>
             {CATEGORIES[selectedCategory].map(site => {
               const blocked = isDuplicate(storage.blockedItems, 'website', site)
               return (

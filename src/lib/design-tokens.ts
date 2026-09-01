@@ -8,7 +8,7 @@ export const TOKENS = {
     minHeight: '448px',
     padX: '16px',
     padYOuter: '12px 0 6px',
-    gapOuter: '6px',
+    gapOuter: '8px',
   },
 
   // — Spacing scale (4/8/12/16/24) —
