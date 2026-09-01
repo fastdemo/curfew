@@ -1,8 +1,22 @@
 import { ChromeStorage, DEFAULT_STORAGE, BlockedItem, Schedule, InterventionId } from '../types'
 
 export async function getStorage(): Promise<ChromeStorage> {
-  const result = await chrome.storage.local.get(null)
-  return { ...DEFAULT_STORAGE, ...result } as ChromeStorage
+  const result = await chrome.storage.local.get(null) as Partial<ChromeStorage> & { settings?: Record<string, unknown> }
+  const rawSettings = result.settings as Record<string, unknown> | undefined
+  const cleanedSettings = rawSettings ? { ...rawSettings } : undefined
+  if (cleanedSettings && 'overlayMode' in cleanedSettings) delete cleanedSettings.overlayMode
+  return {
+    ...DEFAULT_STORAGE,
+    ...result,
+    settings: { ...DEFAULT_STORAGE.settings, ...(cleanedSettings as Partial<ChromeStorage['settings']> | undefined) },
+    strictSession: { ...DEFAULT_STORAGE.strictSession, ...(result.strictSession as Partial<ChromeStorage['strictSession']> | undefined) },
+    bypasses: result.bypasses ?? DEFAULT_STORAGE.bypasses,
+    usageStats: result.usageStats ?? DEFAULT_STORAGE.usageStats,
+    blockedItems: result.blockedItems ?? DEFAULT_STORAGE.blockedItems,
+    schedules: result.schedules ?? DEFAULT_STORAGE.schedules,
+    selectedInterventions: result.selectedInterventions ?? DEFAULT_STORAGE.selectedInterventions,
+    masterToggle: result.masterToggle ?? DEFAULT_STORAGE.masterToggle,
+  } as ChromeStorage
 }
 
 export async function setStorage(partial: Partial<ChromeStorage>): Promise<void> {
@@ -69,13 +83,18 @@ export async function removeSchedule(id: string): Promise<void> {
 }
 
 export async function getSettings(): Promise<ChromeStorage['settings']> {
-  const { settings } = await chrome.storage.local.get('settings')
-  return (settings as ChromeStorage['settings']) ?? DEFAULT_STORAGE.settings
+  const { settings } = await chrome.storage.local.get('settings') as { settings?: Record<string, unknown> }
+  if (!settings) return DEFAULT_STORAGE.settings
+  const cleaned = { ...settings }
+  if ('overlayMode' in cleaned) delete cleaned.overlayMode
+  return { ...DEFAULT_STORAGE.settings, ...cleaned } as ChromeStorage['settings']
 }
 
 export async function setSettings(settings: Partial<ChromeStorage['settings']>): Promise<void> {
   const current = await getSettings()
-  await chrome.storage.local.set({ settings: { ...current, ...settings } })
+  const next = { ...current, ...settings } as Record<string, unknown>
+  if ('overlayMode' in next) delete next.overlayMode
+  await chrome.storage.local.set({ settings: next })
 }
 
 export async function getSelectedInterventions(): Promise<InterventionId[]> {
@@ -95,17 +114,22 @@ export async function getUsageStats(): Promise<ChromeStorage['usageStats']> {
 let trackQueue: Promise<void> = Promise.resolve()
 
 export function trackDomainUsage(domain: string, ms: number): Promise<void> {
+  if (!domain || ms <= 0) return Promise.resolve()
   trackQueue = trackQueue.then(async () => {
-    const stats = structuredClone(await getUsageStats())
-    const today = new Date().toISOString().slice(0, 10)
-    if (!stats[domain]) stats[domain] = []
-    const todayEntry = stats[domain].find(e => e.date === today)
-    if (todayEntry) {
-      todayEntry.timeSpent += ms
-    } else {
-      stats[domain].push({ date: today, timeSpent: ms })
+    try {
+      const stats = structuredClone(await getUsageStats())
+      const today = new Date().toISOString().slice(0, 10)
+      if (!stats[domain]) stats[domain] = []
+      const todayEntry = stats[domain].find(e => e.date === today)
+      if (todayEntry) {
+        todayEntry.timeSpent += ms
+      } else {
+        stats[domain].push({ date: today, timeSpent: ms })
+      }
+      await chrome.storage.local.set({ usageStats: stats })
+    } catch {
+      // storage write failed — swallow to keep queue moving
     }
-    await chrome.storage.local.set({ usageStats: stats })
-  })
+  }).catch(() => {})
   return trackQueue
 }

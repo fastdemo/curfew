@@ -20,7 +20,6 @@ export interface Schedule {
 }
 
 export interface Settings {
-  overlayMode: boolean
   requirePin: boolean
   pinHash: string
   confirmTurnOff: boolean
@@ -54,7 +53,6 @@ export const DEFAULT_STORAGE: ChromeStorage = {
   strictSession: { isActive: false, startTime: 0, endTime: 0 },
   schedules: [],
   settings: {
-    overlayMode: false,
     requirePin: false,
     pinHash: '',
     confirmTurnOff: true,

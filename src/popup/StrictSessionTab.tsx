@@ -49,7 +49,7 @@ export default function StrictSessionTab({ storage, onEndSession }: StrictSessio
 
   const startSession = async (minutes: number) => {
     if (!hasItems) return
-    const start = now
+    const start = Date.now()
     const endTime = start + minutes * 60 * 1000
     await storage.update({
       strictSession: { isActive: true, startTime: start, endTime },

@@ -8,7 +8,10 @@
     "tabs",
     "webNavigation",
     "alarms",
-    "scripting"
+    "scripting",
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess",
+    "declarativeNetRequestFeedback"
   ],
   "host_permissions": ["<all_urls>"],
   "action": {
@@ -28,7 +31,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["block.html", "assets/*"],
+      "resources": ["block.html", "assets/*", "fonts/*"],
       "matches": ["<all_urls>"]
     }
   ],

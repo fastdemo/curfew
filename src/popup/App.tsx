@@ -34,11 +34,29 @@ export default function App() {
   }, [activeTab])
 
   useEffect(() => {
-    chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-      if (tabs[0]?.url) {
-        setActiveDomain(getDomainFromUrl(tabs[0].url))
-      }
-    })
+    const refresh = () => {
+      chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+        if (tabs[0]?.url) {
+          setActiveDomain(getDomainFromUrl(tabs[0].url))
+        } else {
+          setActiveDomain('')
+        }
+      })
+    }
+    refresh()
+    const interval = setInterval(refresh, 1000)
+    const tabListener = () => refresh()
+    try {
+      chrome.tabs.onActivated.addListener(tabListener)
+      chrome.tabs.onUpdated.addListener(tabListener as never)
+    } catch { /* ignore */ }
+    return () => {
+      clearInterval(interval)
+      try {
+        chrome.tabs.onActivated.removeListener(tabListener)
+        chrome.tabs.onUpdated.removeListener(tabListener as never)
+      } catch { /* ignore */ }
+    }
   }, [])
 
   const isStrictActive = useMemo(
@@ -89,12 +107,11 @@ export default function App() {
 
   const hidePinOverlay = useCallback(() => setPinOverlay(null), [])
 
-  const endStrictSession = useCallback(() => {
-    getSettings().then(settings => {
-      if (settings.confirmTurnOff && !window.confirm('End the strict focus session?')) return
-      storage.update({ strictSession: { isActive: false, startTime: 0, endTime: 0 } })
-      chrome.runtime.sendMessage({ type: 'CURFEW_RELOAD_BLOCKED_TABS' })
-    })
+  const endStrictSession = useCallback(async () => {
+    const settings = await getSettings()
+    if (settings.confirmTurnOff && !window.confirm('End the strict focus session?')) return
+    await storage.update({ strictSession: { isActive: false, startTime: 0, endTime: 0 } })
+    chrome.runtime.sendMessage({ type: 'CURFEW_RELOAD_BLOCKED_TABS' })
   }, [storage])
 
   const handleEndSessionRequest = useCallback(() => {
@@ -138,11 +155,10 @@ export default function App() {
     })
   }, [storage])
 
-  const disableMaster = useCallback(() => {
-    getSettings().then(settings => {
-      if (settings.confirmTurnOff && !window.confirm('Turn off focus mode?')) return
-      storage.update({ masterToggle: false })
-    })
+  const disableMaster = useCallback(async () => {
+    const settings = await getSettings()
+    if (settings.confirmTurnOff && !window.confirm('Turn off focus mode?')) return
+    await storage.update({ masterToggle: false })
   }, [storage])
 
   const handleToggleMaster = useCallback(async () => {

@@ -16,6 +16,6 @@ export default defineConfig({
     sourcemap: false,
     cssCodeSplit: false,
     modulePreload: false,
-    minify: 'esbuild',
+    minify: false,
   },
 })

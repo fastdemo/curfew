@@ -14,10 +14,16 @@ export function useStorage() {
 
     const listener = (changes: { [key: string]: chrome.storage.StorageChange }) => {
       setData(prev => {
-        const next = { ...prev }
+        const next = { ...prev } as ChromeStorage
         for (const [key, { newValue }] of Object.entries(changes)) {
           if (key in next) {
-            Object.assign(next, { [key]: newValue })
+            if (key === 'settings' && newValue && typeof newValue === 'object') {
+              (next as unknown as Record<string, unknown>)[key] = { ...DEFAULT_STORAGE.settings, ...newValue as object }
+            } else if (key === 'strictSession' && newValue && typeof newValue === 'object') {
+              (next as unknown as Record<string, unknown>)[key] = { ...DEFAULT_STORAGE.strictSession, ...newValue as object }
+            } else {
+              Object.assign(next, { [key]: newValue })
+            }
           }
         }
         return next

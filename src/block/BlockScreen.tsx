@@ -107,7 +107,7 @@ export default function BlockScreen({ domain, interventionId, timeSpent, usageSt
     const today = new Date().toISOString().slice(0, 10)
     let totalMs = 0
     let sitesToday = 0
-    for (const [d, dates] of Object.entries(usageStats)) {
+    for (const [, dates] of Object.entries(usageStats)) {
       let dayMs = 0
       for (const e of dates) if (e.date === today) dayMs += e.timeSpent
       if (dayMs > 0) sitesToday += 1

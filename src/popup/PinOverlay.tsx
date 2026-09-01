@@ -35,6 +35,12 @@ export default function PinOverlay({ mode, pinHash = '', prompt, onVerified, onS
     shakeTimer.current = setTimeout(() => setIsShaking(false), 500)
   }
 
+  const triggerShakeConfirm = () => {
+    setIsShaking(true)
+    setConfirmValue('')
+    shakeTimer.current = setTimeout(() => setIsShaking(false), 500)
+  }
+
   const attemptVerify = async (input: string) => {
     if (!input) return
     const ok = await verifyPin(input, pinHash)
@@ -49,19 +55,18 @@ export default function PinOverlay({ mode, pinHash = '', prompt, onVerified, onS
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (mode === 'setup' && step === 'create') {
       const input = e.target.value.replace(/\D/g, '')
-      if (input.length > 10) return
+      if (input.length > MAX_PIN_LENGTH) return
       setValue(input)
     } else if (mode === 'setup' && step === 'confirm') {
       const input = e.target.value.replace(/\D/g, '')
-      if (input.length > 10) return
+      if (input.length > MAX_PIN_LENGTH) return
       setConfirmValue(input)
       if (input.length === value.length && input.length >= 4) {
         if (input === value) {
           setIsVerified(true)
           verifyTimer.current = setTimeout(() => onSetupComplete?.(input), 300)
         } else {
-          triggerShake()
-          setStep('create')
+          triggerShakeConfirm()
         }
       }
     } else if (mode === 'verify') {
@@ -173,6 +178,31 @@ export default function PinOverlay({ mode, pinHash = '', prompt, onVerified, onS
           >
             next
           </button>
+        )}
+
+        {mode === 'verify' && (
+          <button
+            onClick={() => attemptVerify(value)}
+            style={{
+              padding: '10px 24px',
+              borderRadius: '12px',
+              border: 'none',
+              background: 'var(--color-accent)',
+              color: 'var(--color-on-accent)',
+              fontFamily: "'Sora', sans-serif",
+              fontSize: '14px',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            unlock
+          </button>
+        )}
+
+        {mode === 'setup' && step === 'confirm' && (
+          <p style={{ fontSize: '12px', color: 'var(--color-text-tertiary)', margin: 0 }}>
+            re-enter pin to confirm
+          </p>
         )}
 
         <button

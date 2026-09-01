@@ -21,6 +21,26 @@ export function getDomainFromUrl(url: string): string {
   }
 }
 
+const DOMAIN_ALIASES: Record<string, string[]> = {
+  'x.com': ['twitter.com', 't.co'],
+  'twitter.com': ['x.com', 't.co'],
+  't.co': ['x.com', 'twitter.com'],
+}
+
+function isWebsiteBlocked(domain: string, blockedValue: string): boolean {
+  const aliases = DOMAIN_ALIASES[blockedValue] || []
+  const candidates = [blockedValue, ...aliases]
+  return candidates.some(d => domain === d || domain.endsWith('.' + d))
+}
+
+function isBypassed(domain: string, bypasses?: { [domain: string]: number }): boolean {
+  if (!bypasses) return false
+  if (bypasses[domain] && bypasses[domain] > Date.now()) return true
+  // check aliases for bypass as well
+  const aliases = DOMAIN_ALIASES[domain] || []
+  return aliases.some(a => bypasses[a] && bypasses[a] > Date.now())
+}
+
 export function shouldBlockUrl(
   url: string,
   blockedItems: { type: string; value: string }[],
@@ -30,13 +50,13 @@ export function shouldBlockUrl(
 
   const domain = getDomainFromUrl(url)
 
-  if (bypasses && bypasses[domain] && bypasses[domain] > Date.now()) {
+  if (isBypassed(domain, bypasses)) {
     return false
   }
 
   return blockedItems.some(item => {
     if (item.type === 'website') {
-      return domain === item.value || domain.endsWith('.' + item.value)
+      return isWebsiteBlocked(domain, item.value)
     }
     if (item.type === 'keyword') {
       return url.toLowerCase().includes(item.value.toLowerCase())

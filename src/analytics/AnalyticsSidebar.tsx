@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { ChromeStorage } from '../types'
-import { WARM_CARD, WARM_BORDER, WARM_SURFACE, WARM_TEXT_PRIMARY, WARM_TEXT_SECONDARY, WARM_TEXT_TERTIARY, WARM_ACCENT, WARM_ON_ACCENT } from '../block/palette'
+import { WARM_BORDER, WARM_SURFACE, WARM_TEXT_PRIMARY, WARM_TEXT_SECONDARY, WARM_TEXT_TERTIARY, WARM_ACCENT, WARM_ON_ACCENT } from '../block/palette'
 
 type TimeRange = 'today' | 'week' | 'month'
 
@@ -18,6 +18,7 @@ export default function AnalyticsPie({ highlightDomain }: AnalyticsPieProps) {
   const [stats, setStats] = useState<ChromeStorage['usageStats']>({})
   const [animatedPct, setAnimatedPct] = useState(0)
   const animRef = useRef<number | null>(null)
+  const animatedPctRef = useRef(0)
 
   useEffect(() => {
     chrome.storage.local.get('usageStats', (result) => {
@@ -75,15 +76,21 @@ export default function AnalyticsPie({ highlightDomain }: AnalyticsPieProps) {
   const percentage = totalTrackedTime > 0 ? (currentDomainTime / totalTrackedTime) * 100 : 0
 
   useEffect(() => {
+    animatedPctRef.current = animatedPct
+  }, [animatedPct])
+
+  useEffect(() => {
     if (animRef.current !== null) cancelAnimationFrame(animRef.current)
-    const from = animatedPct
+    const from = animatedPctRef.current
     const to = percentage
     const start = performance.now()
     const duration = 450
     const easeOut = (t: number) => 1 - Math.pow(1 - t, 3)
     const tick = (now: number) => {
       const t = Math.min((now - start) / duration, 1)
-      setAnimatedPct(from + (to - from) * easeOut(t))
+      const val = from + (to - from) * easeOut(t)
+      animatedPctRef.current = val
+      setAnimatedPct(val)
       if (t < 1) animRef.current = requestAnimationFrame(tick)
       else animRef.current = null
     }

@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client'
 import BlockScreen from './BlockScreen'
 import '../index.css'
 import { getStorage } from '../lib/storage'
-import { getRandomIntervention, getDomainFromUrl } from '../lib/interventions'
+import { getRandomIntervention, getDomainFromUrl, isScheduleActive } from '../lib/interventions'
 import { useState, useEffect } from 'react'
 import { ThemeProvider } from '../lib/ThemeProvider'
 
@@ -24,7 +24,20 @@ export function BlockPage() {
   const [timeSpent, setTimeSpent] = useState(0)
   const [usageStats, setUsageStats] = useState<Record<string, { date: string; timeSpent: number }[]>>({})
   const [openTabId, setOpenTabId] = useState<number | null>(null)
-  const [originalUrl] = useState(() => new URLSearchParams(window.location.search).get('url') || '')
+  const [originalUrl] = useState(() => {
+    const href = window.location.href
+    const idx = href.indexOf('?url=')
+    if (idx !== -1) {
+      const raw = href.substring(idx + 5)
+      // raw may be encoded (tabs.update) or raw (DNR); handle both
+      try {
+        return raw.includes('%') ? decodeURIComponent(raw) : raw
+      } catch {
+        return raw
+      }
+    }
+    return new URLSearchParams(window.location.search).get('url') || ''
+  })
   const [theme, setTheme] = useState('light')
   const [canProceed, setCanProceed] = useState(true)
 
@@ -64,12 +77,29 @@ export function BlockPage() {
 
   useEffect(() => {
     if (!domain) return
+    // Apply favicon and tab title as requested: "YouTube / curfew-ed!"
+    const title = `${domain} / curfew-ed!`
+    document.title = title
+    // favicon
+    const existing = document.querySelector<HTMLLinkElement>('link[rel*="icon"]')
+    if (existing) existing.remove()
+    const link = document.createElement('link')
+    link.rel = 'icon'
+    link.type = 'image/png'
+    link.href = chrome.runtime.getURL('icons/anko128.png')
+    document.head.appendChild(link)
+
     const interval = setInterval(async () => {
       const storage = await getStorage()
       const today = new Date().toISOString().slice(0, 10)
       const domainStats = storage.usageStats[domain]
       const todayEntry = domainStats?.find((e: { date: string; timeSpent: number }) => e.date === today)
       setTimeSpent(todayEntry?.timeSpent || 0)
+      // keep title/favicons enforced while on block page
+      if (document.title !== title) document.title = title
+      if (!document.querySelector(`link[href="${link.href}"]`)) {
+        document.head.appendChild(link)
+      }
     }, 1000)
     return () => clearInterval(interval)
   }, [domain])
@@ -79,32 +109,49 @@ export function BlockPage() {
       if (!originalUrl) return
 
       if (changes.settings) {
-        const t = (changes.settings.newValue as { theme: string }).theme
-        setTheme(t)
-        applyTheme(t)
+        const t = (changes.settings.newValue as { theme: string } | undefined)?.theme
+        if (t) {
+          setTheme(t)
+          applyTheme(t)
+        }
       }
 
       if (changes.masterToggle && changes.masterToggle.newValue === false) {
-        window.location.assign(originalUrl)
+        getStorage().then(storage => {
+          const isStrictActive = storage.strictSession.isActive && Date.now() < storage.strictSession.endTime
+          if (!isStrictActive && !isScheduleActive(storage.schedules)) {
+            window.location.assign(originalUrl)
+          }
+        })
         return
       }
 
       if (changes.strictSession) {
-        const newSession = changes.strictSession.newValue as { isActive: boolean; startTime: number; endTime: number }
-        if (!newSession.isActive || Date.now() >= newSession.endTime) {
-          window.location.assign(originalUrl)
+        const newSession = changes.strictSession.newValue as { isActive: boolean; startTime: number; endTime: number } | undefined
+        if (!newSession?.isActive || Date.now() >= newSession.endTime) {
+          getStorage().then(storage => {
+            if (!storage.masterToggle && !isScheduleActive(storage.schedules)) {
+              window.location.assign(originalUrl)
+            }
+          })
           return
         }
       }
 
       if (changes.schedules) {
-        const newSchedules = changes.schedules.newValue as { startTime: string; endTime: string; daysOfWeek: number[]; isActive: boolean }[]
-        if (!newSchedules || newSchedules.length === 0 || !newSchedules.some(s => s.isActive)) {
-          getStorage().then(storage => {
-            if (!storage.masterToggle && !storage.strictSession.isActive) {
-              window.location.assign(originalUrl)
-            }
-          })
+        getStorage().then(storage => {
+          const isStrictActive = storage.strictSession.isActive && Date.now() < storage.strictSession.endTime
+          if (!storage.masterToggle && !isStrictActive && !isScheduleActive(storage.schedules)) {
+            window.location.assign(originalUrl)
+          }
+        })
+      }
+
+      if (changes.bypasses) {
+        const bypasses = (changes.bypasses.newValue as Record<string, number> | undefined) || {}
+        const dom = getDomainFromUrl(originalUrl)
+        if (bypasses[dom] && bypasses[dom] > Date.now()) {
+          window.location.assign(originalUrl)
         }
       }
     }

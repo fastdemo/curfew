@@ -7,15 +7,27 @@ import Chip from './components/Chip'
 import SegmentedControl from './components/SegmentedControl'
 
 const CATEGORIES: Record<string, string[]> = {
-  'social media': ['facebook.com', 'x.com', 'instagram.com', 'tiktok.com', 'linkedin.com', 'reddit.com', 'pinterest.com', 'snapchat.com', 'threads.net', 'discord.com', 'twitch.tv', 'whatsapp.com', 'bsky.app'],
-  entertainment: ['youtube.com', 'netflix.com', 'hulu.com', 'spotify.com', 'disneyplus.com', 'crunchyroll.com', 'twitch.tv', 'vimeo.com', 'soundcloud.com', 'peacocktv.com', 'plex.tv'],
+  'social media': ['facebook.com', 'x.com', 'twitter.com', 'instagram.com', 'tiktok.com', 'linkedin.com', 'reddit.com', 'pinterest.com', 'snapchat.com', 'threads.net', 'discord.com', 'twitch.tv', 'whatsapp.com', 'bsky.app'],
+  entertainment: ['youtube.com', 'netflix.com', 'hulu.com', 'spotify.com', 'disneyplus.com', 'crunchyroll.com', 'vimeo.com', 'soundcloud.com', 'peacocktv.com', 'plex.tv'],
   'e-commerce': ['amazon.com', 'ebay.com', 'walmart.com', 'target.com', 'bestbuy.com', 'etsy.com', 'aliexpress.com', 'newegg.com', 'homedepot.com', 'ikea.com', 'costco.com', 'nike.com', 'temu.com'],
   gaming: ['roblox.com', 'steampowered.com', 'epicgames.com', 'ign.com', 'polygon.com', 'gamespot.com', 'nintendo.com', 'playstation.com', 'xbox.com', 'minecraft.net', 'chess.com'],
   news: ['cnn.com', 'nytimes.com', 'bbc.com', 'theguardian.com', 'foxnews.com', 'reuters.com', 'bloomberg.com', 'forbes.com', 'wsj.com', 'nbcnews.com', 'washingtonpost.com', 'npr.org'],
 }
 
+function normalizeWebsite(value: string): string {
+  let v = value.trim().toLowerCase()
+  // strip protocol, www, path, and trailing slash
+  v = v.replace(/^https?:\/\//, '')
+  v = v.replace(/^www\./, '')
+  v = v.split('/')[0]
+  v = v.split('?')[0]
+  v = v.split('#')[0]
+  v = v.replace(/:\d+$/, '')
+  return v
+}
+
 function isDuplicate(items: BlockedItem[], type: BlockedItem['type'], value: string): boolean {
-  const normalized = value.trim().toLowerCase()
+  const normalized = (type === 'website' ? normalizeWebsite(value) : value.trim().toLowerCase())
   return items.some(i => i.type === type && i.value.toLowerCase() === normalized)
 }
 
@@ -30,13 +42,15 @@ export default function BlockedListTab({ storage }: BlockedListTabProps) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
 
   const handleAdd = async () => {
-    const val = inputValue.trim()
-    if (!val || isDuplicate(storage.blockedItems, inputType, val)) return
+    const raw = inputValue.trim()
+    if (!raw) return
+    const normalized = inputType === 'website' ? normalizeWebsite(raw) : raw.toLowerCase()
+    if (!normalized || isDuplicate(storage.blockedItems, inputType, normalized)) return
 
     const newItem: BlockedItem = {
       id: crypto.randomUUID(),
       type: inputType,
-      value: val.toLowerCase(),
+      value: normalized,
     }
 
     await storage.update({ blockedItems: [...storage.blockedItems, newItem] })

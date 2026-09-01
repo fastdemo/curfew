@@ -13,7 +13,7 @@ interface SettingsTabProps {
 export default function SettingsTab({ storage, onRequirePinToggle }: SettingsTabProps) {
   const theme = useTheme()
 
-  const toggleSetting = async (key: 'overlayMode' | 'requirePin' | 'confirmTurnOff') => {
+  const toggleSetting = async (key: 'requirePin' | 'confirmTurnOff') => {
     if (key === 'requirePin') {
       onRequirePinToggle?.()
       return
@@ -30,12 +30,6 @@ export default function SettingsTab({ storage, onRequirePinToggle }: SettingsTab
   }
 
   const settings = [
-    {
-      key: 'overlayMode' as const,
-      icon: <LayersIcon size={18} color={theme.textPrimary} />,
-      title: 'overlay mode',
-      subtitle: 'show an overlay on blocked sites instead of a new page',
-    },
     {
       key: 'requirePin' as const,
       icon: <PinIcon size={18} color={theme.textPrimary} />,
@@ -97,14 +91,6 @@ export default function SettingsTab({ storage, onRequirePinToggle }: SettingsTab
         />
       </section>
     </div>
-  )
-}
-
-function LayersIcon({ size, color }: { size: number; color: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ color }}>
-      <path d="M20 7l-8-4-8 4 8 4 8-4zM4 17l8 4 8-4M4 12l8 4 8-4" />
-    </svg>
   )
 }
 

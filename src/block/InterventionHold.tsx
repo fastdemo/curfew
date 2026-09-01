@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from 'react'
-import { WARM_BORDER, WARM_SURFACE, WARM_TEXT_SECONDARY, WARM_ACCENT, WARM_TEXT_TERTIARY } from './palette'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { WARM_SURFACE, WARM_TEXT_SECONDARY, WARM_ACCENT, WARM_TEXT_TERTIARY } from './palette'
 
 interface InterventionHoldProps {
   onComplete: () => void
@@ -12,6 +12,7 @@ export default function InterventionHold({ onComplete }: InterventionHoldProps) 
   const [holding, setHolding] = useState(false)
   const startRef = useRef(0)
   const rafRef = useRef(0)
+  const holdingRef = useRef(false)
 
   useEffect(() => {
     return () => {
@@ -19,9 +20,11 @@ export default function InterventionHold({ onComplete }: InterventionHoldProps) 
     }
   }, [])
 
-  const handleMouseDown = () => {
+  const handleMouseDown = useCallback(() => {
+    if (rafRef.current) cancelAnimationFrame(rafRef.current)
+    holdingRef.current = true
     setHolding(true)
-    startRef.current = Date.now()
+    startRef.current = Date.now() - progress * HOLD_DURATION
 
     const animate = () => {
       const elapsed = Date.now() - startRef.current
@@ -29,6 +32,7 @@ export default function InterventionHold({ onComplete }: InterventionHoldProps) 
       setProgress(pct)
 
       if (pct >= 1) {
+        holdingRef.current = false
         setHolding(false)
         onComplete()
         return
@@ -38,15 +42,18 @@ export default function InterventionHold({ onComplete }: InterventionHoldProps) 
     }
 
     rafRef.current = requestAnimationFrame(animate)
-  }
+  }, [progress, onComplete])
 
-  const handleMouseUp = () => {
-    if (holding) {
-      setHolding(false)
-      setProgress(0)
-      if (rafRef.current) cancelAnimationFrame(rafRef.current)
+  const handleMouseUp = useCallback(() => {
+    if (!holdingRef.current) return
+    holdingRef.current = false
+    setHolding(false)
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current)
+      rafRef.current = 0
     }
-  }
+    setProgress(0)
+  }, [])
 
   const circumference = 2 * Math.PI * 60
   const offset = circumference - progress * circumference
