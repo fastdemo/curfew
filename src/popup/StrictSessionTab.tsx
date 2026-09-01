@@ -58,7 +58,7 @@ export default function StrictSessionTab({ storage, onEndSession }: StrictSessio
   }
 
   return (
-    <div className="flex flex-col" style={{ gap: '6px' }}>
+    <div className="flex flex-col" style={{ gap: '8px' }}>
       <section>
         <SectionHeader title="strict session" subtitle="nothing gets through until the timer ends" />
         <div
@@ -145,9 +145,9 @@ export default function StrictSessionTab({ storage, onEndSession }: StrictSessio
           </button>
         </div>
       ) : (
-        <section className="flex flex-col" style={{ gap: '6px' }}>
+        <section className="flex flex-col" style={{ gap: '8px' }}>
           <SectionHeader title="pick a duration" subtitle="how long should the strict session last?" />
-          <div className="grid grid-cols-2" style={{ gap: '6px' }}>
+          <div className="grid grid-cols-2" style={{ gap: '8px' }}>
             {DURATIONS.map(option => {
               const selected = selectedMin === option.min
               return (

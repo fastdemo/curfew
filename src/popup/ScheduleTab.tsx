@@ -69,8 +69,8 @@ export default function ScheduleTab({ storage }: ScheduleTabProps) {
   const empty = storage.schedules.length === 0 && !showForm
 
   return (
-    <div className="flex flex-col" style={{ gap: '6px' }}>
-      <section className="flex flex-col" style={{ gap: '6px' }}>
+    <div className="flex flex-col" style={{ gap: '8px' }}>
+      <section className="flex flex-col" style={{ gap: '8px' }}>
         <SectionHeader title="schedule" subtitle="auto turn on focus mode at set times" />
 
         {empty && (

@@ -14,8 +14,8 @@ export default function FooterNav({ activeTab, onTabChange }: FooterNavProps) {
     <nav
       className="flex shrink-0 items-center justify-between"
       style={{
-        height: '44px',
-        padding: '0 8px',
+        height: '48px',
+        padding: '6px 16px',
         backgroundColor: theme.surface,
         borderTop: `1px solid ${theme.borderSoft}`,
       }}

@@ -19,9 +19,10 @@ export default function Toggle({ checked, disabled, onChange }: ToggleProps) {
       style={{
         width: '32px',
         height: '18px',
-        backgroundColor: checked ? theme.accent : theme.borderMuted,
+        backgroundColor: checked ? theme.accent : theme.toggleOff,
         opacity: disabled ? 0.5 : 1,
         cursor: disabled ? 'not-allowed' : 'pointer',
+        border: `1px solid ${checked ? theme.accent : theme.toggleOff}`,
       }}
     >
       <span

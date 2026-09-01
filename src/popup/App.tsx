@@ -251,11 +251,11 @@ export default function App() {
   return (
     <div
       style={{
-        width: '290px',
-        minWidth: '290px',
-        maxWidth: '290px',
-        height: 'auto',
-        maxHeight: '560px',
+        width: 'var(--popup-width)',
+        minWidth: 'var(--popup-width)',
+        maxWidth: 'var(--popup-width)',
+        minHeight: 'var(--popup-min-height)',
+        height: 'var(--popup-min-height)',
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
@@ -278,10 +278,10 @@ export default function App() {
           overflowY: 'auto',
           overflowX: 'hidden',
           overscrollBehavior: 'contain',
-          padding: '12px 0 6px',
+          padding: 'var(--popup-pad-y)',
         }}
       >
-        <div className="w-full mx-auto max-w-full flex flex-col gap-1.5" style={{ padding: '0 16px' }}>
+        <div className="w-full mx-auto max-w-full flex flex-col" style={{ padding: '0 var(--popup-pad-x)', gap: '8px' }}>
           {renderTab()}
         </div>
       </main>

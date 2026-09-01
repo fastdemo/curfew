@@ -14,6 +14,7 @@ export interface ThemePalette {
   highlight: string
   success: string
   successSoft: string
+  toggleOff: string
 }
 
 export const themes: Record<'light' | 'dark', ThemePalette> = {
@@ -31,6 +32,7 @@ export const themes: Record<'light' | 'dark', ThemePalette> = {
     highlight: '#F2EDE6',
     success: '#5C7D57',
     successSoft: '#E8EDE6',
+    toggleOff: '#D6CFBF',
   },
   dark: {
     background: '#0F0E0D',
@@ -46,6 +48,7 @@ export const themes: Record<'light' | 'dark', ThemePalette> = {
     highlight: '#252220',
     success: '#8FA98B',
     successSoft: '#1E241C',
+    toggleOff: '#3E3B38',
   },
 }
 
@@ -85,6 +88,7 @@ export function cssVarsFor(theme: 'light' | 'dark'): string {
     ['success-soft', c.successSoft],
     ['border', c.borderMuted],
     ['border-muted', c.borderMuted],
+    ['toggle-off', c.toggleOff],
     ['menu-item-bg', c.surface],
     ['menu-item-text', c.textPrimary],
     ['circle-low', c.surface],

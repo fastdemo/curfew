@@ -77,8 +77,8 @@ export default function BlockedListTab({ storage }: BlockedListTabProps) {
   }
 
   return (
-    <div className="flex flex-col" style={{ gap: '6px' }}>
-      <section className="flex flex-col" style={{ gap: '6px' }}>
+    <div className="flex flex-col" style={{ gap: '8px' }}>
+      <section className="flex flex-col" style={{ gap: '8px' }}>
         <SectionHeader title="add to blocked list" />
         <SegmentedControl
           value={inputType}
@@ -91,7 +91,7 @@ export default function BlockedListTab({ storage }: BlockedListTabProps) {
         <div
           className="flex items-center"
           style={{
-            gap: '6px',
+            gap: '8px',
             padding: '4px',
             borderRadius: '8px',
             backgroundColor: theme.surface,
@@ -134,7 +134,7 @@ export default function BlockedListTab({ storage }: BlockedListTabProps) {
         </div>
       </section>
 
-      <section className="flex flex-col" style={{ gap: '6px' }}>
+      <section className="flex flex-col" style={{ gap: '8px' }}>
         <SectionHeader title="quick add" subtitle="tap a category to browse sites" />
         <div className="flex flex-wrap" style={{ gap: '6px' }}>
           {Object.keys(CATEGORIES).map(cat => (
@@ -165,7 +165,7 @@ export default function BlockedListTab({ storage }: BlockedListTabProps) {
         )}
       </section>
 
-      <section className="flex flex-col" style={{ gap: '6px' }}>
+      <section className="flex flex-col" style={{ gap: '8px' }}>
         <SectionHeader title={`blocked items (${storage.blockedItems.length})`} />
         {storage.blockedItems.length === 0 ? (
           <div

@@ -29,7 +29,7 @@ export default function Header({ blocking, timerLabel, timerMode, showTimer }: H
       className="flex shrink-0 items-center justify-between"
       style={{
         marginTop: '4px',
-        padding: '0 16px 6px',
+        padding: '0 16px 8px',
         backgroundColor: 'transparent',
         borderBottom: `1px solid ${theme.borderSoft}`,
         gap: '2px',

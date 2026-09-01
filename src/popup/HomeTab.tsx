@@ -40,7 +40,7 @@ export default function HomeTab({ storage, onToggleMaster }: HomeTabProps) {
   }
 
   return (
-    <div className="flex flex-col" style={{ gap: '6px' }}>
+    <div className="flex flex-col" style={{ gap: '8px' }}>
       <RowItem
         icon={<BoltIcon size={13} color={theme.textPrimary} />}
         title="quick focus"

@@ -14,15 +14,15 @@ export default function SectionHeader({ title, subtitle }: SectionHeaderProps) {
           fontSize: '11px',
           fontWeight: 600,
           lineHeight: 1.3,
-          letterSpacing: '0.04em',
-          textTransform: 'uppercase',
+          letterSpacing: '0.02em',
+          textTransform: 'lowercase',
           color: theme.textTertiary,
         }}
       >
         {title}
       </h2>
       {subtitle && (
-        <p style={{ fontSize: '11px', fontWeight: 400, lineHeight: 1.3, color: theme.textSecondary }}>
+        <p style={{ fontSize: '11px', fontWeight: 400, lineHeight: 1.3, color: theme.textSecondary, textTransform: 'lowercase' }}>
           {subtitle}
         </p>
       )}
