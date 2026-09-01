@@ -3,8 +3,8 @@ import { WARM_TRUNK, WARM_LEAF, WARM_LEAF_LIGHT } from './palette'
 export default function GrowingTree() {
   return (
     <svg
-      width="220"
-      height="175"
+      width="180"
+      height="142"
       viewBox="0 0 240 190"
       fill="none"
       style={{ overflow: 'visible' }}

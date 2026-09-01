@@ -12,10 +12,11 @@ export default function FooterNav({ activeTab, onTabChange }: FooterNavProps) {
   const theme = useTheme()
   return (
     <nav
-      className="flex shrink-0 items-center justify-around px-3"
+      className="flex shrink-0 items-center justify-between"
       style={{
-        height: '56px',
-        backgroundColor: theme.background,
+        height: '44px',
+        padding: '0 8px',
+        backgroundColor: theme.surface,
         borderTop: `1px solid ${theme.borderSoft}`,
       }}
     >
@@ -26,8 +27,10 @@ export default function FooterNav({ activeTab, onTabChange }: FooterNavProps) {
             key={tab}
             type="button"
             onClick={() => onTabChange(tab)}
-            className="flex h-10 w-10 items-center justify-center rounded-full transition-colors duration-150"
+            className="flex items-center justify-center rounded-full transition-colors duration-150"
             style={{
+              width: '36px',
+              height: '36px',
               backgroundColor: active ? theme.highlight : 'transparent',
               color: active ? theme.accent : theme.textTertiary,
             }}
@@ -43,12 +46,12 @@ export default function FooterNav({ activeTab, onTabChange }: FooterNavProps) {
 
 function NavIcon({ tab, active }: { tab: TabId; active: boolean }) {
   const props = {
-    width: 20,
-    height: 20,
+    width: 18,
+    height: 18,
     fill: 'none' as const,
     viewBox: '0 0 24 24',
     stroke: 'currentColor',
-    strokeWidth: active ? 2.4 : 2,
+    strokeWidth: active ? 2.2 : 1.8,
   }
   switch (tab) {
     case 'home':
@@ -60,25 +63,25 @@ function NavIcon({ tab, active }: { tab: TabId; active: boolean }) {
     case 'blocked':
       return (
         <svg {...props}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3.75a8.25 8.25 0 018.25 8.25c0 4.97-4.03 9-9 9s-9-4.03-9-9a8.25 8.25 0 018.25-8.25M12 7.5v3m0 3h.01" />
         </svg>
       )
     case 'strict':
       return (
         <svg {...props}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 18.657A8 8 0 016.343 5.343m0 13.314A8 8 0 0017.657 5.343M12 8v4l3 3" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 00-9 0v3.75m9 0a3 3 0 013 3v3a3 3 0 01-3 3h-9a3 3 0 01-3-3v-3a3 3 0 013-3m9 0H7.5" />
         </svg>
       )
     case 'schedule':
       return (
         <svg {...props}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75M3 12h18" />
         </svg>
       )
     case 'settings':
       return (
         <svg {...props}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.592c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.33.184.72.184 1.05 0l1.15-.66c.48-.276 1.08-.11 1.39.37l1.29 2.02c.3.47.15 1.08-.32 1.39l-1.1.73c-.32.21-.52.56-.53.94s.18.74.49.97l1.09.81c.44.33.53.95.2 1.39l-1.29 1.7c-.33.44-.95.53-1.39.2l-1.09-.81a1.125 1.125 0 00-1.35 0l-1.1.73c-.47.31-.62.92-.32 1.39l1.29 2.02c.31.48.15 1.08-.32 1.39l-1.15.66c-.33.19-.72.19-1.05 0l-1.15-.66a1.125 1.125 0 00-1.35 0l-.21 1.28a1.125 1.125 0 01-1.11.94h-2.59c-.55 0-1.02-.398-1.11-.94l-.21-1.28a1.125 1.125 0 00-1.35 0l-1.15.66c-.48.28-1.08.11-1.39-.37l-1.29-2.02c-.3-.47-.15-1.08.32-1.39l1.1-.73c.32-.21.52-.56.53-.94s-.18-.74-.49-.97l-1.09-.81c-.44-.33-.53-.95-.2-1.39l1.29-1.7c.33-.44.95-.53 1.39-.2l1.09.81c.32.24.74.3 1.12.17.38-.13.68-.43.81-.81l.21-1.28z" />
           <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
       )

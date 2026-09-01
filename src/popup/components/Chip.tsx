@@ -17,8 +17,14 @@ export default function Chip({ label, selected, disabled, trailing, onClick }: C
       type="button"
       onClick={onClick}
       disabled={disabled || !interactive}
-      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors duration-150"
+      className="inline-flex items-center transition-colors duration-150"
       style={{
+        gap: '4px',
+        padding: '5px 10px',
+        borderRadius: '999px',
+        fontSize: '12px',
+        fontWeight: 500,
+        lineHeight: 1,
         backgroundColor: selected ? theme.accent : theme.surface,
         color: selected ? theme.onAccent : theme.textSecondary,
         border: `1px solid ${selected ? theme.accent : theme.borderMuted}`,

@@ -251,12 +251,16 @@ export default function App() {
   return (
     <div
       style={{
-        width: '336px',
-        height: '520px',
+        width: '290px',
+        minWidth: '290px',
+        maxWidth: '290px',
+        height: 'auto',
+        maxHeight: '560px',
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
+        backgroundColor: 'var(--color-surface)',
       }}
     >
       <Header
@@ -274,12 +278,11 @@ export default function App() {
           overflowY: 'auto',
           overflowX: 'hidden',
           overscrollBehavior: 'contain',
+          padding: '12px 0 6px',
         }}
       >
-        <div className="w-full mx-auto max-w-full px-3 flex flex-col gap-3">
-          <div style={{ padding: '14px 0 12px' }}>
-            {renderTab()}
-          </div>
+        <div className="w-full mx-auto max-w-full flex flex-col gap-1.5" style={{ padding: '0 16px' }}>
+          {renderTab()}
         </div>
       </main>
       <FooterNav activeTab={activeTab} onTabChange={setActiveTab} />

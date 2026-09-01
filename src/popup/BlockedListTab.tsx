@@ -16,7 +16,6 @@ const CATEGORIES: Record<string, string[]> = {
 
 function normalizeWebsite(value: string): string {
   let v = value.trim().toLowerCase()
-  // strip protocol, www, path, and trailing slash
   v = v.replace(/^https?:\/\//, '')
   v = v.replace(/^www\./, '')
   v = v.split('/')[0]
@@ -78,8 +77,8 @@ export default function BlockedListTab({ storage }: BlockedListTabProps) {
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      <section className="flex flex-col gap-2.5">
+    <div className="flex flex-col" style={{ gap: '6px' }}>
+      <section className="flex flex-col" style={{ gap: '6px' }}>
         <SectionHeader title="add to blocked list" />
         <SegmentedControl
           value={inputType}
@@ -90,8 +89,14 @@ export default function BlockedListTab({ storage }: BlockedListTabProps) {
           ]}
         />
         <div
-          className="flex items-center gap-1.5 rounded-lg px-2 py-1"
-          style={{ backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}` }}
+          className="flex items-center"
+          style={{
+            gap: '6px',
+            padding: '4px',
+            borderRadius: '8px',
+            backgroundColor: theme.surface,
+            border: `1px solid ${theme.borderSoft}`,
+          }}
         >
           <input
             type="text"
@@ -99,26 +104,39 @@ export default function BlockedListTab({ storage }: BlockedListTabProps) {
             onChange={e => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={inputType === 'website' ? 'eg. x.com' : 'eg. reddit'}
-            className="flex-1 bg-transparent px-2.5 py-2 text-sm outline-none"
-            style={{ color: theme.textPrimary }}
+            className="flex-1 bg-transparent outline-none"
+            style={{
+              padding: '8px 10px',
+              borderRadius: '8px',
+              fontSize: '12.5px',
+              fontWeight: 500,
+              lineHeight: 1.3,
+              color: theme.textPrimary,
+            }}
           />
           <button
             type="button"
             onClick={handleAdd}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-colors duration-150"
-            style={{ backgroundColor: theme.accent, color: theme.onAccent }}
+            className="flex shrink-0 items-center justify-center transition-colors duration-150"
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              backgroundColor: theme.accent,
+              color: theme.onAccent,
+            }}
             aria-label="Add"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 5v14M5 12h14" />
             </svg>
           </button>
         </div>
       </section>
 
-      <section className="flex flex-col gap-2.5">
+      <section className="flex flex-col" style={{ gap: '6px' }}>
         <SectionHeader title="quick add" subtitle="tap a category to browse sites" />
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap" style={{ gap: '6px' }}>
           {Object.keys(CATEGORIES).map(cat => (
             <Chip
               key={cat}
@@ -130,7 +148,7 @@ export default function BlockedListTab({ storage }: BlockedListTabProps) {
         </div>
 
         {selectedCategory && (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap" style={{ gap: '6px' }}>
             {CATEGORIES[selectedCategory].map(site => {
               const blocked = isDuplicate(storage.blockedItems, 'website', site)
               return (
@@ -138,7 +156,7 @@ export default function BlockedListTab({ storage }: BlockedListTabProps) {
                   key={site}
                   label={site}
                   disabled={blocked}
-                  trailing={<span className="text-xs leading-none">{blocked ? '✓' : '+'}</span>}
+                  trailing={<span style={{ fontSize: '11px', lineHeight: 1 }}>{blocked ? '✓' : '+'}</span>}
                   onClick={() => { if (!blocked) handleAddSite(site) }}
                 />
               )
@@ -147,23 +165,29 @@ export default function BlockedListTab({ storage }: BlockedListTabProps) {
         )}
       </section>
 
-      <section className="flex flex-col gap-2.5">
+      <section className="flex flex-col" style={{ gap: '6px' }}>
         <SectionHeader title={`blocked items (${storage.blockedItems.length})`} />
         {storage.blockedItems.length === 0 ? (
           <div
-            className="flex flex-col items-center gap-2 rounded-xl px-4 py-8 text-center"
-            style={{ backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}` }}
+            className="flex flex-col items-center text-center"
+            style={{
+              gap: '6px',
+              padding: '16px',
+              borderRadius: '8px',
+              backgroundColor: theme.surface,
+              border: `1px solid ${theme.borderSoft}`,
+            }}
           >
-            <span className="text-2xl" style={{ color: theme.textTertiary }}>🗒</span>
-            <p className="text-sm font-medium" style={{ color: theme.textPrimary }}>nothing blocked yet</p>
-            <p className="text-xs" style={{ color: theme.textSecondary }}>
+            <span style={{ fontSize: '20px', color: theme.textTertiary }}>◯</span>
+            <p style={{ fontSize: '13px', fontWeight: 600, color: theme.textPrimary }}>nothing blocked yet</p>
+            <p style={{ fontSize: '11px', color: theme.textSecondary, lineHeight: 1.3 }}>
               add a website or keyword above to get started.
             </p>
           </div>
         ) : (
           <div
-            className="overflow-hidden rounded-xl"
-            style={{ backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}` }}
+            className="overflow-hidden"
+            style={{ backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}`, borderRadius: '8px' }}
           >
             {storage.blockedItems.map((item, i) => (
               <RowItem
@@ -172,8 +196,16 @@ export default function BlockedListTab({ storage }: BlockedListTabProps) {
                 divider={i > 0}
                 icon={
                   <span
-                    className="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
-                    style={{ backgroundColor: theme.highlight, color: theme.textSecondary }}
+                    style={{
+                      padding: '2px 5px',
+                      borderRadius: '4px',
+                      fontSize: '10px',
+                      fontWeight: 600,
+                      letterSpacing: '0.04em',
+                      textTransform: 'uppercase',
+                      backgroundColor: theme.highlight,
+                      color: theme.textSecondary,
+                    }}
                   >
                     {item.type === 'website' ? 'URL' : 'KEY'}
                   </span>
@@ -183,11 +215,11 @@ export default function BlockedListTab({ storage }: BlockedListTabProps) {
                   <button
                     type="button"
                     onClick={() => handleRemove(item.id)}
-                    className="flex h-8 w-8 items-center justify-center rounded-md transition-colors duration-150"
-                    style={{ color: theme.textTertiary }}
+                    className="flex items-center justify-center transition-colors duration-150"
+                    style={{ width: '24px', height: '24px', borderRadius: '6px', color: theme.textTertiary }}
                     aria-label="Remove"
                   >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <line x1="18" y1="6" x2="6" y2="18" />
                       <line x1="6" y1="6" x2="18" y2="18" />
                     </svg>

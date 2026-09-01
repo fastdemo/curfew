@@ -1,7 +1,6 @@
 import { ChromeStorage } from '../types'
 import { useTheme } from '../lib/theme-context'
 import SectionHeader from './components/SectionHeader'
-import RowItem from './components/RowItem'
 import Toggle from './components/Toggle'
 import SegmentedControl from './components/SegmentedControl'
 
@@ -32,61 +31,81 @@ export default function SettingsTab({ storage, onRequirePinToggle }: SettingsTab
   const settings = [
     {
       key: 'requirePin' as const,
-      icon: <PinIcon size={18} color={theme.textPrimary} />,
+      icon: <PinIcon size={13} color={theme.textPrimary} />,
       title: 'pin protection',
       subtitle: 'require a pin before turning off focus mode',
     },
     {
       key: 'confirmTurnOff' as const,
-      icon: <CheckIcon size={18} color={theme.textPrimary} />,
+      icon: <CheckIcon size={13} color={theme.textPrimary} />,
       title: 'confirmation prompt',
       subtitle: 'confirm before turning off focus mode',
     },
   ]
 
   return (
-    <div className="flex flex-col gap-3">
-      <section className="flex flex-col gap-2.5">
+    <div className="flex flex-col" style={{ gap: '16px' }}>
+      <section className="flex flex-col" style={{ gap: '8px' }}>
         <SectionHeader title="general" />
         <div
-          className="overflow-hidden rounded-xl"
-          style={{ backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}` }}
+          className="overflow-hidden"
+          style={{
+            backgroundColor: theme.surface,
+            border: `1px solid ${theme.borderSoft}`,
+            borderRadius: '8px',
+            padding: '8px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px',
+          }}
         >
-          {settings.map((s, i) => (
-            <RowItem
+          {settings.map(s => (
+            <div
               key={s.key}
-              variant="flat"
-              divider={i > 0}
-              icon={
+              className="flex items-center justify-between"
+              style={{
+                padding: '8px',
+                backgroundColor: theme.background,
+                borderRadius: '8px',
+                border: `1px solid ${theme.borderSoft}`,
+              }}
+            >
+              <div className="flex items-center min-w-0" style={{ gap: '8px' }}>
                 <span
-                  className="flex h-9 w-9 items-center justify-center rounded-lg"
-                  style={{ backgroundColor: theme.highlight }}
+                  className="flex items-center justify-center shrink-0"
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '6px',
+                    backgroundColor: theme.highlight,
+                    color: theme.textPrimary,
+                  }}
                 >
                   {s.icon}
                 </span>
-              }
-              title={s.title}
-              subtitle={s.subtitle}
-              right={
-                <Toggle
-                  checked={storage.settings[s.key]}
-                  onChange={() => toggleSetting(s.key)}
-                />
-              }
-            />
+                <div className="flex flex-col min-w-0 text-left">
+                  <span style={{ fontSize: '13px', fontWeight: 600, lineHeight: 1.3, color: theme.textPrimary }}>{s.title}</span>
+                  <span style={{ fontSize: '11px', fontWeight: 400, lineHeight: 1.3, color: theme.textSecondary }}>{s.subtitle}</span>
+                </div>
+              </div>
+              <Toggle
+                checked={storage.settings[s.key]}
+                onChange={() => toggleSetting(s.key)}
+              />
+            </div>
           ))}
         </div>
       </section>
 
-      <section className="flex flex-col gap-2.5">
-        <SectionHeader title="theme" subtitle="choose how curfew looks" />
+      <section className="flex flex-col" style={{ gap: '8px' }}>
+        <SectionHeader title="appearance" subtitle="choose how curfew looks" />
         <SegmentedControl
           value={storage.settings.theme}
           onChange={setTheme}
           options={[
-            { value: 'system', label: 'system', icon: <MonitorIcon size={16} color={theme.textTertiary} /> },
-            { value: 'light', label: 'light', icon: <SunIcon size={16} color={theme.textTertiary} /> },
-            { value: 'dark', label: 'dark', icon: <MoonIcon size={16} color={theme.textTertiary} /> },
+            { value: 'system', label: 'system', icon: <MonitorIcon size={13} color={theme.textTertiary} /> },
+            { value: 'light', label: 'light', icon: <SunIcon size={13} color={theme.textTertiary} /> },
+            { value: 'dark', label: 'dark', icon: <MoonIcon size={13} color={theme.textTertiary} /> },
           ]}
         />
       </section>

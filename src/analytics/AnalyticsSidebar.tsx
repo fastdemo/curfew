@@ -8,8 +8,8 @@ interface AnalyticsPieProps {
   highlightDomain?: string
 }
 
-const SIZE = 148
-const STROKE = 11
+const SIZE = 120
+const STROKE = 8
 const RADIUS = (SIZE - STROKE) / 2
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS
 
@@ -63,7 +63,7 @@ export default function AnalyticsPie({ highlightDomain }: AnalyticsPieProps) {
       if (total > 0) entries.push({ domain, time: total })
     }
     entries.sort((a, b) => b.time - a.time)
-    return entries.slice(0, 8)
+    return entries.slice(0, 6)
   }, [stats, timeRange])
 
   const totalTrackedTime = useMemo(() => data.reduce((s, e) => s + e.time, 0), [data])
@@ -84,7 +84,7 @@ export default function AnalyticsPie({ highlightDomain }: AnalyticsPieProps) {
     const from = animatedPctRef.current
     const to = percentage
     const start = performance.now()
-    const duration = 450
+    const duration = 400
     const easeOut = (t: number) => 1 - Math.pow(1 - t, 3)
     const tick = (now: number) => {
       const t = Math.min((now - start) / duration, 1)
@@ -125,23 +125,23 @@ export default function AnalyticsPie({ highlightDomain }: AnalyticsPieProps) {
           to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', width: '100%' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', width: '100%' }}>
 
-        <div style={{ display: 'flex', gap: '4px', padding: '4px', backgroundColor: WARM_SURFACE, border: `1px solid ${WARM_BORDER}`, borderRadius: '12px', width: 'fit-content', margin: '0 auto', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '3px', padding: '3px', backgroundColor: WARM_SURFACE, border: `1px solid ${WARM_BORDER}`, borderRadius: '8px', width: 'fit-content', margin: '0 auto', alignItems: 'center' }}>
           {(['today', 'week', 'month'] as TimeRange[]).map(range => (
             <button
               key={range}
               onClick={() => setTimeRange(range)}
               style={{
-                padding: '6px 14px',
-                borderRadius: '9px',
-                fontSize: '12.5px',
+                padding: '5px 10px',
+                borderRadius: '6px',
+                fontSize: '11px',
                 fontWeight: timeRange === range ? 600 : 500,
                 border: 'none',
                 cursor: 'pointer',
                 backgroundColor: timeRange === range ? WARM_ACCENT : 'transparent',
                 color: timeRange === range ? WARM_ON_ACCENT : WARM_TEXT_TERTIARY,
-                transition: 'all 0.2s',
+                transition: 'all 0.15s',
                 fontFamily: 'inherit',
               }}
             >
@@ -173,41 +173,41 @@ export default function AnalyticsPie({ highlightDomain }: AnalyticsPieProps) {
               style={{ transition: 'stroke-dashoffset 0.1s linear' }}
             />
           </svg>
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px' }}>
-            <span style={{ fontSize: '26px', fontWeight: 800, color: WARM_TEXT_PRIMARY, fontFamily: 'inherit', lineHeight: 1 }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1px' }}>
+            <span style={{ fontSize: '20px', fontWeight: 800, color: WARM_TEXT_PRIMARY, fontFamily: 'inherit', lineHeight: 1 }}>
               {Math.round(animatedPct)}%
             </span>
-            <span style={{ fontSize: '11px', color: WARM_TEXT_TERTIARY }}>
+            <span style={{ fontSize: '10.5px', color: WARM_TEXT_TERTIARY, lineHeight: 1 }}>
               of screen time
             </span>
           </div>
         </div>
 
-        <div key={timeRange} style={{ display: 'flex', flexDirection: 'column', gap: '2px', width: '100%', animation: 'curfew-fade-slide 0.3s ease-out' }}>
+        <div key={timeRange} style={{ display: 'flex', flexDirection: 'column', gap: '1px', width: '100%', animation: 'curfew-fade-slide 0.3s ease-out' }}>
           {data.length === 0 ? (
-            <p style={{ fontSize: '12px', color: WARM_TEXT_TERTIARY, textAlign: 'center', margin: 0 }}>no usage data yet</p>
+            <p style={{ fontSize: '11px', color: WARM_TEXT_TERTIARY, textAlign: 'center', margin: 0 }}>no usage data yet</p>
           ) : (
             data.map((entry) => {
               const isHighlighted = entry.domain === highlightDomain
               return (
-                <div key={entry.domain} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '7px 0', borderBottom: `1px solid ${WARM_BORDER}` }}>
+                <div key={entry.domain} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 0', borderBottom: `1px solid ${WARM_BORDER}` }}>
                   <img
                     src={faviconFor(entry.domain)}
                     alt=""
-                    width={16}
-                    height={16}
-                    style={{ width: '16px', height: '16px', borderRadius: '4px', flexShrink: 0 }}
+                    width={14}
+                    height={14}
+                    style={{ width: '14px', height: '14px', borderRadius: '3px', flexShrink: 0 }}
                   />
-                  <span style={{ color: isHighlighted ? WARM_TEXT_PRIMARY : WARM_TEXT_SECONDARY, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '13px', fontWeight: isHighlighted ? 600 : 400 }}>
+                  <span style={{ color: isHighlighted ? WARM_TEXT_PRIMARY : WARM_TEXT_SECONDARY, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '12px', fontWeight: isHighlighted ? 600 : 400 }}>
                     {entry.domain}
                   </span>
                   <span style={{
                     color: isHighlighted ? WARM_ON_ACCENT : WARM_TEXT_SECONDARY,
-                    fontSize: '12px',
+                    fontSize: '11px',
                     fontWeight: isHighlighted ? 600 : 500,
                     backgroundColor: isHighlighted ? WARM_ACCENT : WARM_SURFACE,
                     border: `1px solid ${isHighlighted ? WARM_ACCENT : WARM_BORDER}`,
-                    padding: '2px 10px',
+                    padding: '2px 7px',
                     borderRadius: '999px',
                     flexShrink: 0,
                   }}>

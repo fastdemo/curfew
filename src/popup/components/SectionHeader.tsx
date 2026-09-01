@@ -8,15 +8,21 @@ interface SectionHeaderProps {
 export default function SectionHeader({ title, subtitle }: SectionHeaderProps) {
   const theme = useTheme()
   return (
-    <div className="flex flex-col gap-1 mb-1.5 text-left">
+    <div className="flex flex-col text-left" style={{ gap: '2px', marginBottom: '4px' }}>
       <h2
-        className="text-xs font-semibold tracking-wide"
-        style={{ color: theme.textTertiary }}
+        style={{
+          fontSize: '11px',
+          fontWeight: 600,
+          lineHeight: 1.3,
+          letterSpacing: '0.04em',
+          textTransform: 'uppercase',
+          color: theme.textTertiary,
+        }}
       >
         {title}
       </h2>
       {subtitle && (
-        <p className="text-xs leading-tight" style={{ color: theme.textSecondary }}>
+        <p style={{ fontSize: '11px', fontWeight: 400, lineHeight: 1.3, color: theme.textSecondary }}>
           {subtitle}
         </p>
       )}

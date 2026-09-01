@@ -23,21 +23,26 @@ export default function SegmentedControl<T extends string>({
 
   return (
     <div
-      className="relative flex w-full rounded-xl p-1"
+      className="relative flex w-full"
       style={{
+        padding: '3px',
+        gap: '2px',
+        borderRadius: '8px',
         backgroundColor: theme.surface,
         border: `1px solid ${theme.borderSoft}`,
       }}
     >
       <div
-        className="absolute rounded-lg transition-transform duration-150 ease-in-out"
+        className="absolute rounded-md transition-transform duration-150 ease-out"
         style={{
-          top: 4,
-          bottom: 4,
-          left: 4,
-          width: `calc((100% - 8px) / ${options.length})`,
+          top: 3,
+          bottom: 3,
+          left: 3,
+          width: `calc((100% - 6px) / ${options.length})`,
           transform: `translateX(${index * 100}%)`,
           backgroundColor: theme.background,
+          boxShadow: '0 1px 2px rgba(0,0,0,0.06)',
+          marginRight: '2px',
         }}
       />
       {options.map(option => {
@@ -47,8 +52,15 @@ export default function SegmentedControl<T extends string>({
             key={option.value}
             type="button"
             onClick={() => onChange(option.value)}
-            className="relative z-10 flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg text-sm font-medium transition-colors duration-150"
-            style={{ color: active ? theme.textPrimary : theme.textTertiary }}
+            className="relative z-10 flex flex-1 items-center justify-center transition-colors duration-150"
+            style={{
+              height: '28px',
+              gap: '6px',
+              borderRadius: '6px',
+              fontSize: '12.5px',
+              fontWeight: active ? 600 : 500,
+              color: active ? theme.textPrimary : theme.textTertiary,
+            }}
           >
             {option.icon}
             {option.label}

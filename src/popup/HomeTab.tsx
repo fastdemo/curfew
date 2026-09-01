@@ -40,9 +40,9 @@ export default function HomeTab({ storage, onToggleMaster }: HomeTabProps) {
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col" style={{ gap: '6px' }}>
       <RowItem
-        icon={<BoltIcon size={18} color={theme.textPrimary} />}
+        icon={<BoltIcon size={13} color={theme.textPrimary} />}
         title="quick focus"
         subtitle="pause or enable site restrictions"
         right={
@@ -57,12 +57,12 @@ export default function HomeTab({ storage, onToggleMaster }: HomeTabProps) {
       <section>
         <SectionHeader title="status" />
         <div
-          className="overflow-hidden rounded-xl"
-          style={{ backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}` }}
+          className="overflow-hidden"
+          style={{ backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}`, borderRadius: '8px' }}
         >
           <RowItem
             variant="flat"
-            icon={<CalendarIcon size={18} color={theme.textSecondary} />}
+            icon={<CalendarIcon size={13} color={theme.textSecondary} />}
             title={activeSchedule ? activeSchedule.name : 'no active schedule'}
             subtitle={
               activeSchedule
@@ -74,7 +74,7 @@ export default function HomeTab({ storage, onToggleMaster }: HomeTabProps) {
           <RowItem
             variant="flat"
             divider
-            icon={<ShieldIcon size={18} color={theme.textSecondary} />}
+            icon={<ShieldIcon size={13} color={theme.textSecondary} />}
             title={blocking ? 'blocking active' : 'not blocking'}
             subtitle={blocking ? 'distracting sites are locked' : 'all sites are accessible'}
             right={<StatusPill label={blocking ? 'active' : 'idle'} tone={blocking ? 'success' : 'muted'} />}
@@ -85,8 +85,8 @@ export default function HomeTab({ storage, onToggleMaster }: HomeTabProps) {
       <section>
         <SectionHeader title="interventions" subtitle="tap to choose how blocked sites are handled" />
         <div
-          className="overflow-hidden rounded-xl"
-          style={{ backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}` }}
+          className="overflow-hidden"
+          style={{ backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}`, borderRadius: '8px' }}
         >
           {INTERVENTIONS.map((intervention, i) => {
             const selected = storage.selectedInterventions.includes(intervention.id)
@@ -111,8 +111,8 @@ export default function HomeTab({ storage, onToggleMaster }: HomeTabProps) {
 function InterventionIcon({ id }: { id: InterventionId }) {
   const theme = useTheme()
   const props = {
-    width: 18,
-    height: 18,
+    width: 13,
+    height: 13,
     fill: 'none' as const,
     viewBox: '0 0 24 24',
     stroke: 'currentColor',

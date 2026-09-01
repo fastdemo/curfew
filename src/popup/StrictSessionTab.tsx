@@ -58,23 +58,23 @@ export default function StrictSessionTab({ storage, onEndSession }: StrictSessio
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col" style={{ gap: '6px' }}>
       <section>
         <SectionHeader title="strict session" subtitle="nothing gets through until the timer ends" />
         <div
-          className="flex items-center justify-between rounded-xl px-4 py-3.5"
-          style={{ backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}` }}
+          className="flex items-center justify-between"
+          style={{ padding: '8px 10px', backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}`, borderRadius: '8px' }}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center" style={{ gap: '8px' }}>
             <span
-              className="flex h-9 w-9 items-center justify-center rounded-lg"
-              style={{ backgroundColor: theme.highlight, color: theme.textPrimary }}
+              className="flex items-center justify-center"
+              style={{ width: '28px', height: '28px', borderRadius: '8px', backgroundColor: theme.highlight, color: theme.textPrimary }}
             >
-              <LockIcon size={18} color={theme.textPrimary} />
+              <LockIcon size={13} color={theme.textPrimary} />
             </span>
             <div className="flex flex-col text-left">
-              <span className="text-sm font-medium leading-tight" style={{ color: theme.textPrimary }}>blocked list</span>
-              <span className="text-xs leading-tight mt-0.5" style={{ color: theme.textSecondary }}>
+              <span style={{ fontSize: '13px', fontWeight: 600, lineHeight: 1.3, color: theme.textPrimary }}>blocked list</span>
+              <span style={{ fontSize: '11px', lineHeight: 1.3, color: theme.textSecondary }}>
                 {websiteCount} site{websiteCount !== 1 ? 's' : ''} · {keywordCount} keyword{keywordCount !== 1 ? 's' : ''} locked
               </span>
             </div>
@@ -85,40 +85,40 @@ export default function StrictSessionTab({ storage, onEndSession }: StrictSessio
 
       {isActive ? (
         <div
-          className="flex flex-col items-center gap-6 rounded-xl px-4 py-8"
-          style={{ backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}` }}
+          className="flex flex-col items-center"
+          style={{ gap: '12px', padding: '16px', backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}`, borderRadius: '8px' }}
         >
           <div
             style={{
-              width: '104px',
-              height: '104px',
+              width: '88px',
+              height: '88px',
               borderRadius: '50%',
               background: `conic-gradient(${theme.accent} 0% ${progress}%, ${theme.borderSoft} ${progress}% 100%)`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: `inset 0 0 0 10px ${theme.background}`,
+              boxShadow: `inset 0 0 0 8px ${theme.background}`,
             }}
           >
             <div style={{ textAlign: 'center' }}>
               <span
-                className="display block text-2xl font-extrabold leading-none"
-                style={{ color: theme.textPrimary }}
+                className="display block leading-none"
+                style={{ fontSize: '20px', fontWeight: 800, color: theme.textPrimary }}
               >
                 {formatTime(remaining).split(' ')[0]}
               </span>
               {remaining >= 60000 && (
-                <div className="mt-1 text-xs" style={{ color: theme.textSecondary }}>remaining</div>
+                <div style={{ marginTop: '2px', fontSize: '10.5px', color: theme.textSecondary }}>remaining</div>
               )}
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center" style={{ gap: '6px' }}>
             <span
               className="inline-block rounded-full"
-              style={{ width: 8, height: 8, backgroundColor: theme.success }}
+              style={{ width: 6, height: 6, backgroundColor: theme.success }}
             />
-            <span className="text-sm font-semibold" style={{ color: theme.textPrimary }}>
+            <span style={{ fontSize: '11px', fontWeight: 600, color: theme.textPrimary }}>
               strict session is active
             </span>
           </div>
@@ -126,16 +126,28 @@ export default function StrictSessionTab({ storage, onEndSession }: StrictSessio
           <button
             type="button"
             onClick={() => onEndSession?.()}
-            className="w-full rounded-xl py-3 text-sm font-semibold transition-colors duration-150"
-            style={{ backgroundColor: theme.accent, color: theme.onAccent }}
+            style={{
+              width: '100%',
+              height: '42px',
+              borderRadius: '8px',
+              padding: '0 12px',
+              fontSize: '13px',
+              fontWeight: 600,
+              backgroundColor: theme.accent,
+              color: theme.onAccent,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+            }}
           >
             end session
           </button>
         </div>
       ) : (
-        <section className="flex flex-col gap-2.5">
+        <section className="flex flex-col" style={{ gap: '6px' }}>
           <SectionHeader title="pick a duration" subtitle="how long should the strict session last?" />
-          <div className="grid grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-2" style={{ gap: '6px' }}>
             {DURATIONS.map(option => {
               const selected = selectedMin === option.min
               return (
@@ -143,30 +155,39 @@ export default function StrictSessionTab({ storage, onEndSession }: StrictSessio
                   key={option.min}
                   type="button"
                   onClick={() => setSelectedMin(option.min)}
-                  className="flex flex-col items-start gap-2.5 rounded-xl p-4 text-left transition-colors duration-150"
+                  className="flex flex-col items-start text-left transition-colors duration-150"
                   style={{
+                    gap: '6px',
+                    padding: '10px',
+                    borderRadius: '8px',
                     boxSizing: 'border-box',
                     backgroundColor: selected ? theme.highlight : theme.surface,
-                    border: `2px solid ${selected ? theme.accent : 'transparent'}`,
+                    border: `1.5px solid ${selected ? theme.accent : theme.borderSoft}`,
                   }}
                 >
                   <span
-                    className="flex h-8 w-8 items-center justify-center rounded-md"
-                    style={{ backgroundColor: theme.background, color: selected ? theme.accent : theme.textSecondary }}
+                    className="flex items-center justify-center"
+                    style={{
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '6px',
+                      backgroundColor: theme.background,
+                      color: selected ? theme.accent : theme.textSecondary,
+                    }}
                   >
-                    <ClockIcon size={16} color={selected ? theme.accent : theme.textSecondary} />
+                    <ClockIcon size={14} color={selected ? theme.accent : theme.textSecondary} />
                   </span>
-                  <span className="text-base font-semibold leading-tight" style={{ color: theme.textPrimary }}>
+                  <span style={{ fontSize: '13px', fontWeight: 600, lineHeight: 1.3, color: theme.textPrimary }}>
                     {option.label}
                   </span>
-                  <span className="text-xs leading-tight" style={{ color: theme.textSecondary }}>{option.sub}</span>
+                  <span style={{ fontSize: '11px', lineHeight: 1.3, color: theme.textSecondary }}>{option.sub}</span>
                 </button>
               )
             })}
           </div>
 
           {!hasItems && (
-            <p className="text-xs" style={{ color: theme.textSecondary }}>
+            <p style={{ fontSize: '11px', color: theme.textSecondary, lineHeight: 1.3 }}>
               add items to your blocked list to start a strict session.
             </p>
           )}
@@ -175,12 +196,21 @@ export default function StrictSessionTab({ storage, onEndSession }: StrictSessio
             type="button"
             onClick={() => startSession(selectedMin)}
             disabled={!hasItems}
-            className="w-full rounded-xl py-3 text-sm font-semibold transition-opacity duration-150"
             style={{
+              width: '100%',
+              height: '42px',
+              borderRadius: '8px',
+              padding: '0 12px',
+              fontSize: '13px',
+              fontWeight: 600,
               backgroundColor: theme.accent,
               color: theme.onAccent,
               opacity: hasItems ? 1 : 0.4,
               cursor: hasItems ? 'pointer' : 'not-allowed',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
             }}
           >
             start strict session

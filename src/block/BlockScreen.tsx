@@ -16,7 +16,7 @@ interface BlockScreenProps {
   canProceed?: boolean
 }
 
-const LeafIcon = ({ size = 18 }: { size?: number }) => (
+const LeafIcon = ({ size = 16 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
     <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
     <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
@@ -34,7 +34,7 @@ const ChevronToggle = ({ isOpen, onClick }: { isOpen: boolean; onClick: () => vo
       background: 'transparent',
       border: 'none',
       cursor: 'pointer',
-      padding: '10px',
+      padding: '6px',
       margin: '0 auto',
       color: WARM_TEXT_TERTIARY,
       transition: 'color 0.15s ease',
@@ -44,8 +44,8 @@ const ChevronToggle = ({ isOpen, onClick }: { isOpen: boolean; onClick: () => vo
     onMouseLeave={(e) => (e.currentTarget.style.color = WARM_TEXT_TERTIARY)}
   >
     <svg
-      width="18"
-      height="18"
+      width="16"
+      height="16"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -59,7 +59,7 @@ const ChevronToggle = ({ isOpen, onClick }: { isOpen: boolean; onClick: () => vo
   </button>
 )
 
-const ProgressRing = ({ size = 72, stroke = 6, pct }: { size?: number; stroke?: number; pct: number }) => {
+const ProgressRing = ({ size = 64, stroke = 5, pct }: { size?: number; stroke?: number; pct: number }) => {
   const radius = (size - stroke) / 2
   const circumference = 2 * Math.PI * radius
   const offset = circumference * (1 - pct / 100)
@@ -128,15 +128,17 @@ export default function BlockScreen({ domain, interventionId, timeSpent, usageSt
 
   const btnPrimary: React.CSSProperties = {
     width: '100%',
-    padding: '12px 20px',
-    borderRadius: '12px',
+    height: '42px',
+    padding: '0 12px',
+    borderRadius: '8px',
     fontWeight: 600,
-    fontSize: '14px',
+    fontSize: '13px',
     border: 'none',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: '6px',
     backgroundColor: WARM_PRIMARY_BTN,
     color: WARM_PRIMARY_BTN_TEXT,
     transition: 'opacity 0.15s ease',
@@ -145,15 +147,17 @@ export default function BlockScreen({ domain, interventionId, timeSpent, usageSt
 
   const btnSecondary: React.CSSProperties = {
     width: '100%',
-    padding: '12px 20px',
-    borderRadius: '12px',
+    height: '42px',
+    padding: '0 12px',
+    borderRadius: '8px',
     fontWeight: 500,
-    fontSize: '14px',
+    fontSize: '13px',
     border: `1px solid ${WARM_OUTLINE_BORDER}`,
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: '6px',
     backgroundColor: 'transparent',
     color: WARM_OUTLINE_TEXT,
     transition: 'opacity 0.15s ease, color 0.15s ease',
@@ -163,56 +167,56 @@ export default function BlockScreen({ domain, interventionId, timeSpent, usageSt
   const btnWrap = {
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '10px',
+    gap: '8px',
     width: '100%',
   }
 
   const badgeRow = (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <span
         style={{
           display: 'inline-flex',
           alignItems: 'center',
-          gap: '7px',
-          padding: '6px 14px',
+          gap: '6px',
+          padding: '5px 10px',
           borderRadius: '999px',
-          fontSize: '12px',
+          fontSize: '11px',
           fontWeight: 600,
           color: WARM_TEXT_PRIMARY,
           border: `1px solid ${WARM_OUTLINE_BORDER}`,
         }}
       >
-        <LeafIcon size={13} />
+        <LeafIcon size={12} />
         {domain}
       </span>
     </div>
   )
 
   const treeSlot = (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '4px 0 0' }}>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '2px 0 0' }}>
       <GrowingTree />
     </div>
   )
 
   const statsRow = (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', width: '100%' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', width: '100%' }}>
       <div style={{ position: 'relative', flexShrink: 0 }}>
-        <ProgressRing size={72} stroke={6} pct={stats.pct} />
+        <ProgressRing size={64} stroke={5} pct={stats.pct} />
         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ fontSize: '15px', fontWeight: 700, color: WARM_TEXT_PRIMARY, fontFamily: 'inherit' }}>{Math.round(stats.pct)}%</span>
+          <span style={{ fontSize: '13px', fontWeight: 700, color: WARM_TEXT_PRIMARY, fontFamily: 'inherit' }}>{Math.round(stats.pct)}%</span>
         </div>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-          <span style={{ fontSize: '18px', fontWeight: 700, color: WARM_TEXT_PRIMARY, fontFamily: 'inherit' }}>{timeDisplay}</span>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+          <span style={{ fontSize: '15px', fontWeight: 700, color: WARM_TEXT_PRIMARY, fontFamily: 'inherit' }}>{timeDisplay}</span>
           <span style={{ fontSize: '11px', color: WARM_TEXT_TERTIARY }}>on {domain}</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-          <span style={{ fontSize: '18px', fontWeight: 700, color: WARM_TEXT_PRIMARY, fontFamily: 'inherit' }}>{totalDisplay}</span>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+          <span style={{ fontSize: '15px', fontWeight: 700, color: WARM_TEXT_PRIMARY, fontFamily: 'inherit' }}>{totalDisplay}</span>
           <span style={{ fontSize: '11px', color: WARM_TEXT_TERTIARY }}>total today</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-          <span style={{ fontSize: '18px', fontWeight: 700, color: WARM_TEXT_PRIMARY, fontFamily: 'inherit' }}>{stats.sitesToday}</span>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+          <span style={{ fontSize: '15px', fontWeight: 700, color: WARM_TEXT_PRIMARY, fontFamily: 'inherit' }}>{stats.sitesToday}</span>
           <span style={{ fontSize: '11px', color: WARM_TEXT_TERTIARY }}>sites visited</span>
         </div>
       </div>
@@ -220,7 +224,7 @@ export default function BlockScreen({ domain, interventionId, timeSpent, usageSt
   )
 
   const centerSlot = (
-    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
       <div
         style={{
           width: '100%',
@@ -254,7 +258,7 @@ export default function BlockScreen({ domain, interventionId, timeSpent, usageSt
     <>
       <style>{`
         @keyframes curfew-fade-up {
-          from { opacity: 0; transform: translateY(8px); }
+          from { opacity: 0; transform: translateY(6px); }
           to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
@@ -263,8 +267,8 @@ export default function BlockScreen({ domain, interventionId, timeSpent, usageSt
           minHeight: '100vh',
           width: '100%',
           background: WARM_BG,
-          backgroundImage: 'radial-gradient(color-mix(in srgb, var(--color-text-tertiary) 20%, transparent) 1px, transparent 1px)',
-          backgroundSize: '28px 28px',
+          backgroundImage: 'radial-gradient(color-mix(in srgb, var(--color-text-tertiary) 18%, transparent) 1px, transparent 1px)',
+          backgroundSize: '24px 24px',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -272,37 +276,37 @@ export default function BlockScreen({ domain, interventionId, timeSpent, usageSt
           boxSizing: 'border-box',
           fontFamily: "'DM Sans', sans-serif",
           WebkitFontSmoothing: 'antialiased',
-          padding: '20px',
+          padding: '16px',
         }}
       >
         <div
           style={{
             width: '100%',
-            maxWidth: '440px',
+            maxWidth: '380px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '20px',
-            padding: '32px',
-            borderRadius: '10px',
+            gap: '12px',
+            padding: '20px',
+            borderRadius: '12px',
             backgroundColor: WARM_CARD,
             border: `1px solid ${WARM_BORDER}`,
             boxSizing: 'border-box',
           }}
         >
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px', textAlign: 'center', animation: 'curfew-fade-up 0.4s ease-out' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', textAlign: 'center', animation: 'curfew-fade-up 0.35s ease-out' }}>
             {badgeRow}
 
-            <h1 style={{ fontFamily: "'Sora', sans-serif", fontSize: '24px', fontWeight: 800, color: WARM_TEXT_PRIMARY, textAlign: 'center', margin: 0 }}>
+            <h1 style={{ fontFamily: "'Sora', sans-serif", fontSize: '20px', fontWeight: 800, color: WARM_TEXT_PRIMARY, textAlign: 'center', margin: 0, lineHeight: 1.2, letterSpacing: '-0.02em' }}>
               time to focus
             </h1>
 
-            <p style={{ fontSize: '13px', fontWeight: 400, color: WARM_TEXT_TERTIARY, textAlign: 'center', margin: 0, lineHeight: 1.5 }}>
+            <p style={{ fontSize: '12.5px', fontWeight: 400, color: WARM_TEXT_TERTIARY, textAlign: 'center', margin: 0, lineHeight: 1.4 }}>
               a moment of stillness can do wonders.
             </p>
           </div>
 
           {!canProceed ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px', width: '100%' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', width: '100%' }}>
               {centerSlot}
               <ChevronToggle isOpen={isDetailsOpen} onClick={() => setIsDetailsOpen(v => !v)} />
               <button
@@ -315,7 +319,7 @@ export default function BlockScreen({ domain, interventionId, timeSpent, usageSt
               </button>
             </div>
           ) : !showIntervention ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px', width: '100%' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', width: '100%' }}>
               {statsRow}
               {centerSlot}
               <ChevronToggle isOpen={isDetailsOpen} onClick={() => setIsDetailsOpen(v => !v)} />
@@ -358,7 +362,7 @@ export default function BlockScreen({ domain, interventionId, timeSpent, usageSt
               </button>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', width: '100%' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', width: '100%' }}>
               {interventionId === 'hold' && <InterventionHold onComplete={handleCompleted} />}
               {interventionId === 'slide' && <InterventionSlide onComplete={handleCompleted} />}
               {interventionId === 'breathing' && <InterventionBreathing onComplete={handleCompleted} />}

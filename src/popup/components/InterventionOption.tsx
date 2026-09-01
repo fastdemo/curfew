@@ -16,16 +16,21 @@ export default function InterventionOption({ icon, title, time, selected, onClic
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors duration-150"
+      className="flex w-full items-center justify-between text-left transition-colors duration-150"
       style={{
+        gap: '8px',
+        padding: '8px 10px',
         cursor: 'pointer',
         borderTop: divider ? `1px solid ${theme.borderSoft}` : 'none',
       }}
     >
-      <div className="flex items-center gap-3 min-w-0">
+      <div className="flex items-center min-w-0" style={{ gap: '8px' }}>
         <span
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+          className="flex shrink-0 items-center justify-center"
           style={{
+            width: '28px',
+            height: '28px',
+            borderRadius: '8px',
             backgroundColor: selected ? theme.highlight : theme.surface,
             color: theme.textPrimary,
             border: `1px solid ${theme.borderSoft}`,
@@ -33,14 +38,25 @@ export default function InterventionOption({ icon, title, time, selected, onClic
         >
           {icon}
         </span>
-        <span className="text-sm font-medium leading-tight min-w-0" style={{ color: theme.textPrimary }}>
+        <span
+          style={{
+            fontSize: '13px',
+            fontWeight: 600,
+            lineHeight: 1.3,
+            color: theme.textPrimary,
+          }}
+        >
           {title}
         </span>
       </div>
-      <span className="flex items-center gap-2.5 shrink-0">
+      <span className="flex items-center shrink-0" style={{ gap: '8px' }}>
         <span
-          className="rounded-full px-2.5 py-0.5 text-xs font-mono font-medium"
           style={{
+            padding: '2px 7px',
+            borderRadius: '999px',
+            fontSize: '11px',
+            fontWeight: 500,
+            fontVariantNumeric: 'tabular-nums',
             backgroundColor: selected ? theme.accent : theme.surface,
             color: selected ? theme.onAccent : theme.textSecondary,
             border: `1px solid ${selected ? theme.accent : theme.borderMuted}`,
@@ -49,17 +65,19 @@ export default function InterventionOption({ icon, title, time, selected, onClic
           {time}
         </span>
         <span
-          className="flex h-5 w-5 items-center justify-center rounded-full"
+          className="flex items-center justify-center rounded-full"
           style={{
+            width: '18px',
+            height: '18px',
             boxSizing: 'border-box',
-            border: `2px solid ${selected ? theme.accent : theme.borderMuted}`,
+            border: `1.5px solid ${selected ? theme.accent : theme.borderMuted}`,
             backgroundColor: selected ? theme.accent : 'transparent',
           }}
         >
           {selected && (
             <span
               className="block rounded-full"
-              style={{ width: 5, height: 5, backgroundColor: theme.onAccent }}
+              style={{ width: 6, height: 6, backgroundColor: theme.onAccent }}
             />
           )}
         </span>

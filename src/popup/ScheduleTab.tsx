@@ -69,24 +69,30 @@ export default function ScheduleTab({ storage }: ScheduleTabProps) {
   const empty = storage.schedules.length === 0 && !showForm
 
   return (
-    <div className="flex flex-col gap-3">
-      <section className="flex flex-col gap-2.5">
+    <div className="flex flex-col" style={{ gap: '6px' }}>
+      <section className="flex flex-col" style={{ gap: '6px' }}>
         <SectionHeader title="schedule" subtitle="auto turn on focus mode at set times" />
 
         {empty && (
-          <div className="flex flex-col items-center gap-3 rounded-xl px-6 py-10 text-center"
-            style={{ backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}` }}>
+          <div className="flex flex-col items-center text-center"
+            style={{
+              gap: '8px',
+              padding: '16px',
+              borderRadius: '8px',
+              backgroundColor: theme.surface,
+              border: `1px solid ${theme.borderSoft}`,
+            }}>
             <span
-              className="flex h-12 w-12 items-center justify-center rounded-full"
-              style={{ backgroundColor: theme.highlight, color: theme.textSecondary }}
+              className="flex items-center justify-center rounded-full"
+              style={{ width: '36px', height: '36px', backgroundColor: theme.highlight, color: theme.textSecondary }}
             >
-              <CalendarIcon size={22} color={theme.textSecondary} />
+              <CalendarIcon size={18} color={theme.textSecondary} />
             </span>
-            <div className="flex flex-col gap-1">
-              <span className="text-sm font-semibold" style={{ color: theme.textPrimary }}>
+            <div className="flex flex-col" style={{ gap: '2px' }}>
+              <span style={{ fontSize: '13px', fontWeight: 600, color: theme.textPrimary }}>
                 no active schedules
               </span>
-              <span className="text-xs leading-relaxed" style={{ color: theme.textSecondary }}>
+              <span style={{ fontSize: '11px', lineHeight: 1.3, color: theme.textSecondary }}>
                 automation turns on focus mode at specified times.
               </span>
             </div>
@@ -95,8 +101,8 @@ export default function ScheduleTab({ storage }: ScheduleTabProps) {
 
         {storage.schedules.length > 0 && (
           <div
-            className="overflow-hidden rounded-xl"
-            style={{ backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}` }}
+            className="overflow-hidden"
+            style={{ backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}`, borderRadius: '8px' }}
           >
             {storage.schedules.map((schedule, i) => (
               <RowItem
@@ -106,15 +112,15 @@ export default function ScheduleTab({ storage }: ScheduleTabProps) {
                 title={schedule.name}
                 subtitle={`${formatTimeDisplay(schedule.startTime)} – ${formatTimeDisplay(schedule.endTime)} · ${daysLabel(schedule.daysOfWeek)}`}
                 right={
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center" style={{ gap: '6px' }}>
                     <button
                       type="button"
                       onClick={() => deleteSchedule(schedule.id)}
-                      className="flex h-8 w-8 items-center justify-center rounded-md transition-colors duration-150"
-                      style={{ color: theme.textTertiary }}
+                      className="flex items-center justify-center transition-colors duration-150"
+                      style={{ width: '24px', height: '24px', borderRadius: '6px', color: theme.textTertiary }}
                       aria-label="Delete"
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                     </button>
@@ -133,8 +139,20 @@ export default function ScheduleTab({ storage }: ScheduleTabProps) {
           <button
             type="button"
             onClick={() => setShowForm(true)}
-            className="rounded-xl py-3 text-sm font-semibold transition-colors duration-150"
-            style={{ backgroundColor: theme.accent, color: theme.onAccent }}
+            style={{
+              width: '100%',
+              height: '42px',
+              borderRadius: '8px',
+              padding: '0 12px',
+              fontSize: '13px',
+              fontWeight: 600,
+              backgroundColor: theme.accent,
+              color: theme.onAccent,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+            }}
           >
             + add schedule
           </button>
@@ -144,8 +162,12 @@ export default function ScheduleTab({ storage }: ScheduleTabProps) {
           <button
             type="button"
             onClick={() => setShowForm(true)}
-            className="w-full rounded-xl py-2.5 text-sm font-medium transition-colors duration-150"
+            className="w-full transition-colors duration-150"
             style={{
+              height: '36px',
+              borderRadius: '8px',
+              fontSize: '13px',
+              fontWeight: 500,
               backgroundColor: theme.surface,
               color: theme.accent,
               border: `1px dashed ${theme.borderMuted}`,
@@ -157,42 +179,69 @@ export default function ScheduleTab({ storage }: ScheduleTabProps) {
 
         {showForm && (
           <div
-            className="flex flex-col gap-3 rounded-xl p-4"
-            style={{ backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}` }}
+            className="flex flex-col"
+            style={{ gap: '8px', padding: '10px', backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}`, borderRadius: '8px' }}
           >
             <input
               type="text"
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="session name"
-              className="w-full rounded-lg px-3.5 py-2.5 text-sm outline-none"
-              style={{ backgroundColor: theme.background, color: theme.textPrimary }}
+              style={{
+                width: '100%',
+                padding: '8px 10px',
+                borderRadius: '8px',
+                fontSize: '12.5px',
+                fontWeight: 500,
+                backgroundColor: theme.background,
+                color: theme.textPrimary,
+                border: `1px solid ${theme.borderSoft}`,
+                outline: 'none',
+              }}
             />
-            <div className="flex gap-2.5">
+            <div className="flex" style={{ gap: '8px' }}>
               <div className="flex-1">
-                <label className="mb-1 block text-xs font-medium" style={{ color: theme.textSecondary }}>start</label>
+                <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', fontWeight: 600, lineHeight: 1.3, color: theme.textSecondary }}>start</label>
                 <input
                   type="time"
                   value={startTime}
                   onChange={e => setStartTime(e.target.value)}
-                  className="w-full rounded-lg px-3.5 py-2.5 text-sm outline-none"
-                  style={{ backgroundColor: theme.background, color: theme.textPrimary }}
+                  style={{
+                    width: '100%',
+                    padding: '8px 10px',
+                    borderRadius: '8px',
+                    fontSize: '12.5px',
+                    fontWeight: 500,
+                    backgroundColor: theme.background,
+                    color: theme.textPrimary,
+                    border: `1px solid ${theme.borderSoft}`,
+                    outline: 'none',
+                  }}
                 />
               </div>
               <div className="flex-1">
-                <label className="mb-1 block text-xs font-medium" style={{ color: theme.textSecondary }}>end</label>
+                <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', fontWeight: 600, lineHeight: 1.3, color: theme.textSecondary }}>end</label>
                 <input
                   type="time"
                   value={endTime}
                   onChange={e => setEndTime(e.target.value)}
-                  className="w-full rounded-lg px-3.5 py-2.5 text-sm outline-none"
-                  style={{ backgroundColor: theme.background, color: theme.textPrimary }}
+                  style={{
+                    width: '100%',
+                    padding: '8px 10px',
+                    borderRadius: '8px',
+                    fontSize: '12.5px',
+                    fontWeight: 500,
+                    backgroundColor: theme.background,
+                    color: theme.textPrimary,
+                    border: `1px solid ${theme.borderSoft}`,
+                    outline: 'none',
+                  }}
                 />
               </div>
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium" style={{ color: theme.textSecondary }}>days</label>
-              <div className="flex gap-1.5">
+              <label style={{ display: 'block', marginBottom: '6px', fontSize: '11px', fontWeight: 600, lineHeight: 1.3, color: theme.textSecondary }}>days</label>
+              <div className="flex" style={{ gap: '4px' }}>
                 {DAYS_SHORT.map((day, i) => {
                   const active = days.includes(i)
                   return (
@@ -200,10 +249,15 @@ export default function ScheduleTab({ storage }: ScheduleTabProps) {
                       key={i}
                       type="button"
                       onClick={() => toggleDay(i)}
-                      className="flex-1 rounded-lg py-2.5 text-xs font-medium transition-colors duration-150"
+                      className="flex-1 transition-colors duration-150"
                       style={{
+                        padding: '6px 0',
+                        borderRadius: '8px',
+                        fontSize: '11px',
+                        fontWeight: 600,
                         backgroundColor: active ? theme.accent : theme.background,
                         color: active ? theme.onAccent : theme.textSecondary,
+                        border: `1px solid ${active ? theme.accent : theme.borderSoft}`,
                       }}
                     >
                       {day}
@@ -212,20 +266,35 @@ export default function ScheduleTab({ storage }: ScheduleTabProps) {
                 })}
               </div>
             </div>
-            <div className="flex gap-2.5">
+            <div className="flex" style={{ gap: '8px' }}>
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="flex-1 rounded-xl py-2.5 text-sm font-medium transition-colors duration-150"
-                style={{ backgroundColor: theme.background, color: theme.textSecondary }}
+                className="flex-1 transition-colors duration-150"
+                style={{
+                  height: '36px',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  backgroundColor: theme.background,
+                  color: theme.textSecondary,
+                  border: `1px solid ${theme.borderSoft}`,
+                }}
               >
                 cancel
               </button>
               <button
                 type="button"
                 onClick={addSchedule}
-                className="flex-1 rounded-xl py-2.5 text-sm font-semibold transition-colors duration-150"
-                style={{ backgroundColor: theme.accent, color: theme.onAccent }}
+                className="flex-1 transition-colors duration-150"
+                style={{
+                  height: '36px',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  backgroundColor: theme.accent,
+                  color: theme.onAccent,
+                }}
               >
                 save
               </button>

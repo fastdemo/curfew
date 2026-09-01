@@ -8,15 +8,19 @@
       html,
       body,
       #root {
-        width: 336px !important;
-        max-width: 336px !important;
+        width: 290px !important;
+        min-width: 290px !important;
+        max-width: 290px !important;
       }
       body {
-        height: 520px;
         margin: 0;
         padding: 0;
         overflow: hidden;
+        background: var(--color-surface);
       }
+      /* fallback for extension pages without CSS vars yet */
+      html { background: #FDFCF9; }
+      html.dark { background: #0F0E0D; }
     </style>
   </head>
   <body>
