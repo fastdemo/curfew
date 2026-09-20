@@ -1,9 +1,9 @@
+import { useRef } from 'react'
 import { useTheme } from './theme'
 import { FRAME } from './frame'
 
 export function Shell({
   mascotUrl,
-  onMascot,
   status,
   children,
   tabs,
@@ -12,7 +12,6 @@ export function Shell({
   mainRef,
 }: {
   mascotUrl: string
-  onMascot: () => void
   /** header status word; null hides it (strict/schedule tabs own their own) */
   status: string | null
   children: React.ReactNode
@@ -22,6 +21,18 @@ export function Shell({
   mainRef: React.Ref<HTMLElement>
 }) {
   const t = useTheme()
+  // Potion chime on mascot click (autobing-style: icon click plays a sound,
+  // navigates nowhere). Lazily created so no audio loads until first click.
+  const potionRef = useRef<HTMLAudioElement | null>(null)
+  const playPotion = () => {
+    try {
+      if (!potionRef.current) {
+        potionRef.current = new Audio(chrome.runtime.getURL('audio/potion.mp3'))
+      }
+      potionRef.current.currentTime = 0
+      void potionRef.current.play().catch(() => {})
+    } catch { /* audio unavailable — silent */ }
+  }
   return (
     <div
       style={{
@@ -48,36 +59,28 @@ export function Shell({
           flexShrink: 0,
         }}
       >
-        <button
-          type="button"
-          onClick={onMascot}
-          aria-label="open curfew on github"
-          title="open curfew on github"
-          className="curfew-mascot"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            padding: 0,
-            border: 'none',
-            background: 'transparent',
-            cursor: 'pointer',
-          }}
+        {/* Mascot icon is its own hover/click target (autobing-style pop +
+            potion sound) — the "curfew" word is a separate, static element. */}
+        <img
+          src={mascotUrl}
+          alt="Curfew"
+          width={30}
+          height={30}
+          onClick={playPotion}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') playPotion() }}
+          tabIndex={0}
+          role="button"
+          aria-label="play curfew sound"
+          title="curfew"
+          className="curfew-mascot-icon"
+          style={{ width: 30, height: 30, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, cursor: 'pointer' }}
+        />
+        <span
+          className="font-display"
+          style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.2, color: t.textPrimary }}
         >
-          <img
-            src={mascotUrl}
-            alt="Curfew"
-            width={30}
-            height={30}
-            style={{ width: 30, height: 30, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
-          />
-          <span
-            className="font-display"
-            style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.2, color: t.textPrimary }}
-          >
-            curfew
-          </span>
-        </button>
+          curfew
+        </span>
         {status && (
           <span
             style={{

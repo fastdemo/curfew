@@ -134,14 +134,16 @@ export function BlockView({ domain, interventionId, timeSpent, usageStats, onClo
             time to focus
           </h1>
           {/* Summary line intentionally sits outside the header stack's
-              centered rhythm: left gap (tabs) = right gap (donut). */}
+              centered rhythm: left gap (tabs) = right gap (donut), and the
+              tabs→donut gap is doubled so it matches donut→chevron. */}
           <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, color: c.secondary, textAlign: 'center' }}>
             {fmtClock(timeSpent)} on this site today · {sitesToday} {sitesToday === 1 ? 'site' : 'sites'} visited
           </p>
-          <div style={{ marginTop: 0 }}>
+          <div style={{ marginTop: 10 }}>
             <RangeTabs range={range} onChange={setRange} />
           </div>
-          <div style={{ marginTop: 0 }}>
+          {/* 2× the stack rhythm: tabs→donut breathes twice the donut→chev gap. */}
+          <div style={{ marginTop: 10 }}>
             <UsageDonut rows={usageRows} highlightDomain={domain} />
           </div>
           <DetailsToggle open={detailsOpen} onToggle={() => setDetailsOpen((v) => !v)} />

@@ -1,9 +1,8 @@
 import { useBlockTheme } from './theme'
 import { fmtDuration } from './usage'
 
-// Site list fed by the same rows as the donut. Favicons stay grayscale so
-// brand colors never compete with the accent; the blocked row reads via the
-// accent time-chip instead.
+// Site list fed by the same rows as the donut. Favicons render in full
+// color; the blocked row still reads via the accent time-chip.
 export function UsageList({
   rows,
   highlightDomain,
@@ -26,7 +25,7 @@ export function UsageList({
               alt=""
               width={14}
               height={14}
-              style={{ width: 14, height: 14, borderRadius: 3, flexShrink: 0, filter: 'grayscale(1)', opacity: 0.75 }}
+              style={{ width: 14, height: 14, borderRadius: 3, flexShrink: 0 }}
             />
             <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12, fontWeight: hot ? 600 : 400, color: hot ? c.primary : c.secondary }}>
               {e.domain}

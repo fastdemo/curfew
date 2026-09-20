@@ -256,7 +256,6 @@ export default function App() {
     <ThemeProvider>
       <Shell
         mascotUrl={chrome.runtime.getURL('icons/anko128.png')}
-        onMascot={() => chrome.tabs.create({ url: 'https://github.com/fastdemo/curfew' })}
         status={status}
         tabs={TABS.map((id) => ({ id, label: id, icon: <NavIcon tab={id} /> }))}
         activeTab={activeTab}

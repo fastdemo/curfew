@@ -95,8 +95,9 @@ export function SettingsScreen({ storage, onRequirePinToggle }: Props) {
   const current = storage.settings.theme
   const paletteId = storage.settings.palette ?? 'curfew'
   const paletteDef = themeDef(paletteId)
-  const pinned = paletteDef.modes !== 'both'
-  const pinLabel = paletteDef.modes === 'dark' ? 'dark' : paletteDef.modes === 'light' ? 'light' : ''
+  // Single-sided palettes (light- or dark-exclusive) lock the appearance
+  // control completely: every segment disabled, no mode change possible.
+  const appearanceLocked = paletteDef.modes !== 'both'
   // Preview follows the palette's own nature: both-mode rows preview the
   // currently-applied appearance; single-sided rows preview their own side.
   const previewDark = (th: ThemeDef) =>
@@ -205,7 +206,7 @@ export function SettingsScreen({ storage, onRequirePinToggle }: Props) {
 
       <div>
         <p style={{ fontSize: 11, fontWeight: 600, lineHeight: 1.3, color: t.textSecondary, margin: '0 0 6px' }}>
-          appearance{pinned ? ` · pinned to ${pinLabel}` : ''}
+          appearance{appearanceLocked ? ` · locked to ${paletteDef.modes}` : ''}
         </p>
         <div
           role="radiogroup"
@@ -221,9 +222,9 @@ export function SettingsScreen({ storage, onRequirePinToggle }: Props) {
         >
           {themes.map((o) => {
             const on = current === o.value
-            // Single-sided palettes pin the mode switch to their side.
-            const disabled = (pinned && paletteDef.modes === 'dark' && o.value !== 'dark')
-              || (pinned && paletteDef.modes === 'light' && o.value !== 'light')
+            // Single-sided palettes lock appearance completely: nothing
+            // clickable here, the checked segment just reflects the pin.
+            const disabled = appearanceLocked
             return (
               <button
                 key={o.value}

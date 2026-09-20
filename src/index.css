@@ -79,16 +79,21 @@ input:focus-visible,
   70% { transform: scale(1.06) rotate(5deg); }
 }
 
-.curfew-mascot img {
-  transition: transform 180ms ease-out;
+/* Autobing-style mascot hover: icon-only spring (icon pops, text untouched).
+   Scoped to the icon element itself — hovering the "curfew" word does
+   nothing. Respects reduced-motion. */
+.curfew-mascot-icon {
+  display: block;
+  transform-origin: center;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.curfew-mascot:hover img {
-  animation: curfew-mascot-wiggle 480ms ease-in-out;
+.curfew-mascot-icon:hover {
+  transform: scale(1.12) rotate(-5deg);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .curfew-mascot:hover img {
-    animation: none;
+  .curfew-mascot-icon:hover {
+    transform: none;
   }
 }
