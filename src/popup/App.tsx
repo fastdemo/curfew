@@ -8,6 +8,7 @@ import { ThemeProvider } from '../ui/ThemeProvider'
 import { Shell } from '../ui/Shell'
 import { HomeScreen } from '../screens/HomeScreen'
 import { BlockedScreen } from '../screens/BlockedScreen'
+import { StrictScreen } from '../screens/StrictScreen'
 
 export type TabId = 'home' | 'blocked' | 'strict' | 'schedule' | 'settings'
 
@@ -54,8 +55,8 @@ function NavIcon({ tab }: { tab: TabId }) {
     case 'settings':
       return (
         <svg {...props}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.592c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.33.184.72.184 1.05 0l1.15-.66c.48-.276 1.08-.11 1.39.37l1.29 2.02c.3.47.15 1.08-.32 1.39l-1.1.73c-.32.21-.52.56-.53.94s.18.74.49.97l1.09.81c.44.33.53.95.2 1.39l-1.29 1.7c-.33.44-.95.53-1.39.2l-1.09-.81a1.125 1.125 0 00-1.35 0l-1.1.73c-.47.31-.62.92-.32 1.39l1.29 2.02c.31.48.15 1.08-.32 1.39l-1.15.66c-.33.19-.72.19-1.05 0l-1.15-.66a1.125 1.125 0 00-1.35 0l-.21 1.28a1.125 1.125 0 01-1.11.94h-2.59c-.55 0-1.02-.398-1.11-.94l-.21-1.28a1.125 1.125 0 00-1.35 0l-1.15.66c-.48.28-1.08.11-1.39-.37l-1.29-2.02c-.3-.47-.15-1.08.32-1.39l1.1-.73c.32-.21.52-.56.53-.94s-.18-.74-.49-.97l-1.09-.81c-.44-.33-.53-.95-.2-1.39l1.29-1.7c.33-.44.95-.53 1.39-.2l1.09.81c.32.24.74.3 1.12.17.38-.13.68-.43.81-.81l.21-1.28z" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <circle cx="12" cy="12" r="3" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
         </svg>
       )
   }
@@ -222,9 +223,8 @@ export default function App() {
     disableMaster()
   }, [storage, now, disableMaster])
 
-  // Home-only milestone: other screens + pin overlay land in the follow-up
-  // pass after home is approved. Reference pending logic so it stays compiled.
-  void handleEndSessionRequest
+  // Pin overlay + remaining screens land in the follow-up pass.
+  // Reference pending logic so it stays compiled.
   void handleRequirePinToggle
   void handleSetupComplete
   void handleVerifyEndSession
@@ -256,7 +256,10 @@ export default function App() {
             <HomeScreen storage={storage} onToggleMaster={handleToggleMaster} />
           )}
           {activeTab === 'blocked' && <BlockedScreen storage={storage} />}
-          {!['home', 'blocked'].includes(activeTab) && pinOverlay === null && (
+          {activeTab === 'strict' && (
+            <StrictScreen storage={storage} onEndSession={handleEndSessionRequest} />
+          )}
+          {!['home', 'blocked', 'strict'].includes(activeTab) && pinOverlay === null && (
             <p style={{ fontSize: 12, opacity: 0.6, margin: 0 }}>
               {activeTab} screen lands in the next pass.
             </p>
