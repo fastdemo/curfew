@@ -6,7 +6,6 @@ import { useTheme } from '../lib/theme-context'
 import SectionHeader from './components/SectionHeader'
 import RowItem from './components/RowItem'
 import Toggle from './components/Toggle'
-import StatusPill from './components/StatusPill'
 import InterventionOption from './components/InterventionOption'
 
 interface HomeTabProps {
@@ -25,14 +24,26 @@ export default function HomeTab({ storage, onToggleMaster }: HomeTabProps) {
   const { now } = useTimer()
   const theme = useTheme()
 
-  const scheduleActive = isScheduleActive(storage.schedules)
   const activeSchedule = storage.schedules.find(s => s.isActive && isScheduleActive([s]))
   const isStrictActive = storage.strictSession.isActive && now < storage.strictSession.endTime
 
-  const blocking = storage.masterToggle || isStrictActive || scheduleActive
-
   const websiteCount = storage.blockedItems.filter(i => i.type === 'website').length
   const keywordCount = storage.blockedItems.filter(i => i.type === 'keyword').length
+  const scopeLabel = `${websiteCount} site${websiteCount !== 1 ? 's' : ''} · ${keywordCount} keyword${keywordCount !== 1 ? 's' : ''}`
+
+  // Single driver line: the one place on this screen that names WHY blocking
+  // is on (or that it is off). Priority matches the blocking engine:
+  // strict session > running schedule > manual toggle > idle.
+  let focusSubtitle: string
+  if (isStrictActive) {
+    focusSubtitle = 'strict session is locking everything'
+  } else if (activeSchedule) {
+    focusSubtitle = `schedule · ${activeSchedule.name} until ${formatTime(activeSchedule.endTime)}`
+  } else if (storage.masterToggle) {
+    focusSubtitle = websiteCount + keywordCount > 0 ? `${scopeLabel} locked` : 'blocking is on · list is empty'
+  } else {
+    focusSubtitle = 'all sites are accessible'
+  }
 
   const toggleIntervention = async (id: InterventionId) => {
     const current = storage.selectedInterventions
@@ -44,53 +55,10 @@ export default function HomeTab({ storage, onToggleMaster }: HomeTabProps) {
 
   return (
     <div className="flex flex-col" style={{ gap: '8px' }}>
-      {/* status hero — dot + state, baseline readout, no progress bar */}
-      <section
-        aria-label="blocking status"
-        style={{
-          backgroundColor: theme.surface,
-          border: `1px solid ${theme.borderSoft}`,
-          borderRadius: '12px',
-          padding: '14px',
-        }}
-      >
-        <div className="flex items-center" style={{ gap: '7px' }}>
-          <span
-            className="inline-block rounded-full"
-            style={{ width: '7px', height: '7px', backgroundColor: blocking ? theme.success : theme.textTertiary }}
-          />
-          <span style={{ fontSize: '11px', fontWeight: 600, lineHeight: 1.3, color: theme.textSecondary }}>
-            {blocking ? 'blocking' : 'idle'}
-          </span>
-          <span className="ml-auto">
-            <StatusPill label={blocking ? 'active' : 'idle'} tone={blocking ? 'success' : 'muted'} dot={false} />
-          </span>
-        </div>
-        <div className="flex items-baseline justify-between" style={{ margin: '13px 0 0' }}>
-          <strong
-            style={{
-              fontSize: '20px',
-              fontWeight: 700,
-              lineHeight: 1.2,
-              letterSpacing: '-0.04em',
-              color: theme.textPrimary,
-              fontVariantNumeric: 'tabular-nums',
-            }}
-          >
-            {blocking ? 'blocking active' : 'idle'}
-          </strong>
-          <span style={{ fontSize: '11px', lineHeight: 1.3, color: theme.textSecondary }}>
-            {activeSchedule
-              ? activeSchedule.name
-              : `${websiteCount} site${websiteCount !== 1 ? 's' : ''} · ${keywordCount} keyword${keywordCount !== 1 ? 's' : ''}`}
-          </span>
-        </div>
-      </section>
-
       <RowItem
         icon={<BoltIcon size={13} color={theme.textSecondary} />}
         title="quick focus"
-        subtitle="pause or enable site restrictions"
+        subtitle={focusSubtitle}
         right={
           <Toggle
             checked={storage.masterToggle || isStrictActive}
@@ -101,38 +69,10 @@ export default function HomeTab({ storage, onToggleMaster }: HomeTabProps) {
       />
 
       <section>
-        <SectionHeader title="status" />
-        <div
-          className="overflow-hidden"
-          style={{ backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}`, borderRadius: '10px' }}
-        >
-          <RowItem
-            variant="flat"
-            icon={<CalendarIcon size={13} color={theme.textSecondary} />}
-            title={activeSchedule ? activeSchedule.name : 'no active schedule'}
-            subtitle={
-              activeSchedule
-                ? `${formatTime(activeSchedule.startTime)} – ${formatTime(activeSchedule.endTime)}`
-                : 'nothing scheduled right now'
-            }
-            right={<StatusPill label={scheduleActive ? 'active' : 'disabled'} tone={scheduleActive ? 'success' : 'muted'} dot={false} />}
-          />
-          <RowItem
-            variant="flat"
-            divider
-            icon={<ShieldIcon size={13} color={theme.textSecondary} />}
-            title={blocking ? 'blocking active' : 'not blocking'}
-            subtitle={blocking ? 'distracting sites are locked' : 'all sites are accessible'}
-            right={<StatusPill label={blocking ? 'active' : 'idle'} tone={blocking ? 'success' : 'muted'} dot={false} />}
-          />
-        </div>
-      </section>
-
-      <section>
         <SectionHeader title="interventions" subtitle="tap to choose how blocked sites are handled" />
         <div
           className="overflow-hidden"
-          style={{ backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}`, borderRadius: '10px' }}
+          style={{ backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}`, borderRadius: '8px' }}
         >
           {INTERVENTIONS.map((intervention, i) => {
             const selected = storage.selectedInterventions.includes(intervention.id)
@@ -183,22 +123,6 @@ function BoltIcon({ size, color }: { size: number; color: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ color }}>
       <path d="M13 10V3L4 14h7v7l9-11h-7z" />
-    </svg>
-  )
-}
-
-function CalendarIcon({ size, color }: { size: number; color: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ color }}>
-      <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-    </svg>
-  )
-}
-
-function ShieldIcon({ size, color }: { size: number; color: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ color }}>
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
     </svg>
   )
 }
