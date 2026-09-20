@@ -27,7 +27,7 @@ export default function SegmentedControl<T extends string>({
       style={{
         padding: '3px',
         gap: '2px',
-        borderRadius: '8px',
+        borderRadius: '10px',
         backgroundColor: theme.surface,
         border: `1px solid ${theme.borderSoft}`,
       }}
@@ -40,7 +40,7 @@ export default function SegmentedControl<T extends string>({
           left: 3,
           width: `calc((100% - 6px) / ${options.length})`,
           transform: `translateX(${index * 100}%)`,
-          backgroundColor: theme.background,
+          backgroundColor: theme.highlight,
           boxShadow: '0 1px 2px rgba(0,0,0,0.06)',
           marginRight: '2px',
         }}

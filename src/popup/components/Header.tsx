@@ -31,7 +31,6 @@ export default function Header({ blocking, timerLabel, timerMode, showTimer }: H
         marginTop: '4px',
         padding: '0 16px 8px',
         backgroundColor: 'transparent',
-        borderBottom: `1px solid ${theme.borderSoft}`,
         gap: '2px',
       }}
     >
@@ -67,7 +66,7 @@ export default function Header({ blocking, timerLabel, timerMode, showTimer }: H
               fontSize: '10.5px',
               fontWeight: 400,
               lineHeight: 1.3,
-              color: theme.textTertiary,
+              color: theme.textSecondary,
               letterSpacing: '0.01em',
             }}
           >

@@ -62,7 +62,7 @@ export default function RowItem({
           padding: '8px 10px',
           backgroundColor: theme.surface,
           border: `1px solid ${theme.borderSoft}`,
-          borderRadius: '8px',
+          borderRadius: '10px',
         }}
       >
         {body}
@@ -77,7 +77,7 @@ export default function RowItem({
         padding: '8px 10px',
         backgroundColor: theme.surface,
         border: `1px solid ${theme.borderSoft}`,
-        borderRadius: '8px',
+        borderRadius: '10px',
       }}
     >
       {body}

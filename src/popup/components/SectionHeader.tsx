@@ -16,7 +16,7 @@ export default function SectionHeader({ title, subtitle }: SectionHeaderProps) {
           lineHeight: 1.3,
           letterSpacing: '0.02em',
           textTransform: 'lowercase',
-          color: theme.textTertiary,
+          color: theme.textSecondary,
         }}
       >
         {title}

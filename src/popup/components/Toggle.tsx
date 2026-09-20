@@ -19,18 +19,22 @@ export default function Toggle({ checked, disabled, onChange }: ToggleProps) {
       style={{
         width: '32px',
         height: '18px',
+        padding: 0,
         backgroundColor: checked ? theme.accent : theme.toggleOff,
         opacity: disabled ? 0.5 : 1,
         cursor: disabled ? 'not-allowed' : 'pointer',
-        border: `1px solid ${checked ? theme.accent : theme.toggleOff}`,
+        border: 'none',
       }}
     >
       <span
-        className="inline-block rounded-full bg-white shadow-sm transition-transform duration-150"
+        className="inline-block rounded-full transition-transform duration-150"
         style={{
           width: '14px',
           height: '14px',
-          transform: checked ? 'translateX(16px)' : 'translateX(2px)',
+          marginLeft: '2px',
+          backgroundColor: '#ffffff',
+          boxShadow: '0 1px 2px rgba(0, 0, 0, 0.25)',
+          transform: checked ? 'translateX(14px)' : 'translateX(0)',
         }}
       />
     </button>

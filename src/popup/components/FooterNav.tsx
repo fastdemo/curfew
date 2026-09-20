@@ -10,16 +10,18 @@ const tabs: TabId[] = ['home', 'blocked', 'strict', 'schedule', 'settings']
 
 export default function FooterNav({ activeTab, onTabChange }: FooterNavProps) {
   const theme = useTheme()
+  const version = chrome.runtime.getManifest?.()?.version ?? ''
   return (
     <nav
-      className="flex shrink-0 items-center justify-between"
+      className="flex shrink-0 flex-col items-center justify-center"
       style={{
-        height: '48px',
         padding: '6px 16px',
         backgroundColor: theme.surface,
         borderTop: `1px solid ${theme.borderSoft}`,
+        gap: '2px',
       }}
     >
+      <div className="flex w-full items-center justify-between">
       {tabs.map(tab => {
         const active = activeTab === tab
         return (
@@ -32,7 +34,7 @@ export default function FooterNav({ activeTab, onTabChange }: FooterNavProps) {
               width: '36px',
               height: '36px',
               backgroundColor: active ? theme.highlight : 'transparent',
-              color: active ? theme.accent : theme.textTertiary,
+              color: active ? theme.textPrimary : theme.textTertiary,
             }}
             aria-label={tab}
           >
@@ -40,6 +42,12 @@ export default function FooterNav({ activeTab, onTabChange }: FooterNavProps) {
           </button>
         )
       })}
+      </div>
+      {version && (
+        <span style={{ fontSize: '11px', fontWeight: 600, lineHeight: 1.2, color: theme.textSecondary }}>
+          v{version} · @fastdemo
+        </span>
+      )}
     </nav>
   )
 }

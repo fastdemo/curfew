@@ -63,14 +63,14 @@ export default function StrictSessionTab({ storage, onEndSession }: StrictSessio
         <SectionHeader title="strict session" subtitle="nothing gets through until the timer ends" />
         <div
           className="flex items-center justify-between"
-          style={{ padding: '8px 10px', backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}`, borderRadius: '8px' }}
+          style={{ padding: '8px 10px', backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}`, borderRadius: '10px' }}
         >
           <div className="flex items-center" style={{ gap: '8px' }}>
             <span
               className="flex items-center justify-center"
-              style={{ width: '28px', height: '28px', borderRadius: '8px', backgroundColor: theme.highlight, color: theme.textPrimary }}
+              style={{ width: '28px', height: '28px', borderRadius: '8px', backgroundColor: theme.highlight, color: theme.textSecondary }}
             >
-              <LockIcon size={13} color={theme.textPrimary} />
+              <LockIcon size={13} color={theme.textSecondary} />
             </span>
             <div className="flex flex-col text-left">
               <span style={{ fontSize: '13px', fontWeight: 600, lineHeight: 1.3, color: theme.textPrimary }}>blocked list</span>
@@ -86,7 +86,7 @@ export default function StrictSessionTab({ storage, onEndSession }: StrictSessio
       {isActive ? (
         <div
           className="flex flex-col items-center"
-          style={{ gap: '12px', padding: '16px', backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}`, borderRadius: '8px' }}
+          style={{ gap: '12px', padding: '16px', backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}`, borderRadius: '10px' }}
         >
           <div
             style={{

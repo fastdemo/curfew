@@ -22,7 +22,9 @@ export const TOKENS = {
 
   // — Card —
   card: {
-    radius: '8px',
+    heroRadius: '12px',
+    heroPad: '14px',
+    radius: '10px',
     pad: '8px 10px',
     gapIconText: '8px',
     gapTitleDesc: '1px',
@@ -67,6 +69,7 @@ export const TOKENS = {
     w: '32px',
     h: '18px',
     knob: '14px',
+    thumbShadow: '0 1px 2px rgba(0, 0, 0, 0.25)',
   },
 
   // — Buttons —

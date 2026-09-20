@@ -31,6 +31,9 @@ export default function HomeTab({ storage, onToggleMaster }: HomeTabProps) {
 
   const blocking = storage.masterToggle || isStrictActive || scheduleActive
 
+  const websiteCount = storage.blockedItems.filter(i => i.type === 'website').length
+  const keywordCount = storage.blockedItems.filter(i => i.type === 'keyword').length
+
   const toggleIntervention = async (id: InterventionId) => {
     const current = storage.selectedInterventions
     const next = current.includes(id)
@@ -41,8 +44,51 @@ export default function HomeTab({ storage, onToggleMaster }: HomeTabProps) {
 
   return (
     <div className="flex flex-col" style={{ gap: '8px' }}>
+      {/* status hero — dot + state, baseline readout, no progress bar */}
+      <section
+        aria-label="blocking status"
+        style={{
+          backgroundColor: theme.surface,
+          border: `1px solid ${theme.borderSoft}`,
+          borderRadius: '12px',
+          padding: '14px',
+        }}
+      >
+        <div className="flex items-center" style={{ gap: '7px' }}>
+          <span
+            className="inline-block rounded-full"
+            style={{ width: '7px', height: '7px', backgroundColor: blocking ? theme.success : theme.textTertiary }}
+          />
+          <span style={{ fontSize: '11px', fontWeight: 600, lineHeight: 1.3, color: theme.textSecondary }}>
+            {blocking ? 'blocking' : 'idle'}
+          </span>
+          <span className="ml-auto">
+            <StatusPill label={blocking ? 'active' : 'idle'} tone={blocking ? 'success' : 'muted'} dot={false} />
+          </span>
+        </div>
+        <div className="flex items-baseline justify-between" style={{ margin: '13px 0 0' }}>
+          <strong
+            style={{
+              fontSize: '20px',
+              fontWeight: 700,
+              lineHeight: 1.2,
+              letterSpacing: '-0.04em',
+              color: theme.textPrimary,
+              fontVariantNumeric: 'tabular-nums',
+            }}
+          >
+            {blocking ? 'blocking active' : 'idle'}
+          </strong>
+          <span style={{ fontSize: '11px', lineHeight: 1.3, color: theme.textSecondary }}>
+            {activeSchedule
+              ? activeSchedule.name
+              : `${websiteCount} site${websiteCount !== 1 ? 's' : ''} · ${keywordCount} keyword${keywordCount !== 1 ? 's' : ''}`}
+          </span>
+        </div>
+      </section>
+
       <RowItem
-        icon={<BoltIcon size={13} color={theme.textPrimary} />}
+        icon={<BoltIcon size={13} color={theme.textSecondary} />}
         title="quick focus"
         subtitle="pause or enable site restrictions"
         right={
@@ -58,7 +104,7 @@ export default function HomeTab({ storage, onToggleMaster }: HomeTabProps) {
         <SectionHeader title="status" />
         <div
           className="overflow-hidden"
-          style={{ backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}`, borderRadius: '8px' }}
+          style={{ backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}`, borderRadius: '10px' }}
         >
           <RowItem
             variant="flat"
@@ -69,7 +115,7 @@ export default function HomeTab({ storage, onToggleMaster }: HomeTabProps) {
                 ? `${formatTime(activeSchedule.startTime)} – ${formatTime(activeSchedule.endTime)}`
                 : 'nothing scheduled right now'
             }
-            right={<StatusPill label={scheduleActive ? 'active' : 'disabled'} tone={scheduleActive ? 'success' : 'muted'} />}
+            right={<StatusPill label={scheduleActive ? 'active' : 'disabled'} tone={scheduleActive ? 'success' : 'muted'} dot={false} />}
           />
           <RowItem
             variant="flat"
@@ -77,7 +123,7 @@ export default function HomeTab({ storage, onToggleMaster }: HomeTabProps) {
             icon={<ShieldIcon size={13} color={theme.textSecondary} />}
             title={blocking ? 'blocking active' : 'not blocking'}
             subtitle={blocking ? 'distracting sites are locked' : 'all sites are accessible'}
-            right={<StatusPill label={blocking ? 'active' : 'idle'} tone={blocking ? 'success' : 'muted'} />}
+            right={<StatusPill label={blocking ? 'active' : 'idle'} tone={blocking ? 'success' : 'muted'} dot={false} />}
           />
         </div>
       </section>
@@ -86,7 +132,7 @@ export default function HomeTab({ storage, onToggleMaster }: HomeTabProps) {
         <SectionHeader title="interventions" subtitle="tap to choose how blocked sites are handled" />
         <div
           className="overflow-hidden"
-          style={{ backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}`, borderRadius: '8px' }}
+          style={{ backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}`, borderRadius: '10px' }}
         >
           {INTERVENTIONS.map((intervention, i) => {
             const selected = storage.selectedInterventions.includes(intervention.id)
@@ -119,7 +165,7 @@ function InterventionIcon({ id }: { id: InterventionId }) {
     strokeWidth: 2,
     strokeLinecap: 'round' as const,
     strokeLinejoin: 'round' as const,
-    style: { color: theme.textPrimary },
+    style: { color: theme.textSecondary },
   }
   switch (id) {
     case 'instant':

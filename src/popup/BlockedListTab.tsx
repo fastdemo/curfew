@@ -88,17 +88,27 @@ export default function BlockedListTab({ storage }: BlockedListTabProps) {
             { value: 'keyword', label: 'keyword' },
           ]}
         />
-        <div
-          className="flex items-center"
-          style={{
-            gap: '8px',
-            padding: '4px',
-            borderRadius: '8px',
-            backgroundColor: theme.surface,
-            border: `1px solid ${theme.borderSoft}`,
-          }}
-        >
+        <div className="flex flex-col" style={{ gap: '0' }}>
+          <label
+            htmlFor="blocked-input"
+            className="flex items-center"
+            style={{ gap: '5px', marginBottom: '5px', fontSize: '11px', fontWeight: 600, lineHeight: 1.3, color: theme.textPrimary }}
+          >
+            {inputType === 'website' ? <GlobeIcon size={10} /> : <TagIcon size={10} />}
+            {inputType === 'website' ? 'website' : 'keyword'}
+          </label>
+          <div
+            className="flex items-center"
+            style={{
+              gap: '8px',
+              padding: '4px',
+              borderRadius: '10px',
+              backgroundColor: theme.surface,
+              border: `1px solid ${theme.borderSoft}`,
+            }}
+          >
           <input
+            id="blocked-input"
             type="text"
             value={inputValue}
             onChange={e => setInputValue(e.target.value)}
@@ -131,6 +141,7 @@ export default function BlockedListTab({ storage }: BlockedListTabProps) {
               <path d="M12 5v14M5 12h14" />
             </svg>
           </button>
+          </div>
         </div>
       </section>
 
@@ -173,7 +184,7 @@ export default function BlockedListTab({ storage }: BlockedListTabProps) {
             style={{
               gap: '6px',
               padding: '16px',
-              borderRadius: '8px',
+              borderRadius: '10px',
               backgroundColor: theme.surface,
               border: `1px solid ${theme.borderSoft}`,
             }}
@@ -187,7 +198,7 @@ export default function BlockedListTab({ storage }: BlockedListTabProps) {
         ) : (
           <div
             className="overflow-hidden"
-            style={{ backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}`, borderRadius: '8px' }}
+            style={{ backgroundColor: theme.surface, border: `1px solid ${theme.borderSoft}`, borderRadius: '10px' }}
           >
             {storage.blockedItems.map((item, i) => (
               <RowItem
@@ -231,5 +242,23 @@ export default function BlockedListTab({ storage }: BlockedListTabProps) {
         )}
       </section>
     </div>
+  )
+}
+
+function GlobeIcon({ size }: { size: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+    </svg>
+  )
+}
+
+function TagIcon({ size }: { size: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2H2v10l9.29 9.29a1 1 0 001.42 0l8.58-8.58a1 1 0 000-1.42L12 2z" />
+      <circle cx="7" cy="7" r="1.5" />
+    </svg>
   )
 }

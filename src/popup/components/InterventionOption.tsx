@@ -28,12 +28,9 @@ export default function InterventionOption({ icon, title, time, selected, onClic
         <span
           className="flex shrink-0 items-center justify-center"
           style={{
-            width: '28px',
-            height: '28px',
-            borderRadius: '8px',
-            backgroundColor: selected ? theme.highlight : theme.surface,
-            color: theme.textPrimary,
-            border: `1px solid ${theme.borderSoft}`,
+            width: '20px',
+            height: '20px',
+            color: theme.textSecondary,
           }}
         >
           {icon}
@@ -57,9 +54,9 @@ export default function InterventionOption({ icon, title, time, selected, onClic
             fontSize: '11px',
             fontWeight: 500,
             fontVariantNumeric: 'tabular-nums',
-            backgroundColor: selected ? theme.accent : theme.surface,
+            backgroundColor: selected ? theme.accent : theme.highlight,
             color: selected ? theme.onAccent : theme.textSecondary,
-            border: `1px solid ${selected ? theme.accent : theme.borderMuted}`,
+            border: `1px solid ${selected ? theme.accent : theme.borderSoft}`,
           }}
         >
           {time}

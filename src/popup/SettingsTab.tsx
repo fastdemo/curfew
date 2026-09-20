@@ -31,20 +31,20 @@ export default function SettingsTab({ storage, onRequirePinToggle }: SettingsTab
   const settings = [
     {
       key: 'requirePin' as const,
-      icon: <PinIcon size={13} color={theme.textPrimary} />,
+      icon: <PinIcon size={13} color={theme.textSecondary} />,
       title: 'pin protection',
       subtitle: 'require a pin before turning off focus mode',
     },
     {
       key: 'confirmTurnOff' as const,
-      icon: <CheckIcon size={13} color={theme.textPrimary} />,
+      icon: <CheckIcon size={13} color={theme.textSecondary} />,
       title: 'confirmation prompt',
       subtitle: 'confirm before turning off focus mode',
     },
   ]
 
   return (
-    <div className="flex flex-col" style={{ gap: '16px' }}>
+    <div className="flex flex-col" style={{ gap: '8px' }}>
       <section className="flex flex-col" style={{ gap: '8px' }}>
         <SectionHeader title="general" />
         <div
@@ -52,22 +52,16 @@ export default function SettingsTab({ storage, onRequirePinToggle }: SettingsTab
           style={{
             backgroundColor: theme.surface,
             border: `1px solid ${theme.borderSoft}`,
-            borderRadius: '8px',
-            padding: '8px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px',
+            borderRadius: '10px',
           }}
         >
-          {settings.map(s => (
+          {settings.map((s, i) => (
             <div
               key={s.key}
               className="flex items-center justify-between"
               style={{
-                padding: '8px',
-                backgroundColor: theme.background,
-                borderRadius: '8px',
-                border: `1px solid ${theme.borderSoft}`,
+                padding: '8px 10px',
+                borderTop: i > 0 ? `1px solid ${theme.borderSoft}` : 'none',
               }}
             >
               <div className="flex items-center min-w-0" style={{ gap: '8px' }}>
@@ -76,9 +70,7 @@ export default function SettingsTab({ storage, onRequirePinToggle }: SettingsTab
                   style={{
                     width: '20px',
                     height: '20px',
-                    borderRadius: '6px',
-                    backgroundColor: theme.highlight,
-                    color: theme.textPrimary,
+                    color: theme.textSecondary,
                   }}
                 >
                   {s.icon}
