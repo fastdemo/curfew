@@ -1,10 +1,7 @@
-import React from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { useState, useEffect } from 'react'
 import { getStorage } from '../lib/storage'
 import { getRandomIntervention, getDomainFromUrl, isScheduleActive, shouldBlockUrl } from '../lib/interventions'
-import { cssVarsFor } from '../lib/theme'
-import BlockScreen from '../block/BlockScreen'
 
 let shadowHost: HTMLDivElement | null = null
 let reactRoot: Root | null = null
@@ -45,13 +42,11 @@ if (window.top === window && window.location.href.startsWith('http')) {
 }
 
 function overlayThemeCss(theme: 'light' | 'dark' | 'system') {
-  const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-  const resolved: 'light' | 'dark' = theme === 'dark' || (theme === 'system' && systemDark) ? 'dark' : 'light'
-  return `
-    :host {
-      ${cssVarsFor(resolved)}
-    }
-  `
+  // UI STRIPPED (full rebuild, step 1). Theme system deleted; the rebuild
+  // provides its own shadow-DOM styling. Keep the hook signature so the
+  // settings-change listener below stays intact.
+  void theme
+  return ''
 }
 
 chrome.runtime.onMessage.addListener((message) => {
@@ -205,38 +200,42 @@ export function OverlayApp({ url }: { url: string }) {
     window.location.reload()
   }
 
-  return (
-    <BlockScreen
-      domain={domain}
-      interventionId={interventionId}
-      timeSpent={timeSpent}
-      usageStats={usageStats}
-      onCloseTab={handleCloseTab}
-      onProceed={handleProceed}
-      canProceed={canProceed}
-    />
-  )
+  // UI STRIPPED (full rebuild, step 1). No markup — the overlay shell above
+  // (shadow host, hide-inject, title/favicon guard, storage listeners) is
+  // preserved intact. UI contract for the rebuild: render the same block
+  // flow as the block page (domain, interventionId, timeSpent, usageStats,
+  // canProceed; actions handleCloseTab / handleProceed) inside the shadow
+  // mount point created by showOverlay.
+  void interventionId
+  void timeSpent
+  void usageStats
+  void canProceed
+  void handleCloseTab
+  void handleProceed
+
+  return null
 }
 
 function showOverlay(url: string) {
   currentOverlayUrl = url
   try { window.stop() } catch { void 0 }
   injectHide()
+  // UI STRIPPED (full rebuild, step 1). The fixed host positioning stays
+  // (overlay must cover the page); the hardcoded background is deleted.
   const host = document.createElement('div')
-  host.style.cssText = 'position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 2147483647; visibility: visible !important; background: #FBF9F5;'
+  host.style.cssText = 'position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 2147483647;'
   shadowHost = host
 
   const shadow = host.attachShadow({ mode: 'closed' })
 
+  // UI STRIPPED (full rebuild, step 1). Loading fallback text deleted; an
+  // empty mount shell stays so the page is still covered while React mounts.
   const fallback = document.createElement('div')
-  fallback.textContent = 'Curfew — time to focus'
-  fallback.style.cssText = 'position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;font-family:sans-serif;font-size:22px;font-weight:800;color:#2D2824;background:#FBF9F5;z-index:1;padding:20px;text-align:center;'
-  const fallbackSub = document.createElement('div')
-  fallbackSub.textContent = 'If you see this, overlay shadow is working'
-  fallbackSub.style.cssText = 'font-size:14px;font-weight:400;color:#7D7570;'
-  fallback.appendChild(fallbackSub)
+  fallback.style.cssText = 'position:absolute;inset:0;z-index:1;'
   shadow.appendChild(fallback)
 
+  // UI STRIPPED (full rebuild, step 1). Font loading stays (logic); only the
+  // hardcoded font-family styling is deleted with the new visual system.
   const fontFaceStyle = document.createElement('style')
   try {
     const base = chrome.runtime.getURL('fonts/')
@@ -264,11 +263,12 @@ function showOverlay(url: string) {
   }
   shadow.appendChild(fontLink)
 
+  // UI STRIPPED (full rebuild, step 1). The reset caused host-inherited
+  // styling for the mount shell; the rebuild owns shadow-DOM styling.
   const resetStyle = document.createElement('style')
   resetStyle.textContent = `
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    :host { all: initial; display: block; font-family: 'DM Sans', sans-serif; }
-    :host * { font-family: 'DM Sans', sans-serif; }
+    :host { all: initial; display: block; }
   `
   shadow.appendChild(resetStyle)
 
@@ -356,7 +356,9 @@ function showOverlay(url: string) {
 
   reactRoot = createRoot(mountPoint)
   try {
-    reactRoot.render(<OverlayApp url={url} />)
+    // UI STRIPPED (full rebuild, step 1). The mount point + shell stays;
+    // the rebuild renders the new block flow here via <OverlayApp url={url} />.
+    reactRoot.render(null)
   } catch (e) {
     console.error('[Curfew] overlay render failed', e)
   }

@@ -1,13 +1,12 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import BlockScreen from './BlockScreen'
-import '../index.css'
 import { getStorage } from '../lib/storage'
 import { getRandomIntervention, getDomainFromUrl, isScheduleActive } from '../lib/interventions'
 import { useState, useEffect } from 'react'
-import { ThemeProvider } from '../lib/ThemeProvider'
 
 function applyTheme(theme: string) {
+  // UI STRIPPED (full rebuild, step 1). Theme system deleted — keep the
+  // resolved mode on <html> only so a future theme can hook in.
   const root = document.documentElement
   if (theme === 'dark') {
     root.classList.add('dark')
@@ -18,6 +17,17 @@ function applyTheme(theme: string) {
   }
 }
 
+// UI STRIPPED (full rebuild, step 1). No markup below — logic preserved intact.
+// UI contract for the rebuild (block page):
+// - reads ?url= (encoded or raw), derives `domain`.
+// - loads usageStats, picks a random intervention from selectedInterventions,
+//   sets `canProceed = selectedInterventions.length > 0`.
+// - polls today's timeSpent for `domain` every 1s; sets tab title
+//   "<domain> / curfew-ed!" + curfew favicon.
+// - auto-returns to originalUrl when blocking ends (master off / strict
+//   expired / schedule inactive / bypass granted).
+// - actions: `handleCloseTab` (remove tab + close), `handleProceed`
+//   (60s bypass for domain, then navigate to originalUrl).
 export function BlockPage() {
   const [domain, setDomain] = useState('')
   const [interventionId, setInterventionId] = useState('')
@@ -180,26 +190,24 @@ export function BlockPage() {
     window.location.href = originalUrl
   }
 
-  return (
-    <BlockScreen
-      domain={domain}
-      interventionId={interventionId}
-      timeSpent={timeSpent}
-      usageStats={usageStats}
-      onCloseTab={handleCloseTab}
-      onProceed={handleProceed}
-      canProceed={canProceed}
-    />
-  )
+  // Values below are consumed by UI that does not exist yet (see contract at
+  // top). Reference them so the logic stays compiled and reviewable.
+  void domain
+  void interventionId
+  void timeSpent
+  void usageStats
+  void canProceed
+  void handleCloseTab
+  void handleProceed
+
+  return null
 }
 
 const rootEl = document.getElementById('root')
 if (rootEl) {
   ReactDOM.createRoot(rootEl).render(
     <React.StrictMode>
-      <ThemeProvider>
-        <BlockPage />
-      </ThemeProvider>
+      <BlockPage />
     </React.StrictMode>
   )
 }

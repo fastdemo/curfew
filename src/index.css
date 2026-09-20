@@ -1,120 +1,69 @@
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
+/* Curfew visual system (rebuild step 5, direction A).
+   Single source of truth for all popup UI. Theme is a variable swap only:
+   layout / radius / type never change between modes.
+   Palette: warm paper + espresso text + taupe accent (curfew's own colors).
+   Frame: ONE fixed size for all 5 tabs (see :root vars). Shell is exactly
+   width x height; header/nav pinned; main scrolls internally.
+   NOTE: tailwind v4 tree-shakes @theme vars that no stylesheet references as
+   utilities, so the frame vars ALSO live on :root below (belt + suspenders).
+   Never read frame dims from var() — Shell uses FRAME constants instead. */
 
 @import "tailwindcss";
 
 @theme {
-  /* — Minimal warm palette — refined for 290px compact */
-  --color-bg-app: #FDFCF9;
-  --color-bg-surface: #FFFFFF;
-  --color-bg-card: #FFFFFF;
-  --color-surface: #FDFCF9;
-  --color-surface-secondary: #FFFFFF;
-  --color-surface-tertiary: color-mix(in srgb, var(--color-surface-secondary) 82%, var(--color-border-muted));
-  --color-text-primary: #2E2A26;
-  --color-text-secondary: #7A736E;
-  --color-text-muted: #7A736E;
-  --color-text-tertiary: #A8A09A;
-  --color-accent: #8C7F75;
-  --color-on-accent: #FDFCF9;
-  --color-success: #5C7D57;
-  --color-success-soft: #E8EDE6;
-  --color-border: #E8E2D9;
-  --color-border-muted: #E8E2D9;
-  --color-border-accent: #8C7F75;
-  --color-highlight: #F2EDE6;
-  --color-toggle-off: #D6CFBF;
-  --color-menu-item-bg: #F6F1EB;
-  --color-menu-item-text: #2E2A26;
-  --color-circle-low: #F6F1EB;
-  --color-circle-med: #8C7F75;
-  --color-circle-high: #2E2A26;
-  --color-curfew-100: #F6F1EB;
-  --color-curfew-400: #7A736E;
-  --color-curfew-500: #8C7F75;
-  --color-curfew-600: #8C7F75;
-  --color-curfew-700: #8C7F75;
-  --color-curfew-900: #2E2A26;
-  --color-overlay: rgba(46, 42, 38, 0.48);
+  --color-bg-app: #fdfcf9;
+  --color-bg-surface: #ffffff;
+  --color-text-primary: #2e2a26;
+  --color-text-secondary: #7a736e;
+  --color-text-tertiary: #a8a09a;
+  --color-accent: #8c7f75;
+  --color-on-accent: #fdfcf9;
+  --color-success: #5c7d57;
+  --color-success-soft: #e8ede6;
+  --color-border: #e8e2d9;
+  --color-highlight: #f2ede6;
+  --color-toggle-off: #d6cfbf;
+}
 
-  /* settings tokens — compact minimal */
-  --settings-space-1: 4px;
-  --settings-space-2: 8px;
-  --settings-space-3: 12px;
-  --settings-space-4: 16px;
-  --settings-space-5: 24px;
-  --settings-card-padding: 8px;
-  --settings-input-radius: 8px;
-  --settings-icon-size: 20px;
-  --settings-toggle-width: 32px;
-  --settings-toggle-height: 18px;
-  --settings-toggle-knob-size: 14px;
-  --settings-content-gap: 8px;
-  --settings-section-gap: 16px;
-
-  /* popup compact — locked frame */
+:root {
   --popup-width: 290px;
-  --popup-min-height: 448px;
+  --popup-height: 400px;
   --popup-pad-x: 16px;
-  --popup-pad-y: 12px;
-  --popup-gap: 8px;
-  --popup-card-radius: 10px;
-  --popup-card-pad: 8px 10px;
 }
 
 .dark {
-  --color-bg-app: #0F0E0D;
-  --color-bg-surface: #1C1A19;
-  --color-bg-card: #1E1C1B;
-  --color-surface: #0F0E0D;
-  --color-surface-secondary: #1C1A19;
-  --color-surface-tertiary: color-mix(in srgb, var(--color-surface-secondary) 82%, var(--color-border-muted));
-  --color-text-primary: #F2EDE8;
-  --color-text-secondary: #A69E99;
-  --color-text-muted: #A69E99;
-  --color-text-tertiary: #6E6763;
-  --color-accent: #9C8F84;
-  --color-on-accent: #FDFCF9;
-  --color-success: #8FA98B;
-  --color-success-soft: #1E241C;
-  --color-border: #2A2725;
-  --color-border-muted: #2A2725;
-  --color-border-accent: #9C8F84;
+  --color-bg-app: #0f0e0d;
+  --color-bg-surface: #1c1a19;
+  --color-text-primary: #f2ede8;
+  --color-text-secondary: #a69e99;
+  --color-text-tertiary: #6e6763;
+  --color-accent: #9c8f84;
+  --color-on-accent: #fdfcf9;
+  --color-success: #8fa98b;
+  --color-success-soft: #1e241c;
+  --color-border: #2a2725;
   --color-highlight: #252220;
-  --color-toggle-off: #3E3B38;
-  --color-menu-item-bg: #1C1A19;
-  --color-menu-item-text: #F2EDE8;
-  --color-circle-low: #1C1A19;
-  --color-circle-med: #9C8F84;
-  --color-circle-high: #F2EDE8;
-  --color-curfew-100: #1C1A19;
-  --color-curfew-400: #A69E99;
-  --color-curfew-500: #9C8F84;
-  --color-curfew-600: #9C8F84;
-  --color-curfew-700: #9C8F84;
-  --color-curfew-900: #F2EDE8;
-  --color-overlay: rgba(0, 0, 0, 0.68);
+  --color-toggle-off: #3e3b38;
 }
 
 body {
-  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, Helvetica, Arial, system-ui, sans-serif;
-  background: var(--color-surface);
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--color-bg-app);
   color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-feature-settings: "ss01" 1;
 }
 
-.display {
+.font-display {
   font-family: 'Sora', sans-serif;
   letter-spacing: -0.02em;
 }
 
-/* Hide scrollbar but keep scroll */
 * {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
-::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; background: transparent !important; }
+::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
 
 button:focus-visible,
 input:focus-visible,
@@ -122,6 +71,3 @@ input:focus-visible,
   outline: 2px solid var(--color-accent);
   outline-offset: 1px;
 }
-
-@keyframes curfew-pulse { 0%,100%{opacity:1} 50%{opacity:.45} }
-@keyframes curfew-in { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
