@@ -24,6 +24,8 @@ export interface Settings {
   pinHash: string
   confirmTurnOff: boolean
   theme: 'light' | 'dark' | 'system'
+  /** Color palette id (default 'curfew'). Absent in old installs = curfew. */
+  palette?: ThemeId
 }
 
 export interface UsageStats {
@@ -32,6 +34,18 @@ export interface UsageStats {
     timeSpent: number
   }[]
 }
+
+export type ThemeId =
+  | 'curfew'
+  | 'catppuccin-mocha'
+  | 'dracula'
+  | 'nord'
+  | 'gruvbox-dark'
+  | 'tokyo-night'
+  | 'rose-pine'
+  | 'solarized-light'
+  | 'monokai'
+  | 'everforest'
 
 export type InterventionId = 'instant' | 'hold' | 'slide' | 'breathing'
 

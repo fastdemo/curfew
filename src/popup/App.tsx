@@ -5,6 +5,7 @@ import { getDomainFromUrl, isScheduleActive } from '../lib/interventions'
 import { getSettings } from '../lib/storage'
 import { hashPin } from '../lib/pin'
 import { ThemeProvider } from '../ui/ThemeProvider'
+import { applyTheme, type ModeSetting } from '../ui/theme'
 import { Shell } from '../ui/Shell'
 import { HomeScreen } from '../screens/HomeScreen'
 import { BlockedScreen } from '../screens/BlockedScreen'
@@ -126,29 +127,37 @@ export default function App() {
   const timerMode = isStrictLive ? 'strict' : 'bypass'
   const timerLabel = isStrictLive ? formatCountdown(strictRemaining) : formatCountdown(graceRemaining)
 
+  // Paint the stored palette + mode on launch, and re-paint whenever the
+  // stored settings change (theme picker, mode switch) or the OS flips in
+  // system mode. Single place that owns <html> paint for the popup.
+  // NOTE: useStorage.update() writes storage but never fires onChanged
+  // listeners in the same context, so the effect below re-runs off the
+  // RENDERED settings (dep pair) and repaints synchronously — no listener
+  // round-trip needed. The listeners only cover external writers (other
+  // popup instances, background, OS flips).
+  const paintPalette = storage.settings.palette ?? 'curfew'
+  const paintMode = storage.settings.theme
   useEffect(() => {
-    const theme = storage.settings.theme
-    const root = document.documentElement
-    // System mode: match OS on load AND on change; explicit modes pin .dark.
+    applyTheme(paintPalette, paintMode)
+
     const mq = window.matchMedia('(prefers-color-scheme: dark)')
-    const applySystem = () => root.classList.toggle('dark', mq.matches)
-    if (theme === 'dark') {
-      root.classList.add('dark')
-    } else if (theme === 'light') {
-      root.classList.remove('dark')
-    } else {
-      applySystem()
+    const onOs = () => {
+      if (paintMode === 'system') applyTheme(paintPalette, 'system')
     }
-    const handler = () => {
-      // Re-read the current setting so an explicit light/dark choice made
-      // while this listener lives is never overridden by the OS.
-      const current = storage.settings.theme
-      if (current === 'system') applySystem()
-      else root.classList.toggle('dark', current === 'dark')
+    mq.addEventListener('change', onOs)
+
+    const onStorage = (changes: { [key: string]: chrome.storage.StorageChange }) => {
+      if (changes.settings) {
+        const next = changes.settings.newValue as { theme?: ModeSetting; palette?: string } | undefined
+        applyTheme(next?.palette ?? 'curfew', next?.theme ?? 'system')
+      }
     }
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
-  }, [storage.settings.theme])
+    chrome.storage.onChanged.addListener(onStorage)
+    return () => {
+      mq.removeEventListener('change', onOs)
+      chrome.storage.onChanged.removeListener(onStorage)
+    }
+  }, [paintPalette, paintMode])
 
   /* ── PIN overlay callbacks (logic unchanged from pre-rebuild) ── */
 

@@ -87,6 +87,8 @@ export async function getSettings(): Promise<ChromeStorage['settings']> {
   if (!settings) return DEFAULT_STORAGE.settings
   const cleaned = { ...settings }
   if ('overlayMode' in cleaned) delete cleaned.overlayMode
+  // Drop unknown palette ids (e.g. from a newer version) back to default.
+  if (typeof cleaned.palette !== 'string') delete cleaned.palette
   return { ...DEFAULT_STORAGE.settings, ...cleaned } as ChromeStorage['settings']
 }
 

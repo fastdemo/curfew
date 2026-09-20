@@ -1,5 +1,6 @@
-import type { ChromeStorage } from '../types'
-import { useTheme } from '../ui/theme'
+import type { ChromeStorage, ThemeId } from '../types'
+import { useTheme, type ModeSetting } from '../ui/theme'
+import { THEMES, themeDef } from '../ui/themes'
 import { Switch } from '../ui/Switch'
 
 interface Props {
@@ -18,8 +19,11 @@ export function SettingsScreen({ storage, onRequirePinToggle }: Props) {
       settings: { ...storage.settings, confirmTurnOff: !storage.settings.confirmTurnOff },
     })
 
-  const setTheme = (theme: 'light' | 'dark' | 'system') =>
+  const setMode = (theme: ModeSetting) =>
     storage.update({ settings: { ...storage.settings, theme } })
+
+  const setPalette = (palette: ThemeId) =>
+    storage.update({ settings: { ...storage.settings, palette } })
 
   const rows = [
     {
@@ -79,6 +83,9 @@ export function SettingsScreen({ storage, onRequirePinToggle }: Props) {
   ]
 
   const current = storage.settings.theme
+  const paletteId = storage.settings.palette ?? 'curfew'
+  const paletteDef = themeDef(paletteId)
+  const darkOnly = paletteDef.modes === 'dark'
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -120,7 +127,65 @@ export function SettingsScreen({ storage, onRequirePinToggle }: Props) {
 
       <div>
         <p style={{ fontSize: 11, fontWeight: 600, lineHeight: 1.3, color: t.textSecondary, margin: '0 0 6px' }}>
-          appearance
+          color theme
+        </p>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+            padding: 4,
+            borderRadius: 10,
+            backgroundColor: t.bgSurface,
+            border: `1px solid ${t.border}`,
+            maxHeight: 148,
+            overflowY: 'auto',
+          }}
+          role="radiogroup"
+          aria-label="color theme"
+        >
+          {THEMES.map((th) => {
+            const on = paletteId === th.id
+            return (
+              <button
+                key={th.id}
+                role="radio"
+                aria-checked={on}
+                type="button"
+                onClick={() => void setPalette(th.id)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  width: '100%',
+                  padding: '7px 8px',
+                  border: 'none',
+                  borderRadius: 7,
+                  cursor: 'pointer',
+                  backgroundColor: on ? t.highlight : 'transparent',
+                  transition: 'background-color 180ms ease-out',
+                }}
+              >
+                <span style={{ display: 'flex', gap: 3, flexShrink: 0 }} aria-hidden>
+                  <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: th.dark.accent, border: `1px solid ${t.border}` }} />
+                  <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: th.dark.bgApp, border: `1px solid ${t.border}` }} />
+                  <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: th.dark.success, border: `1px solid ${t.border}` }} />
+                </span>
+                <span style={{ flex: 1, textAlign: 'left', fontSize: 12.5, fontWeight: on ? 600 : 500, color: on ? t.textPrimary : t.textSecondary }}>
+                  {th.label}
+                </span>
+                {th.modes === 'dark' && (
+                  <span style={{ fontSize: 10, fontWeight: 600, color: t.textTertiary }}>dark</span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      <div>
+        <p style={{ fontSize: 11, fontWeight: 600, lineHeight: 1.3, color: t.textSecondary, margin: '0 0 6px' }}>
+          appearance{darkOnly ? ' · pinned to dark' : ''}
         </p>
         <div
           role="radiogroup"
@@ -136,13 +201,15 @@ export function SettingsScreen({ storage, onRequirePinToggle }: Props) {
         >
           {themes.map((o) => {
             const on = current === o.value
+            const disabled = darkOnly && o.value !== 'dark'
             return (
               <button
                 key={o.value}
                 role="radio"
                 aria-checked={on}
                 type="button"
-                onClick={() => void setTheme(o.value)}
+                disabled={disabled}
+                onClick={() => void setMode(o.value)}
                 style={{
                   flex: 1,
                   height: 30,
@@ -152,11 +219,12 @@ export function SettingsScreen({ storage, onRequirePinToggle }: Props) {
                   gap: 6,
                   border: 'none',
                   borderRadius: 7,
-                  cursor: 'pointer',
+                  cursor: disabled ? 'not-allowed' : 'pointer',
                   fontSize: 12.5,
                   fontWeight: on ? 600 : 500,
                   backgroundColor: on ? t.highlight : 'transparent',
                   color: on ? t.textPrimary : t.textTertiary,
+                  opacity: disabled ? 0.4 : 1,
                 }}
               >
                 {o.icon}

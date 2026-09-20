@@ -4,6 +4,7 @@ import { getStorage } from '../lib/storage'
 import { getRandomIntervention, getDomainFromUrl, isScheduleActive, shouldBlockUrl } from '../lib/interventions'
 import { ThemeProvider } from '../ui/ThemeProvider'
 import { BlockView } from '../block/BlockView'
+import { applyTheme } from '../ui/theme'
 
 let shadowHost: HTMLDivElement | null = null
 let reactRoot: Root | null = null
@@ -67,9 +68,12 @@ chrome.storage.onChanged.addListener((changes) => {
   if (!shadowHost) return
 
   if (changes.settings) {
-    const theme = (changes.settings.newValue as { theme: 'light' | 'dark' | 'system' } | undefined)?.theme
-    if (theme && themeStyle) {
-      themeStyle.textContent = overlayThemeCss(theme)
+    const s = (changes.settings.newValue as { theme?: 'light' | 'dark' | 'system'; palette?: string } | undefined)
+    if (s && themeStyle) {
+      // Overlay paints through the same CSS vars: re-resolve palette + mode.
+      const host = themeStyle.parentNode as ShadowRoot | null
+      void host
+      applyTheme(s.palette ?? 'curfew', s.theme ?? 'system')
     }
   }
 
@@ -266,18 +270,18 @@ function showOverlay(url: string) {
   }
   shadow.appendChild(fontLink)
 
-  // UI STRIPPED (full rebuild, step 1). The reset caused host-inherited
-  // styling for the mount shell; the rebuild owns shadow-DOM styling.
   const resetStyle = document.createElement('style')
   resetStyle.textContent = `
     * { box-sizing: border-box; margin: 0; padding: 0; }
     :host { all: initial; display: block; }
+    :host * { font-family: 'DM Sans', sans-serif; }
   `
   shadow.appendChild(resetStyle)
 
-  // BlockView reads theme from useBlockTheme, which syncs .dark from the
-  // stored setting — no injected vars needed. Keep the empty style node so
-  // the settings-change listener below keeps working.
+  // BlockView reads theme from ThemeProvider, which repaints CSS vars on
+  // <html> via a MutationObserver — the shadow tree inherits them through
+  // the reset below. Keep the empty style node so the settings listener
+  // above keeps a stable hook.
   themeStyle = document.createElement('style')
   themeStyle.textContent = ''
   shadow.appendChild(themeStyle)

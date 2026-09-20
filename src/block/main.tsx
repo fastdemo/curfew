@@ -4,20 +4,9 @@ import { getStorage } from '../lib/storage'
 import { getRandomIntervention, getDomainFromUrl, isScheduleActive } from '../lib/interventions'
 import { useState, useEffect } from 'react'
 import { ThemeProvider } from '../ui/ThemeProvider'
+import { applyTheme } from '../ui/theme'
 import { BlockView } from './BlockView'
-
-function applyTheme(theme: string) {
-  // UI STRIPPED (full rebuild, step 1). Theme system deleted — keep the
-  // resolved mode on <html> only so a future theme can hook in.
-  const root = document.documentElement
-  if (theme === 'dark') {
-    root.classList.add('dark')
-  } else if (theme === 'light') {
-    root.classList.remove('dark')
-  } else {
-    root.classList.toggle('dark', window.matchMedia('(prefers-color-scheme: dark)').matches)
-  }
-}
+import type { ModeSetting } from '../ui/theme'
 
 // UI STRIPPED (full rebuild, step 1). No markup below — logic preserved intact.
 // UI contract for the rebuild (block page):
@@ -50,7 +39,8 @@ export function BlockPage() {
     }
     return new URLSearchParams(window.location.search).get('url') || ''
   })
-  const [theme, setTheme] = useState('light')
+  const [theme, setTheme] = useState<ModeSetting>('system')
+  const [palette, setPalette] = useState('curfew')
   const [canProceed, setCanProceed] = useState(true)
 
   useEffect(() => {
@@ -69,7 +59,8 @@ export function BlockPage() {
       setInterventionId(picked.id)
 
       setTheme(storage.settings.theme)
-      applyTheme(storage.settings.theme)
+      setPalette(storage.settings.palette ?? 'curfew')
+      applyTheme(storage.settings.palette ?? 'curfew', storage.settings.theme)
     })
 
     chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
@@ -78,14 +69,13 @@ export function BlockPage() {
   }, [originalUrl])
 
   useEffect(() => {
-    if (theme !== 'system') return
     const mq = window.matchMedia('(prefers-color-scheme: dark)')
-    const handler = (e: MediaQueryListEvent) => {
-      document.documentElement.classList.toggle('dark', e.matches)
+    const handler = () => {
+      if (theme === 'system') applyTheme(palette, 'system')
     }
     mq.addEventListener('change', handler)
     return () => mq.removeEventListener('change', handler)
-  }, [theme])
+  }, [theme, palette])
 
   useEffect(() => {
     if (!domain) return
@@ -121,11 +111,10 @@ export function BlockPage() {
       if (!originalUrl) return
 
       if (changes.settings) {
-        const t = (changes.settings.newValue as { theme: string } | undefined)?.theme
-        if (t) {
-          setTheme(t)
-          applyTheme(t)
-        }
+        const s = changes.settings.newValue as { theme?: ModeSetting; palette?: string } | undefined
+        if (s?.theme) setTheme(s.theme)
+        if (s?.palette !== undefined) setPalette(s.palette ?? 'curfew')
+        applyTheme(s?.palette ?? palette, s?.theme ?? theme)
       }
 
       if (changes.masterToggle && changes.masterToggle.newValue === false) {
@@ -170,6 +159,9 @@ export function BlockPage() {
 
     chrome.storage.onChanged.addListener(listener)
     return () => chrome.storage.onChanged.removeListener(listener)
+    // originalUrl only: palette/theme repaints are handled by their own
+    // effects above; settings-driven auto-return reads fresh storage.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [originalUrl])
 
   const handleCloseTab = async () => {

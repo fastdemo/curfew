@@ -36,6 +36,24 @@ export function useStorage() {
 
   const update = useCallback(async (partial: Partial<ChromeStorage>) => {
     await setStorage(partial)
+    // Real chrome.storage only fires onChanged in OTHER contexts — never in
+    // the writer itself. Mirror the write into local state so the UI (and
+    // effects keyed off it, e.g. theme repaint) reacts synchronously.
+    setData(prev => {
+      const next = { ...prev } as ChromeStorage
+      for (const [key, newValue] of Object.entries(partial)) {
+        if (key in next) {
+          if (key === 'settings' && newValue && typeof newValue === 'object') {
+            (next as unknown as Record<string, unknown>)[key] = { ...prev.settings, ...newValue as object }
+          } else if (key === 'strictSession' && newValue && typeof newValue === 'object') {
+            (next as unknown as Record<string, unknown>)[key] = { ...prev.strictSession, ...newValue as object }
+          } else {
+            Object.assign(next, { [key]: newValue })
+          }
+        }
+      }
+      return next
+    })
   }, [])
 
   return { ...data, loading, update }

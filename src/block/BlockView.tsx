@@ -3,7 +3,10 @@ import { useBlockTheme } from './theme'
 import { HoldToComplete } from './HoldToComplete'
 import { SlideToContinue } from './SlideToContinue'
 import { BreathingDot } from './BreathingDot'
-import { UsageBreakdown } from './UsageBreakdown'
+import { RangeTabs } from './RangeTabs'
+import { UsageDonut } from './UsageDonut'
+import { UsageList } from './UsageList'
+import { useUsageRows, type UsageRange } from './useUsage'
 
 export interface BlockViewProps {
   domain: string
@@ -29,11 +32,14 @@ export function BlockView({ domain, interventionId, timeSpent, usageStats, onClo
   const [stage, setStage] = useState<'stats' | 'friction'>('stats')
   const [completed, setCompleted] = useState(false)
   const [detailsOpen, setDetailsOpen] = useState(false)
+  // Range lives at the BlockView level so the always-visible tabs and the
+  // expandable breakdown share one window — chart and list update together.
+  const [range, setRange] = useState<UsageRange>('today')
+  const usageRows = useUsageRows(range)
 
   const done = useCallback(() => setCompleted(true), [])
 
   const today = new Date().toISOString().slice(0, 10)
-  const domainMs = usageStats[domain]?.find((e) => e.date === today)?.timeSpent ?? 0
   const sitesToday = useMemo(() => {
     let n = 0
     for (const dates of Object.values(usageStats)) {
@@ -139,6 +145,8 @@ export function BlockView({ domain, interventionId, timeSpent, usageStats, onClo
             <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, color: c.secondary, textAlign: 'center' }}>
               {fmtClock(timeSpent)} on this site today · {sitesToday} {sitesToday === 1 ? 'site' : 'sites'} visited
             </p>
+            <RangeTabs range={range} onChange={setRange} />
+            <UsageDonut rows={usageRows} highlightDomain={domain} />
             <DetailsToggle open={detailsOpen} onToggle={() => setDetailsOpen((v) => !v)} />
             <div
               style={{
@@ -150,7 +158,7 @@ export function BlockView({ domain, interventionId, timeSpent, usageStats, onClo
               }}
             >
               <div style={{ overflow: 'hidden', minHeight: 0 }}>
-                <UsageBreakdown highlightDomain={domain} />
+                <UsageList rows={usageRows} highlightDomain={domain} />
               </div>
             </div>
             <button type="button" onClick={onCloseTab} style={primary}>
@@ -162,6 +170,8 @@ export function BlockView({ domain, interventionId, timeSpent, usageStats, onClo
             <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, color: c.secondary, textAlign: 'center' }}>
               {fmtClock(timeSpent)} on this site today · {sitesToday} {sitesToday === 1 ? 'site' : 'sites'} visited
             </p>
+            <RangeTabs range={range} onChange={setRange} />
+            <UsageDonut rows={usageRows} highlightDomain={domain} />
             <DetailsToggle open={detailsOpen} onToggle={() => setDetailsOpen((v) => !v)} />
             <div
               style={{
@@ -173,7 +183,7 @@ export function BlockView({ domain, interventionId, timeSpent, usageStats, onClo
               }}
             >
               <div style={{ overflow: 'hidden', minHeight: 0 }}>
-                <UsageBreakdown highlightDomain={domain} />
+                <UsageList rows={usageRows} highlightDomain={domain} />
               </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
