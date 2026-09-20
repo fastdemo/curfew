@@ -2,15 +2,24 @@ import type { Theme } from '../ui/theme'
 
 export type ThemeId =
   | 'curfew'
+  | 'catppuccin-latte'
+  | 'catppuccin-frappe'
+  | 'catppuccin-macchiato'
   | 'catppuccin-mocha'
   | 'dracula'
-  | 'nord'
-  | 'gruvbox-dark'
-  | 'tokyo-night'
-  | 'rose-pine'
-  | 'solarized-light'
-  | 'monokai'
   | 'everforest'
+  | 'everforest-dark'
+  | 'gruvbox-dark'
+  | 'gruvbox-light'
+  | 'kanagawa'
+  | 'monokai'
+  | 'nord'
+  | 'one-dark'
+  | 'rose-pine'
+  | 'solarized-dark'
+  | 'solarized-light'
+  | 'tokyo-night'
+  | 'tokyo-night-light'
 
 export interface Palette {
   bgApp: string
@@ -30,8 +39,13 @@ export interface Palette {
 export interface ThemeDef {
   id: ThemeId
   label: string
-  /** 'both' | 'dark' — dark-only palettes pin the mode switch to dark. */
-  modes: 'both' | 'dark'
+  /**
+   * Which appearances the palette supports:
+   * - 'both': real light + dark variants, follows the auto/light/dark switch
+   * - 'dark': dark-only by nature (mocha, dracula, …) — mode pins to dark
+   * - 'light': light-only by nature (latte, gruvbox light, …) — pins to light
+   */
+  modes: 'both' | 'dark' | 'light'
   light: Palette
   dark: Palette
 }
@@ -68,6 +82,56 @@ const CURFEW_DARK: Palette = {
 
 export const THEMES: ThemeDef[] = [
   { id: 'curfew', label: 'curfew', modes: 'both', light: CURFEW_LIGHT, dark: CURFEW_DARK },
+  // — Catppuccin: all four flavors. Latte is the real light variant;
+  // frappé / macchiato / mocha are dark-only and pin the mode switch.
+  {
+    id: 'catppuccin-latte', label: 'catppuccin latte', modes: 'light',
+    // dark rosy text / vivid mauve accent on milky latte #eff1f5
+    light: {
+      bgApp: '#eff1f5', bgSurface: '#e6e9ef', textPrimary: '#4c4f69',
+      textSecondary: '#5c5f77', textTertiary: '#8c8fa1', accent: '#8839ef',
+      onAccent: '#eff1f5', success: '#40a02b', successSoft: '#ccd0da',
+      border: '#ccd0da', highlight: '#ccd0da', toggleOff: '#bcc0cc',
+    },
+    dark: {
+      bgApp: '#eff1f5', bgSurface: '#e6e9ef', textPrimary: '#4c4f69',
+      textSecondary: '#5c5f77', textTertiary: '#8c8fa1', accent: '#8839ef',
+      onAccent: '#eff1f5', success: '#40a02b', successSoft: '#ccd0da',
+      border: '#ccd0da', highlight: '#ccd0da', toggleOff: '#bcc0cc',
+    },
+  },
+  {
+    id: 'catppuccin-frappe', label: 'catppuccin frappé', modes: 'dark',
+    // cool lavender text / soft mauve accent on mid-dark frappé #303446
+    light: {
+      bgApp: '#303446', bgSurface: '#414559', textPrimary: '#c6d0f5',
+      textSecondary: '#a5adce', textTertiary: '#737994', accent: '#ca9ee6',
+      onAccent: '#303446', success: '#a6d189', successSoft: '#51576d',
+      border: '#51576d', highlight: '#51576d', toggleOff: '#626880',
+    },
+    dark: {
+      bgApp: '#303446', bgSurface: '#414559', textPrimary: '#c6d0f5',
+      textSecondary: '#a5adce', textTertiary: '#737994', accent: '#ca9ee6',
+      onAccent: '#303446', success: '#a6d189', successSoft: '#51576d',
+      border: '#51576d', highlight: '#51576d', toggleOff: '#626880',
+    },
+  },
+  {
+    id: 'catppuccin-macchiato', label: 'catppuccin macchiato', modes: 'dark',
+    // pale periwinkle text / bright mauve accent on #24273a
+    light: {
+      bgApp: '#24273a', bgSurface: '#363a4f', textPrimary: '#cad3f5',
+      textSecondary: '#a5adcb', textTertiary: '#6e738d', accent: '#c6a0f6',
+      onAccent: '#24273a', success: '#a6da95', successSoft: '#494d64',
+      border: '#494d64', highlight: '#494d64', toggleOff: '#5b6078',
+    },
+    dark: {
+      bgApp: '#24273a', bgSurface: '#363a4f', textPrimary: '#cad3f5',
+      textSecondary: '#a5adcb', textTertiary: '#6e738d', accent: '#c6a0f6',
+      onAccent: '#24273a', success: '#a6da95', successSoft: '#494d64',
+      border: '#494d64', highlight: '#494d64', toggleOff: '#5b6078',
+    },
+  },
   {
     id: 'catppuccin-mocha', label: 'catppuccin mocha', modes: 'dark',
     light: {
@@ -114,7 +178,7 @@ export const THEMES: ThemeDef[] = [
     },
   },
   {
-    id: 'gruvbox-dark', label: 'gruvbox', modes: 'dark',
+    id: 'gruvbox-dark', label: 'gruvbox dark', modes: 'dark',
     light: {
       bgApp: '#282828', bgSurface: '#3c3836', textPrimary: '#ebdbb2',
       textSecondary: '#bdae93', textTertiary: '#7c6f64', accent: '#fabd2f',
@@ -129,7 +193,23 @@ export const THEMES: ThemeDef[] = [
     },
   },
   {
-    id: 'tokyo-night', label: 'tokyo night', modes: 'dark',
+    id: 'gruvbox-light', label: 'gruvbox light', modes: 'light',
+    // dark-brown text / burnt-orange accent on warm paper #fbf1c7
+    light: {
+      bgApp: '#fbf1c7', bgSurface: '#f2e5bc', textPrimary: '#3c3836',
+      textSecondary: '#5a524c', textTertiary: '#928374', accent: '#af3a03',
+      onAccent: '#fbf1c7', success: '#4c7a3f', successSoft: '#ebdbb2',
+      border: '#d5c4a1', highlight: '#ebdbb2', toggleOff: '#c9b896',
+    },
+    dark: {
+      bgApp: '#fbf1c7', bgSurface: '#f2e5bc', textPrimary: '#3c3836',
+      textSecondary: '#5a524c', textTertiary: '#928374', accent: '#af3a03',
+      onAccent: '#fbf1c7', success: '#4c7a3f', successSoft: '#ebdbb2',
+      border: '#d5c4a1', highlight: '#ebdbb2', toggleOff: '#c9b896',
+    },
+  },
+  {
+    id: 'tokyo-night', label: 'tokyo night storm', modes: 'dark',
     light: {
       bgApp: '#1a1b26', bgSurface: '#24283b', textPrimary: '#c0caf5',
       textSecondary: '#9aa0b8', textTertiary: '#565f89', accent: '#7aa2f7',
@@ -144,7 +224,23 @@ export const THEMES: ThemeDef[] = [
     },
   },
   {
-    id: 'rose-pine', label: 'rosé pine', modes: 'both',
+    id: 'tokyo-night-light', label: 'tokyo night day', modes: 'light',
+    // deep ink text / blue accent on warm paper #e1e2e7
+    light: {
+      bgApp: '#e1e2e7', bgSurface: '#d0d3dd', textPrimary: '#3760bf',
+      textSecondary: '#6172b0', textTertiary: '#8b93b8', accent: '#2e7de9',
+      onAccent: '#e1e2e7', success: '#587539', successSoft: '#c4c8da',
+      border: '#c4c8da', highlight: '#c4c8da', toggleOff: '#a8aecb',
+    },
+    dark: {
+      bgApp: '#e1e2e7', bgSurface: '#d0d3dd', textPrimary: '#3760bf',
+      textSecondary: '#6172b0', textTertiary: '#8b93b8', accent: '#2e7de9',
+      onAccent: '#e1e2e7', success: '#587539', successSoft: '#c4c8da',
+      border: '#c4c8da', highlight: '#c4c8da', toggleOff: '#a8aecb',
+    },
+  },
+  {
+    id: 'rose-pine', label: 'rosé pine moon', modes: 'both',
     light: {
       bgApp: '#faf4ed', bgSurface: '#fffaf3', textPrimary: '#575279',
       textSecondary: '#6e6a86', textTertiary: '#9893a5', accent: '#907aa9',
@@ -159,12 +255,28 @@ export const THEMES: ThemeDef[] = [
     },
   },
   {
-    id: 'solarized-light', label: 'solarized', modes: 'both',
+    id: 'solarized-light', label: 'solarized light', modes: 'light',
     light: {
       bgApp: '#fdf6e3', bgSurface: '#eee8d5', textPrimary: '#586e75',
       textSecondary: '#657b83', textTertiary: '#93a1a1', accent: '#268bd2',
       onAccent: '#fdf6e3', success: '#4a7c43', successSoft: '#e6dfc8',
       border: '#ddd6c0', highlight: '#e6dfc8', toggleOff: '#ccc4a8',
+    },
+    dark: {
+      bgApp: '#002b36', bgSurface: '#073642', textPrimary: '#eee8d5',
+      textSecondary: '#b3c3c4', textTertiary: '#71909a', accent: '#2aa198',
+      onAccent: '#002b36', success: '#859900', successSoft: '#0b3a43',
+      border: '#0b4b56', highlight: '#0b3a43', toggleOff: '#17525d',
+    },
+  },
+  {
+    id: 'solarized-dark', label: 'solarized dark', modes: 'dark',
+    // warm off-white text / cyan accent on deep teal #002b36
+    light: {
+      bgApp: '#002b36', bgSurface: '#073642', textPrimary: '#eee8d5',
+      textSecondary: '#b3c3c4', textTertiary: '#71909a', accent: '#2aa198',
+      onAccent: '#002b36', success: '#859900', successSoft: '#0b3a43',
+      border: '#0b4b56', highlight: '#0b3a43', toggleOff: '#17525d',
     },
     dark: {
       bgApp: '#002b36', bgSurface: '#073642', textPrimary: '#eee8d5',
@@ -189,12 +301,29 @@ export const THEMES: ThemeDef[] = [
     },
   },
   {
-    id: 'everforest', label: 'everforest', modes: 'both',
+    id: 'everforest', label: 'everforest light', modes: 'light',
+    // green-grey text / moss accent on warm paper #fffbef
     light: {
       bgApp: '#fffbef', bgSurface: '#f8f0dc', textPrimary: '#5c6a72',
       textSecondary: '#6d7b83', textTertiary: '#939f91', accent: '#7f8971',
       onAccent: '#fffbef', success: '#4c7a5b', successSoft: '#ede8d2',
       border: '#e0d8bd', highlight: '#ede8d2', toggleOff: '#d3c6aa',
+    },
+    dark: {
+      bgApp: '#fffbef', bgSurface: '#f8f0dc', textPrimary: '#5c6a72',
+      textSecondary: '#6d7b83', textTertiary: '#939f91', accent: '#7f8971',
+      onAccent: '#fffbef', success: '#4c7a5b', successSoft: '#ede8d2',
+      border: '#e0d8bd', highlight: '#ede8d2', toggleOff: '#d3c6aa',
+    },
+  },
+  {
+    id: 'everforest-dark', label: 'everforest dark', modes: 'dark',
+    // straw text / soft-green accent on deep forest #2d353b
+    light: {
+      bgApp: '#2d353b', bgSurface: '#343f44', textPrimary: '#d3c6aa',
+      textSecondary: '#b8b095', textTertiary: '#7a8478', accent: '#a7c080',
+      onAccent: '#2d353b', success: '#a7c080', successSoft: '#3d484d',
+      border: '#3d484d', highlight: '#3d484d', toggleOff: '#4d5a5f',
     },
     dark: {
       bgApp: '#2d353b', bgSurface: '#343f44', textPrimary: '#d3c6aa',
@@ -203,6 +332,39 @@ export const THEMES: ThemeDef[] = [
       border: '#3d484d', highlight: '#3d484d', toggleOff: '#4d5a5f',
     },
   },
+  {
+    id: 'kanagawa', label: 'kanagawa', modes: 'dark',
+    // warm wave-white text / sakura-pink accent on sumi ink #1f1f28
+    light: {
+      bgApp: '#1f1f28', bgSurface: '#2a2a37', textPrimary: '#dcd7ba',
+      textSecondary: '#b8b09a', textTertiary: '#727169', accent: '#d27e99',
+      onAccent: '#1f1f28', success: '#98bb6c', successSoft: '#363646',
+      border: '#363646', highlight: '#363646', toggleOff: '#54546d',
+    },
+    dark: {
+      bgApp: '#1f1f28', bgSurface: '#2a2a37', textPrimary: '#dcd7ba',
+      textSecondary: '#b8b09a', textTertiary: '#727169', accent: '#d27e99',
+      onAccent: '#1f1f28', success: '#98bb6c', successSoft: '#363646',
+      border: '#363646', highlight: '#363646', toggleOff: '#54546d',
+    },
+  },
+  {
+    id: 'one-dark', label: 'one dark', modes: 'dark',
+    // atom grey-blue text / signature blue accent on #282c34
+    light: {
+      bgApp: '#282c34', bgSurface: '#353b45', textPrimary: '#abb2bf',
+      textSecondary: '#979eab', textTertiary: '#5c6370', accent: '#61afef',
+      onAccent: '#282c34', success: '#98c379', successSoft: '#3e4451',
+      border: '#3e4451', highlight: '#3e4451', toggleOff: '#545862',
+    },
+    dark: {
+      bgApp: '#282c34', bgSurface: '#353b45', textPrimary: '#abb2bf',
+      textSecondary: '#979eab', textTertiary: '#5c6370', accent: '#61afef',
+      onAccent: '#282c34', success: '#98c379', successSoft: '#3e4451',
+      border: '#3e4451', highlight: '#3e4451', toggleOff: '#545862',
+    },
+  },
+
 ]
 
 export function themeDef(id: string): ThemeDef {
@@ -218,6 +380,9 @@ export function resolvePalette(
   const def = themeDef(paletteId)
   if (def.modes === 'dark') {
     return { palette: def.dark, dark: true, forcedDark: true }
+  }
+  if (def.modes === 'light') {
+    return { palette: def.light, dark: false, forcedDark: true }
   }
   const dark = modeSetting === 'dark' || (modeSetting === 'system' && systemDark)
   return { palette: dark ? def.dark : def.light, dark, forcedDark: false }

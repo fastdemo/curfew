@@ -19,7 +19,7 @@ export interface Theme {
   mode: 'light' | 'dark'
   /** Selected color palette (default 'curfew'). */
   paletteId: ThemeId
-  /** Mode switch pinned to dark — the palette is dark-only. */
+  /** Mode switch pinned — the palette is single-sided (dark-only or light-only). */
   forcedDark: boolean
 }
 

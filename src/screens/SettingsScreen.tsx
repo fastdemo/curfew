@@ -1,6 +1,6 @@
 import type { ChromeStorage, ThemeId } from '../types'
 import { useTheme, type ModeSetting } from '../ui/theme'
-import { THEMES, themeDef } from '../ui/themes'
+import { THEMES, themeDef, type ThemeDef } from '../ui/themes'
 import { Switch } from '../ui/Switch'
 
 interface Props {
@@ -22,8 +22,18 @@ export function SettingsScreen({ storage, onRequirePinToggle }: Props) {
   const setMode = (theme: ModeSetting) =>
     storage.update({ settings: { ...storage.settings, theme } })
 
-  const setPalette = (palette: ThemeId) =>
-    storage.update({ settings: { ...storage.settings, palette } })
+  const setPalette = (palette: ThemeId) => {
+    // Single-sided palettes pin the mode switch: carry the mode along so the
+    // stored pair is always consistent (no checked-but-disabled state).
+    const def = themeDef(palette)
+    if (def.modes === 'dark') {
+      void storage.update({ settings: { ...storage.settings, palette, theme: 'dark' } })
+    } else if (def.modes === 'light') {
+      void storage.update({ settings: { ...storage.settings, palette, theme: 'light' } })
+    } else {
+      void storage.update({ settings: { ...storage.settings, palette } })
+    }
+  }
 
   const rows = [
     {
@@ -85,7 +95,15 @@ export function SettingsScreen({ storage, onRequirePinToggle }: Props) {
   const current = storage.settings.theme
   const paletteId = storage.settings.palette ?? 'curfew'
   const paletteDef = themeDef(paletteId)
-  const darkOnly = paletteDef.modes === 'dark'
+  const pinned = paletteDef.modes !== 'both'
+  const pinLabel = paletteDef.modes === 'dark' ? 'dark' : paletteDef.modes === 'light' ? 'light' : ''
+  // Preview follows the palette's own nature: both-mode rows preview the
+  // currently-applied appearance; single-sided rows preview their own side.
+  const previewDark = (th: ThemeDef) =>
+    th.modes === 'dark' || (th.modes === 'both' && t.mode === 'dark')
+  const accentDotFor = (th: ThemeDef) => (previewDark(th) ? th.dark.accent : th.light.accent)
+  const bgDotFor = (th: ThemeDef) => (previewDark(th) ? th.dark.bgApp : th.light.bgApp)
+  const successDotFor = (th: ThemeDef) => (previewDark(th) ? th.dark.success : th.light.success)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -166,16 +184,18 @@ export function SettingsScreen({ storage, onRequirePinToggle }: Props) {
                   transition: 'background-color 180ms ease-out',
                 }}
               >
+                {/* Dots show the palette's own signature: mode-aware accent,
+                    bg, and success — not the currently-applied theme. */}
                 <span style={{ display: 'flex', gap: 3, flexShrink: 0 }} aria-hidden>
-                  <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: th.dark.accent, border: `1px solid ${t.border}` }} />
-                  <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: th.dark.bgApp, border: `1px solid ${t.border}` }} />
-                  <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: th.dark.success, border: `1px solid ${t.border}` }} />
+                  <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: accentDotFor(th), border: `1px solid ${t.border}` }} />
+                  <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: bgDotFor(th), border: `1px solid ${t.border}` }} />
+                  <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: successDotFor(th), border: `1px solid ${t.border}` }} />
                 </span>
                 <span style={{ flex: 1, textAlign: 'left', fontSize: 12.5, fontWeight: on ? 600 : 500, color: on ? t.textPrimary : t.textSecondary }}>
                   {th.label}
                 </span>
-                {th.modes === 'dark' && (
-                  <span style={{ fontSize: 10, fontWeight: 600, color: t.textTertiary }}>dark</span>
+                {th.modes !== 'both' && (
+                  <span style={{ fontSize: 10, fontWeight: 600, color: t.textTertiary }}>{th.modes}</span>
                 )}
               </button>
             )
@@ -185,7 +205,7 @@ export function SettingsScreen({ storage, onRequirePinToggle }: Props) {
 
       <div>
         <p style={{ fontSize: 11, fontWeight: 600, lineHeight: 1.3, color: t.textSecondary, margin: '0 0 6px' }}>
-          appearance{darkOnly ? ' · pinned to dark' : ''}
+          appearance{pinned ? ` · pinned to ${pinLabel}` : ''}
         </p>
         <div
           role="radiogroup"
@@ -201,7 +221,9 @@ export function SettingsScreen({ storage, onRequirePinToggle }: Props) {
         >
           {themes.map((o) => {
             const on = current === o.value
-            const disabled = darkOnly && o.value !== 'dark'
+            // Single-sided palettes pin the mode switch to their side.
+            const disabled = (pinned && paletteDef.modes === 'dark' && o.value !== 'dark')
+              || (pinned && paletteDef.modes === 'light' && o.value !== 'light')
             return (
               <button
                 key={o.value}

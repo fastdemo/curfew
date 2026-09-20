@@ -88,8 +88,11 @@ export function Shell({
               padding: '4px 9px',
               borderRadius: 999,
               whiteSpace: 'nowrap',
-              backgroundColor: t.successSoft,
-              color: t.success,
+              // "active" is informational, not the primary action: tint it
+              // with the accent so curfew's green stays reserved, except on
+              // the curfew palette itself where green is the brand signal.
+              backgroundColor: t.paletteId === 'curfew' ? t.successSoft : t.highlight,
+              color: t.paletteId === 'curfew' ? t.success : t.accent,
             }}
           >
             {status}

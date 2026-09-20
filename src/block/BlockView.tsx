@@ -110,7 +110,7 @@ export function BlockView({ domain, interventionId, timeSpent, usageStats, onClo
           border: `1px solid ${c.border}`,
         }}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, textAlign: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, textAlign: 'center' }}>
           <span
             style={{
               display: 'inline-flex',
@@ -124,30 +124,31 @@ export function BlockView({ domain, interventionId, timeSpent, usageStats, onClo
               border: `1px solid ${c.border}`,
             }}
           >
-            <span
-              style={{
-                width: 6,
-                height: 6,
-                borderRadius: '50%',
-                backgroundColor: c.accent,
-                flexShrink: 0,
-              }}
-            />
+            <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke={c.accent} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+              <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+              <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+            </svg>
             {domain}
           </span>
           <h1 className="font-display" style={{ margin: 0, fontSize: 20, fontWeight: 800, lineHeight: 1.2, color: c.primary }}>
             time to focus
           </h1>
+          {/* Summary line intentionally sits outside the header stack's
+              centered rhythm: left gap (tabs) = right gap (donut). */}
+          <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, color: c.secondary, textAlign: 'center' }}>
+            {fmtClock(timeSpent)} on this site today · {sitesToday} {sitesToday === 1 ? 'site' : 'sites'} visited
+          </p>
+          <div style={{ marginTop: 0 }}>
+            <RangeTabs range={range} onChange={setRange} />
+          </div>
+          <div style={{ marginTop: 0 }}>
+            <UsageDonut rows={usageRows} highlightDomain={domain} />
+          </div>
+          <DetailsToggle open={detailsOpen} onToggle={() => setDetailsOpen((v) => !v)} />
         </div>
 
         {!canProceed ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-            <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, color: c.secondary, textAlign: 'center' }}>
-              {fmtClock(timeSpent)} on this site today · {sitesToday} {sitesToday === 1 ? 'site' : 'sites'} visited
-            </p>
-            <RangeTabs range={range} onChange={setRange} />
-            <UsageDonut rows={usageRows} highlightDomain={domain} />
-            <DetailsToggle open={detailsOpen} onToggle={() => setDetailsOpen((v) => !v)} />
             <div
               style={{
                 width: '100%',
@@ -167,12 +168,6 @@ export function BlockView({ domain, interventionId, timeSpent, usageStats, onClo
           </div>
         ) : stage === 'stats' ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-            <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, color: c.secondary, textAlign: 'center' }}>
-              {fmtClock(timeSpent)} on this site today · {sitesToday} {sitesToday === 1 ? 'site' : 'sites'} visited
-            </p>
-            <RangeTabs range={range} onChange={setRange} />
-            <UsageDonut rows={usageRows} highlightDomain={domain} />
-            <DetailsToggle open={detailsOpen} onToggle={() => setDetailsOpen((v) => !v)} />
             <div
               style={{
                 width: '100%',
