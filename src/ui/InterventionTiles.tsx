@@ -34,7 +34,7 @@ export function InterventionTiles({ selected, onToggle }: TilesProps) {
           margin: '0 0 6px',
         }}
       >
-        when blocked, make me pause with
+        interventions
       </p>
       <div
         style={{

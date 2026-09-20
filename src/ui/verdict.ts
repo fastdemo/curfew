@@ -66,5 +66,5 @@ export function verdictFor(
     return { kind: 'manual', line: 'blocking · list is empty' }
   }
 
-  return { kind: 'idle', line: 'everything is open' }
+  return { kind: 'idle', line: 'not blocking' }
 }

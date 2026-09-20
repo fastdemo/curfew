@@ -131,7 +131,7 @@ export function StrictScreen({ storage, onEndSession }: Props) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       <div>
         <p style={{ fontSize: 11, fontWeight: 600, lineHeight: 1.3, color: t.textSecondary, margin: '0 0 6px' }}>
-          lock everything for
+          strict session
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
           {DURATIONS.map((d) => {
@@ -173,11 +173,11 @@ export function StrictScreen({ storage, onEndSession }: Props) {
           cursor: hasItems ? 'pointer' : 'not-allowed',
         }}
       >
-        start strict session
+        start session
       </button>
       <p style={{ margin: 0, fontSize: 11, lineHeight: 1.4, color: t.textSecondary }}>
         {hasItems
-          ? `locks ${items === 1 ? '1 item' : `${items} items`} · no bypass until the timer ends`
+          ? `locks ${items === 1 ? '1 item' : `${items} items`} · you cannot bypass until the timer ends`
           : 'add something to your blocked list first.'}
       </p>
     </div>

@@ -159,7 +159,7 @@ export function BlockedScreen({ storage }: Props) {
             value={value}
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={handleKey}
-            placeholder={kind === 'website' ? 'x.com' : 'a word in any url'}
+            placeholder={kind === 'website' ? 'example: youtube.com' : 'example: "movies"'}
             aria-label={kind === 'website' ? 'website to block' : 'keyword to block'}
             style={input}
           />
