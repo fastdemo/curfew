@@ -9,6 +9,9 @@ import { Shell } from '../ui/Shell'
 import { HomeScreen } from '../screens/HomeScreen'
 import { BlockedScreen } from '../screens/BlockedScreen'
 import { StrictScreen } from '../screens/StrictScreen'
+import { ScheduleScreen } from '../screens/ScheduleScreen'
+import { SettingsScreen } from '../screens/SettingsScreen'
+import { PinGate } from '../ui/PinGate'
 
 export type TabId = 'home' | 'blocked' | 'strict' | 'schedule' | 'settings'
 
@@ -259,17 +262,45 @@ export default function App() {
           {activeTab === 'strict' && (
             <StrictScreen storage={storage} onEndSession={handleEndSessionRequest} />
           )}
-          {!['home', 'blocked', 'strict'].includes(activeTab) && pinOverlay === null && (
-            <p style={{ fontSize: 12, opacity: 0.6, margin: 0 }}>
-              {activeTab} screen lands in the next pass.
-            </p>
-          )}
-          {pinOverlay !== null && (
-            <p style={{ fontSize: 12, opacity: 0.6, margin: 0 }}>
-              pin overlay lands in the next pass.
-            </p>
+          {activeTab === 'schedule' && <ScheduleScreen storage={storage} />}
+          {activeTab === 'settings' && (
+            <SettingsScreen storage={storage} onRequirePinToggle={handleRequirePinToggle} />
           )}
         </div>
+        {pinOverlay?.type === 'setup' && (
+          <PinGate
+            mode="setup"
+            onSetupComplete={(pin) => void handleSetupComplete(pin)}
+            onCancel={hidePinOverlay}
+          />
+        )}
+        {pinOverlay?.type === 'verify-end-session' && (
+          <PinGate
+            mode="verify"
+            pinHash={storage.settings.pinHash}
+            prompt="enter pin to end the session"
+            onVerified={handleVerifyEndSession}
+            onCancel={hidePinOverlay}
+          />
+        )}
+        {pinOverlay?.type === 'verify-disable-pin' && (
+          <PinGate
+            mode="verify"
+            pinHash={storage.settings.pinHash}
+            prompt="enter pin to remove protection"
+            onVerified={() => void handleVerifyDisablePin()}
+            onCancel={hidePinOverlay}
+          />
+        )}
+        {pinOverlay?.type === 'verify-disable-master' && (
+          <PinGate
+            mode="verify"
+            pinHash={storage.settings.pinHash}
+            prompt="enter pin to switch off"
+            onVerified={() => void disableMaster()}
+            onCancel={hidePinOverlay}
+          />
+        )}
       </Shell>
     </ThemeProvider>
   )
