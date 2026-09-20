@@ -49,6 +49,8 @@ export function UsageBreakdown({ highlightDomain }: { highlightDomain?: string }
 
   const total = rows.reduce((s, e) => s + e.time, 0)
   const mine = highlightDomain ? (rows.find((d) => d.domain === highlightDomain)?.time ?? 0) : 0
+  // Single share metric, computed once and rendered in both places from this
+  // value — the headline number and the per-row bars can never diverge.
   const pct = total > 0 ? Math.round((mine / total) * 100) : 0
 
   const fmt = (ms: number) => {
@@ -86,8 +88,8 @@ export function UsageBreakdown({ highlightDomain }: { highlightDomain?: string }
           </button>
         ))}
       </div>
-      <p style={{ margin: 0, fontSize: 20, fontWeight: 800, color: c.primary, lineHeight: 1 }}>
-        {pct}% <span style={{ fontSize: 10.5, fontWeight: 400, color: c.tertiary }}>of screen time</span>
+      <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: c.primary, lineHeight: 1.4 }}>
+        {pct}% of screen time <span style={{ fontSize: 11, fontWeight: 400, color: c.tertiary }}>· {range === 'today' ? 'today' : range === 'week' ? 'this week' : 'this month'}</span>
       </p>
       <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
         {rows.length === 0 ? (
@@ -102,7 +104,7 @@ export function UsageBreakdown({ highlightDomain }: { highlightDomain?: string }
                   alt=""
                   width={14}
                   height={14}
-                  style={{ width: 14, height: 14, borderRadius: 3, flexShrink: 0 }}
+                  style={{ width: 14, height: 14, borderRadius: 3, flexShrink: 0, filter: 'grayscale(1)', opacity: 0.75 }}
                 />
                 <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12, fontWeight: hot ? 600 : 400, color: hot ? c.primary : c.secondary }}>
                   {e.domain}

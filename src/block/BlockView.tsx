@@ -3,7 +3,6 @@ import { useBlockTheme } from './theme'
 import { HoldToComplete } from './HoldToComplete'
 import { SlideToContinue } from './SlideToContinue'
 import { BreathingDot } from './BreathingDot'
-import { GrowingTree } from './GrowingTree'
 import { UsageBreakdown } from './UsageBreakdown'
 
 export interface BlockViewProps {
@@ -17,10 +16,14 @@ export interface BlockViewProps {
 }
 
 // Block page (also rendered inside the content-script overlay): domain badge,
-// "time to focus", today's stats for this domain, the growing tree with an
-// expandable usage breakdown, then the friction flow — "let me continue"
-// reveals the picked intervention; completing it unlocks "proceed".
-// canProceed=false (no interventions selected) skips friction entirely.
+// "time to focus", one summary line for the blocked domain, an expandable
+// usage breakdown, then the friction flow — "let me continue" reveals the
+// picked intervention (instant/hold/slide/breathing); completing it unlocks
+// "proceed". canProceed=false (no interventions selected) skips friction.
+// Per-screen rules: the domain's time is said once (in the summary line, in
+// context next to the list) — never repeated in a header stat block. The
+// easy path is "close tab" (accent fill); the gated path is "let me continue"
+// (neutral outline) until friction completes.
 export function BlockView({ domain, interventionId, timeSpent, usageStats, onCloseTab, onProceed, canProceed = true }: BlockViewProps) {
   const c = useBlockTheme()
   const [stage, setStage] = useState<'stats' | 'friction'>('stats')
@@ -30,28 +33,19 @@ export function BlockView({ domain, interventionId, timeSpent, usageStats, onClo
   const done = useCallback(() => setCompleted(true), [])
 
   const today = new Date().toISOString().slice(0, 10)
-  const stats = useMemo(() => {
-    let totalMs = 0
-    let sitesToday = 0
+  const domainMs = usageStats[domain]?.find((e) => e.date === today)?.timeSpent ?? 0
+  const sitesToday = useMemo(() => {
+    let n = 0
     for (const dates of Object.values(usageStats)) {
-      let dayMs = 0
-      for (const e of dates) if (e.date === today) dayMs += e.timeSpent
-      if (dayMs > 0) sitesToday += 1
-      totalMs += dayMs
+      if (dates.some((e) => e.date === today && e.timeSpent > 0)) n += 1
     }
-    const domainMs = usageStats[domain]?.find((e) => e.date === today)?.timeSpent ?? 0
-    return { totalMs, sitesToday, pct: totalMs > 0 ? (domainMs / totalMs) * 100 : 0 }
-  }, [usageStats, domain, today])
+    return n
+  }, [usageStats, today])
 
   const fmtClock = (ms: number) => {
     const s = Math.floor(ms / 1000)
     const m = Math.floor(s / 60)
     return m > 0 ? `${m}m ${s % 60}s` : `${s % 60}s`
-  }
-  const fmtTotal = (ms: number) => {
-    const m = Math.floor(ms / 60000)
-    if (m < 60) return `${m}m`
-    return `${Math.floor(m / 60)}h ${m % 60}m`
   }
 
   const primary: React.CSSProperties = {
@@ -91,6 +85,8 @@ export function BlockView({ domain, interventionId, timeSpent, usageStats, onClo
         justifyContent: 'center',
         padding: 16,
         backgroundColor: c.bg,
+        backgroundImage: c.dotPattern,
+        backgroundSize: '22px 22px',
         fontFamily: "'DM Sans', sans-serif",
       }}
     >
@@ -118,101 +114,84 @@ export function BlockView({ domain, interventionId, timeSpent, usageStats, onClo
               borderRadius: 999,
               fontSize: 11,
               fontWeight: 600,
-              color: c.primary,
+              color: c.secondary,
               border: `1px solid ${c.border}`,
             }}
           >
-            <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
-              <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
-              <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
-            </svg>
+            <span
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                backgroundColor: c.accent,
+                flexShrink: 0,
+              }}
+            />
             {domain}
           </span>
           <h1 className="font-display" style={{ margin: 0, fontSize: 20, fontWeight: 800, lineHeight: 1.2, color: c.primary }}>
             time to focus
           </h1>
-          <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.4, color: c.tertiary }}>
-            a moment of stillness can do wonders.
-          </p>
         </div>
 
         {!canProceed ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-            <GrowingTree />
-            <button
-              type="button"
-              onClick={() => setDetailsOpen((v) => !v)}
-              aria-expanded={detailsOpen}
-              aria-label={detailsOpen ? 'hide usage breakdown' : 'show usage breakdown'}
-              style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 6, color: c.tertiary }}
+            <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, color: c.secondary, textAlign: 'center' }}>
+              {fmtClock(timeSpent)} on this site today · {sitesToday} {sitesToday === 1 ? 'site' : 'sites'} visited
+            </p>
+            <DetailsToggle open={detailsOpen} onToggle={() => setDetailsOpen((v) => !v)} />
+            <div
+              style={{
+                width: '100%',
+                display: 'grid',
+                gridTemplateRows: detailsOpen ? '1fr' : '0fr',
+                opacity: detailsOpen ? 1 : 0,
+                transition: 'grid-template-rows 180ms ease-out, opacity 180ms ease-out',
+              }}
             >
-              <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" style={{ transform: detailsOpen ? 'rotate(180deg)' : 'none', transition: 'transform 200ms' }}>
-                <path d="M6 9l6 6 6-6" />
-              </svg>
-            </button>
-            {detailsOpen && <UsageBreakdown highlightDomain={domain} />}
+              <div style={{ overflow: 'hidden', minHeight: 0 }}>
+                <UsageBreakdown highlightDomain={domain} />
+              </div>
+            </div>
             <button type="button" onClick={onCloseTab} style={primary}>
               close tab
             </button>
           </div>
         ) : stage === 'stats' ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, width: '100%' }}>
-              <div style={{ position: 'relative', flexShrink: 0 }}>
-                <svg width={64} height={64} viewBox="0 0 64 64" style={{ transform: 'rotate(-90deg)' }}>
-                  <circle cx={32} cy={32} r={27} fill="none" stroke={c.border} strokeWidth={5} />
-                  <circle
-                    cx={32} cy={32} r={27} fill="none"
-                    stroke={c.accent} strokeWidth={5} strokeLinecap="round"
-                    strokeDasharray={2 * Math.PI * 27}
-                    strokeDashoffset={2 * Math.PI * 27 * (1 - stats.pct / 100)}
-                  />
-                </svg>
-                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: c.primary }}>{Math.round(stats.pct)}%</span>
-                </div>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: c.primary }}>
-                  {fmtClock(timeSpent)} <span style={{ fontSize: 11, fontWeight: 400, color: c.tertiary }}>on {domain}</span>
-                </p>
-                <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: c.primary }}>
-                  {fmtTotal(stats.totalMs)} <span style={{ fontSize: 11, fontWeight: 400, color: c.tertiary }}>total today</span>
-                </p>
-                <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: c.primary }}>
-                  {stats.sitesToday} <span style={{ fontSize: 11, fontWeight: 400, color: c.tertiary }}>sites visited</span>
-                </p>
+            <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, color: c.secondary, textAlign: 'center' }}>
+              {fmtClock(timeSpent)} on this site today · {sitesToday} {sitesToday === 1 ? 'site' : 'sites'} visited
+            </p>
+            <DetailsToggle open={detailsOpen} onToggle={() => setDetailsOpen((v) => !v)} />
+            <div
+              style={{
+                width: '100%',
+                display: 'grid',
+                gridTemplateRows: detailsOpen ? '1fr' : '0fr',
+                opacity: detailsOpen ? 1 : 0,
+                transition: 'grid-template-rows 180ms ease-out, opacity 180ms ease-out',
+              }}
+            >
+              <div style={{ overflow: 'hidden', minHeight: 0 }}>
+                <UsageBreakdown highlightDomain={domain} />
               </div>
             </div>
-            <GrowingTree />
-            <button
-              type="button"
-              onClick={() => setDetailsOpen((v) => !v)}
-              aria-expanded={detailsOpen}
-              aria-label={detailsOpen ? 'hide usage breakdown' : 'show usage breakdown'}
-              style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 6, color: c.tertiary }}
-            >
-              <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" style={{ transform: detailsOpen ? 'rotate(180deg)' : 'none', transition: 'transform 200ms' }}>
-                <path d="M6 9l6 6 6-6" />
-              </svg>
-            </button>
-            {detailsOpen && <UsageBreakdown highlightDomain={domain} />}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
-              <button type="button" onClick={() => setStage('friction')} style={secondary}>
-                let me continue
-              </button>
               <button type="button" onClick={onCloseTab} style={primary}>
                 close tab
+              </button>
+              <button type="button" onClick={() => setStage('friction')} style={secondary}>
+                let me continue
               </button>
             </div>
           </div>
         ) : isInstant ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <button type="button" onClick={() => onProceed(domain)} style={primary}>
-              proceed to {domain}
-            </button>
-            <button type="button" onClick={onCloseTab} style={secondary}>
+            <button type="button" onClick={onCloseTab} style={primary}>
               close tab
+            </button>
+            <button type="button" onClick={() => onProceed(domain)} style={secondary}>
+              proceed to {domain}
             </button>
           </div>
         ) : (
@@ -221,18 +200,39 @@ export function BlockView({ domain, interventionId, timeSpent, usageStats, onClo
             {interventionId === 'slide' && <SlideToContinue onComplete={done} />}
             {interventionId === 'breathing' && <BreathingDot onComplete={done} />}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
-              {completed && (
-                <button type="button" onClick={() => onProceed(domain)} style={primary}>
-                  proceed to {domain}
-                </button>
-              )}
-              <button type="button" onClick={onCloseTab} style={secondary}>
+              <button type="button" onClick={onCloseTab} style={primary}>
                 close tab
               </button>
+              {completed ? (
+                <button type="button" onClick={() => onProceed(domain)} style={secondary}>
+                  proceed to {domain}
+                </button>
+              ) : (
+                <p style={{ margin: 0, fontSize: 11, lineHeight: 1.4, color: c.tertiary, textAlign: 'center' }}>
+                  finish the pause above to continue
+                </p>
+              )}
             </div>
           </div>
         )}
       </div>
     </div>
+  )
+}
+
+function DetailsToggle({ open, onToggle }: { open: boolean; onToggle: () => void }) {
+  const c = useBlockTheme()
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={open}
+      aria-label={open ? 'hide usage breakdown' : 'show usage breakdown'}
+      style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 6, color: c.tertiary }}
+    >
+      <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block', transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 180ms ease-out' }}>
+        <path d="M6 9l6 6 6-6" />
+      </svg>
+    </button>
   )
 }

@@ -7,6 +7,9 @@ export function useBlockTheme() {
   useEffect(() => {
     document.documentElement.classList.toggle('dark', t.mode === 'dark')
   }, [t.mode])
+  // Dotted texture for the page backdrop: barely-visible dots that echo the
+  // popup shell, in both modes. Kept off the card so content stays clean.
+  const dot = t.mode === 'dark' ? 'rgba(255,255,255,0.055)' : 'rgba(46,42,38,0.07)'
   return {
     bg: t.bgApp,
     card: t.bgSurface,
@@ -17,8 +20,6 @@ export function useBlockTheme() {
     tertiary: t.textTertiary,
     accent: t.accent,
     onAccent: t.onAccent,
-    trunk: '#5e4f3d',
-    leaf: '#7c9670',
-    leafLight: '#94aa7f',
+    dotPattern: `radial-gradient(${dot} 1px, transparent 1px)`,
   }
 }
