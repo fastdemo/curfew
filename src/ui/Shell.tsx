@@ -53,6 +53,7 @@ export function Shell({
           onClick={onMascot}
           aria-label="open curfew on github"
           title="open curfew on github"
+          className="curfew-mascot"
           style={{
             display: 'flex',
             alignItems: 'center',

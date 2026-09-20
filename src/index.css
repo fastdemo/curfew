@@ -72,3 +72,23 @@ input:focus-visible,
   outline: 2px solid var(--color-accent);
   outline-offset: 1px;
 }
+
+@keyframes curfew-mascot-wiggle {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  35% { transform: scale(1.1) rotate(-7deg); }
+  70% { transform: scale(1.06) rotate(5deg); }
+}
+
+.curfew-mascot img {
+  transition: transform 180ms ease-out;
+}
+
+.curfew-mascot:hover img {
+  animation: curfew-mascot-wiggle 480ms ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .curfew-mascot:hover img {
+    animation: none;
+  }
+}

@@ -20,7 +20,7 @@ const DURATIONS = [
 // The blocked-scope count is said once (idle helper line), never repeated.
 export function StrictScreen({ storage, onEndSession }: Props) {
   const t = useTheme()
-  const { now, getRemaining, formatTime } = useTimer()
+  const { now, getRemaining, formatCountdown } = useTimer()
   const [selectedMin, setSelectedMin] = useState<number>(20)
 
   const isActive = storage.strictSession.isActive && now < storage.strictSession.endTime
@@ -35,6 +35,11 @@ export function StrictScreen({ storage, onEndSession }: Props) {
     if (!isActive || total === 0) return 0
     return Math.max(0, Math.min(1, (now - storage.strictSession.startTime) / total))
   }, [isActive, total, storage.strictSession.startTime, now])
+
+  // Ring + header timer share one source: fraction of time REMAINING.
+  // elapsed=0 (just started) -> full ring; elapsed=1 (done) -> empty ring.
+  const remainingFrac = 1 - elapsed
+  const ringLabel = formatCountdown(remaining)
 
   const items = storage.blockedItems.length
   const hasItems = items > 0
@@ -89,7 +94,7 @@ export function StrictScreen({ storage, onEndSession }: Props) {
                 strokeWidth={7}
                 strokeLinecap="round"
                 strokeDasharray={C}
-                strokeDashoffset={C * (1 - elapsed)}
+                strokeDashoffset={C * (1 - remainingFrac)}
               />
             </svg>
             <div
@@ -106,7 +111,7 @@ export function StrictScreen({ storage, onEndSession }: Props) {
                 className="font-display"
                 style={{ fontSize: 19, fontWeight: 800, lineHeight: 1, color: t.textPrimary, fontVariantNumeric: 'tabular-nums' }}
               >
-                {formatTime(remaining).split(' ')[0]}
+                {ringLabel}
               </span>
               <span style={{ marginTop: 3, fontSize: 10.5, color: t.textSecondary }}>left</span>
             </div>

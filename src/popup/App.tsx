@@ -70,7 +70,7 @@ const TABS: TabId[] = ['home', 'blocked', 'strict', 'schedule', 'settings']
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>('home')
   const storage = useStorage()
-  const { now, getRemaining, formatTime } = useTimer()
+  const { now, getRemaining, formatCountdown } = useTimer()
   const [activeDomain, setActiveDomain] = useState('')
   const [pinOverlay, setPinOverlay] = useState<PinOverlayKind | null>(null)
   const mainRef = useRef<HTMLDivElement>(null)
@@ -124,7 +124,7 @@ export default function App() {
 
   const showTimer = isStrictLive || (hasGracePeriod && graceRemaining > 0)
   const timerMode = isStrictLive ? 'strict' : 'bypass'
-  const timerLabel = isStrictLive ? formatTime(strictRemaining) : formatTime(graceRemaining)
+  const timerLabel = isStrictLive ? formatCountdown(strictRemaining) : formatCountdown(graceRemaining)
 
   useEffect(() => {
     const theme = storage.settings.theme

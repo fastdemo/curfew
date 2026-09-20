@@ -122,7 +122,7 @@ export function PinGate({ mode, pinHash = '', prompt, onVerified, onSetupComplet
         onChange={change}
         onKeyDown={key}
         maxLength={MAX_PIN_LENGTH}
-        aria-label="pin"
+        aria-label="pin entry"
         style={{
           width: 150,
           padding: '10px 14px',

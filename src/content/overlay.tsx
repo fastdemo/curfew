@@ -2,6 +2,8 @@ import { createRoot, type Root } from 'react-dom/client'
 import { useState, useEffect } from 'react'
 import { getStorage } from '../lib/storage'
 import { getRandomIntervention, getDomainFromUrl, isScheduleActive, shouldBlockUrl } from '../lib/interventions'
+import { ThemeProvider } from '../ui/ThemeProvider'
+import { BlockView } from '../block/BlockView'
 
 let shadowHost: HTMLDivElement | null = null
 let reactRoot: Root | null = null
@@ -42,9 +44,8 @@ if (window.top === window && window.location.href.startsWith('http')) {
 }
 
 function overlayThemeCss(theme: 'light' | 'dark' | 'system') {
-  // UI STRIPPED (full rebuild, step 1). Theme system deleted; the rebuild
-  // provides its own shadow-DOM styling. Keep the hook signature so the
-  // settings-change listener below stays intact.
+  // BlockView reads the live popup theme via useBlockTheme; the shadow host
+  // only needs the .dark flag so CSS vars resolve to the dark values.
   void theme
   return ''
 }
@@ -200,20 +201,22 @@ export function OverlayApp({ url }: { url: string }) {
     window.location.reload()
   }
 
-  // UI STRIPPED (full rebuild, step 1). No markup — the overlay shell above
-  // (shadow host, hide-inject, title/favicon guard, storage listeners) is
-  // preserved intact. UI contract for the rebuild: render the same block
-  // flow as the block page (domain, interventionId, timeSpent, usageStats,
-  // canProceed; actions handleCloseTab / handleProceed) inside the shadow
-  // mount point created by showOverlay.
-  void interventionId
-  void timeSpent
-  void usageStats
-  void canProceed
-  void handleCloseTab
-  void handleProceed
-
-  return null
+  // Renders the same BlockView as the block page inside the shadow mount
+  // point created by showOverlay. OverlayApp owns the data (same contract
+  // as BlockPage); BlockView owns the markup.
+  return (
+    <ThemeProvider>
+      <BlockView
+        domain={domain}
+        interventionId={interventionId}
+        timeSpent={timeSpent}
+        usageStats={usageStats}
+        onCloseTab={handleCloseTab}
+        onProceed={() => void handleProceed()}
+        canProceed={canProceed}
+      />
+    </ThemeProvider>
+  )
 }
 
 function showOverlay(url: string) {
@@ -272,8 +275,11 @@ function showOverlay(url: string) {
   `
   shadow.appendChild(resetStyle)
 
+  // BlockView reads theme from useBlockTheme, which syncs .dark from the
+  // stored setting — no injected vars needed. Keep the empty style node so
+  // the settings-change listener below keeps working.
   themeStyle = document.createElement('style')
-  themeStyle.textContent = overlayThemeCss('system')
+  themeStyle.textContent = ''
   shadow.appendChild(themeStyle)
 
   try {
@@ -356,9 +362,7 @@ function showOverlay(url: string) {
 
   reactRoot = createRoot(mountPoint)
   try {
-    // UI STRIPPED (full rebuild, step 1). The mount point + shell stays;
-    // the rebuild renders the new block flow here via <OverlayApp url={url} />.
-    reactRoot.render(null)
+    reactRoot.render(<OverlayApp url={url} />)
   } catch (e) {
     console.error('[Curfew] overlay render failed', e)
   }

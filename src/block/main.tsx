@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom/client'
 import { getStorage } from '../lib/storage'
 import { getRandomIntervention, getDomainFromUrl, isScheduleActive } from '../lib/interventions'
 import { useState, useEffect } from 'react'
+import { ThemeProvider } from '../ui/ThemeProvider'
+import { BlockView } from './BlockView'
 
 function applyTheme(theme: string) {
   // UI STRIPPED (full rebuild, step 1). Theme system deleted — keep the
@@ -190,24 +192,29 @@ export function BlockPage() {
     window.location.href = originalUrl
   }
 
-  // Values below are consumed by UI that does not exist yet (see contract at
-  // top). Reference them so the logic stays compiled and reviewable.
-  void domain
-  void interventionId
-  void timeSpent
-  void usageStats
+  // canProceed=false (no interventions selected) skips friction entirely.
   void canProceed
-  void handleCloseTab
-  void handleProceed
 
-  return null
+  return (
+    <BlockView
+      domain={domain}
+      interventionId={interventionId}
+      timeSpent={timeSpent}
+      usageStats={usageStats}
+      onCloseTab={() => void handleCloseTab()}
+      onProceed={(dom) => void handleProceed(dom)}
+      canProceed={canProceed}
+    />
+  )
 }
 
 const rootEl = document.getElementById('root')
 if (rootEl) {
   ReactDOM.createRoot(rootEl).render(
     <React.StrictMode>
-      <BlockPage />
+      <ThemeProvider>
+        <BlockPage />
+      </ThemeProvider>
     </React.StrictMode>
   )
 }
