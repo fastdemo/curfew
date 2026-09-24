@@ -1,4 +1,4 @@
-<img width="128" height="128" alt="anko128" src="https://github.com/user-attachments/assets/d61fd451-ca9a-460d-9672-0ec7811752c8" />
+![anko128](public/icons/anko128.png)
 
 # curfew
 
