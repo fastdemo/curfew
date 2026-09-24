@@ -75,8 +75,9 @@ export function Shell({
           className="curfew-mascot-icon"
           style={{ width: 30, height: 30, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, cursor: 'pointer' }}
         />
-        {/* Wordmark: subtle hover shift, opens the repo in a new tab,
-            never selectable. Icon keeps its own pop + potion sound. */}
+        {/* Wordmark: letters bounce in sequence on hover (pure CSS, one
+            span per letter — text still reads "curfew" for a11y/UA),
+            opens the repo in a new tab, never selectable. */}
         <span
           className="font-display curfew-wordmark"
           role="link"
@@ -87,7 +88,11 @@ export function Shell({
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') chrome.tabs.create({ url: 'https://github.com/fastdemo/curfew' }) }}
           style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.2, color: t.textPrimary, cursor: 'pointer', userSelect: 'none' }}
         >
-          curfew
+          {'curfew'.split('').map((ch, i) => (
+            <span key={i} className="curfew-letter" aria-hidden="true">
+              {ch}
+            </span>
+          ))}
         </span>
         {status && (
           <span

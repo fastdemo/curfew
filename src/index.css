@@ -96,17 +96,41 @@ input:focus-visible,
   .curfew-mascot-icon:hover {
     transform: none;
   }
-  .curfew-wordmark:hover {
-    color: inherit;
+  .curfew-wordmark:hover .curfew-letter,
+  .curfew-wordmark:focus-visible .curfew-letter {
+    animation: none;
   }
 }
 
-/* Wordmark hover: restrained color shift to accent, matching the app's
-   150–180ms ease-out motion language. Icon pop stays icon-only. */
+/* Wordmark hover: playful letter-wave — each letter bounces in sequence,
+   same spring as the mascot pop. Respects reduced-motion. */
 .curfew-wordmark {
-  transition: color 150ms ease-out;
+  display: inline-block;
 }
 
-.curfew-wordmark:hover {
-  color: var(--color-accent);
+.curfew-wordmark .curfew-letter {
+  display: inline-block;
+  transform-origin: center bottom;
+}
+
+.curfew-wordmark:hover .curfew-letter,
+.curfew-wordmark:focus-visible .curfew-letter {
+  animation: curfew-letter-bounce 450ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.curfew-wordmark:hover .curfew-letter:nth-child(2),
+.curfew-wordmark:focus-visible .curfew-letter:nth-child(2) { animation-delay: 40ms; }
+.curfew-wordmark:hover .curfew-letter:nth-child(3),
+.curfew-wordmark:focus-visible .curfew-letter:nth-child(3) { animation-delay: 80ms; }
+.curfew-wordmark:hover .curfew-letter:nth-child(4),
+.curfew-wordmark:focus-visible .curfew-letter:nth-child(4) { animation-delay: 120ms; }
+.curfew-wordmark:hover .curfew-letter:nth-child(5),
+.curfew-wordmark:focus-visible .curfew-letter:nth-child(5) { animation-delay: 160ms; }
+.curfew-wordmark:hover .curfew-letter:nth-child(6),
+.curfew-wordmark:focus-visible .curfew-letter:nth-child(6) { animation-delay: 200ms; }
+
+@keyframes curfew-letter-bounce {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  35% { transform: translateY(-3px) rotate(-4deg); }
+  70% { transform: translateY(0.5px) rotate(2deg); }
 }
