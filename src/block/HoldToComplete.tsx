@@ -1,56 +1,13 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
 import { useBlockTheme } from './theme'
+import { useHoldTiming, SLIDE_DURATION } from './useHoldTiming'
 
-// Hold-to-complete friction (8s press-and-hold). Logic mirrors the old
-// intervention: rAF progress, release resets to 0, complete fires once.
+// Hold-to-complete friction (8s press-and-hold). Timing comes from the
+// shared elapsed-time hook (same as slide): progress advances only while
+// held, release resets to 0, complete fires once.
 export function HoldToComplete({ onComplete }: { onComplete: () => void }) {
   const c = useBlockTheme()
-  const [progress, setProgress] = useState(0)
-  const [holding, setHolding] = useState(false)
-  const startRef = useRef(0)
-  const rafRef = useRef(0)
-  const holdingRef = useRef(false)
-  const doneRef = useRef(false)
-
-  const DURATION = 8000
-
-  useEffect(() => {
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current)
-    }
-  }, [])
-
-  const down = useCallback(() => {
-    if (doneRef.current) return
-    if (rafRef.current) cancelAnimationFrame(rafRef.current)
-    holdingRef.current = true
-    setHolding(true)
-    startRef.current = Date.now() - progress * DURATION
-    const tick = () => {
-      const pct = Math.min((Date.now() - startRef.current) / DURATION, 1)
-      setProgress(pct)
-      if (pct >= 1) {
-        doneRef.current = true
-        holdingRef.current = false
-        setHolding(false)
-        onComplete()
-        return
-      }
-      rafRef.current = requestAnimationFrame(tick)
-    }
-    rafRef.current = requestAnimationFrame(tick)
-  }, [progress, onComplete])
-
-  const up = useCallback(() => {
-    if (!holdingRef.current || doneRef.current) return
-    holdingRef.current = false
-    setHolding(false)
-    if (rafRef.current) {
-      cancelAnimationFrame(rafRef.current)
-      rafRef.current = 0
-    }
-    setProgress(0)
-  }, [])
+  const { progress, holding, begin: down, release } = useHoldTiming(SLIDE_DURATION, onComplete)
+  const up = () => release(true)
 
   const C = 2 * Math.PI * 60
   return (

@@ -336,7 +336,7 @@ function showOverlay(url: string) {
   const head = document.head || document.documentElement
   if (curfewIcon.href && head) head.appendChild(curfewIcon)
   const displayDomain = getDomainFromUrl(url)
-  const curfewTitle = `${displayDomain} / curfew-ed!`
+  const curfewTitle = `${displayDomain}`
   document.title = curfewTitle
   const titleGuard = setInterval(() => {
     if (!shadowHost) { clearInterval(titleGuard); return }

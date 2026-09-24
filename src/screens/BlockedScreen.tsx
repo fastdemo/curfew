@@ -33,6 +33,10 @@ const QUICK: { label: string; sites: string[] }[] = [
     label: 'productivity',
     sites: ['mail.google.com', 'outlook.com', 'slack.com', 'notion.so', 'docs.google.com', 'drive.google.com', 'dropbox.com', 'figma.com', 'canva.com', 'asana.com', 'trello.com', 'evernote.com'],
   },
+  {
+    label: 'ai tools',
+    sites: ['chatgpt.com', 'claude.ai', 'gemini.google.com', 'perplexity.ai', 'character.ai', 'poe.com', 'you.com', 'copilot.microsoft.com', 'huggingface.co', 'deepseek.com', 'chat.deepseek.com', 'grok.com', 'meta.ai', 'mistral.ai'],
+  },
 ]
 
 function normalizeWebsite(value: string): string {

@@ -8,13 +8,7 @@ import { applyTheme } from '../ui/theme'
 import { BlockView } from './BlockView'
 import type { ModeSetting } from '../ui/theme'
 
-// UI STRIPPED (full rebuild, step 1). No markup below — logic preserved intact.
-// UI contract for the rebuild (block page):
-// - reads ?url= (encoded or raw), derives `domain`.
-// - loads usageStats, picks a random intervention from selectedInterventions,
-//   sets `canProceed = selectedInterventions.length > 0`.
-// - polls today's timeSpent for `domain` every 1s; sets tab title
-//   "<domain> / curfew-ed!" + curfew favicon.
+// Block page: reads ?url= (encoded or raw), derives `domain`.
 // - auto-returns to originalUrl when blocking ends (master off / strict
 //   expired / schedule inactive / bypass granted).
 // - actions: `handleCloseTab` (remove tab + close), `handleProceed`
@@ -79,8 +73,8 @@ export function BlockPage() {
 
   useEffect(() => {
     if (!domain) return
-    // Apply favicon and tab title as requested: "YouTube / curfew-ed!"
-    const title = `${domain} / curfew-ed!`
+    // Apply favicon and plain domain tab title (no suffix).
+    const title = `${domain}`
     document.title = title
     // favicon
     const existing = document.querySelector<HTMLLinkElement>('link[rel*="icon"]')
