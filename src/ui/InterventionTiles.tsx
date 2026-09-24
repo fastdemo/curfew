@@ -1,7 +1,8 @@
-import type { ReactElement } from 'react'
 import { INTERVENTIONS } from '../lib/interventions'
 import type { InterventionId } from '../types'
 import { useTheme } from './theme'
+import { SquareTileGrid } from './SquareTileGrid'
+import type { ReactElement } from 'react'
 
 interface TilesProps {
   selected: InterventionId[]
@@ -37,81 +38,18 @@ export function InterventionTiles({ selected, onToggle }: TilesProps) {
       >
         interventions
       </p>
-      {/* Square tiles: 2-col grid, equal 1fr rows stretched to fill the
-          leftover frame height — no dead space below the grid. Content
-          stays vertically centered so short rows never clip. */}
-      <div
-        style={{
-          flex: 1,
-          minHeight: 0,
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gridTemplateRows: '1fr 1fr',
-          gap: 8,
-        }}
-      >
-        {INTERVENTIONS.map((item) => {
-          const on = selected.includes(item.id)
-          return (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => onToggle(item.id)}
-              aria-pressed={on}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 5,
-                minHeight: 0,
-                overflow: 'hidden',
-                padding: 8,
-                borderRadius: 10,
-                cursor: 'pointer',
-                backgroundColor: on ? t.highlight : t.bgSurface,
-                border: `1px solid ${on ? t.accent : t.border}`,
-                transition: 'background-color 150ms ease-out, border-color 150ms ease-out',
-              }}
-            >
-              <svg
-                width={17}
-                height={17}
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke={on ? t.accent : t.textSecondary}
-                strokeWidth={2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                style={{ flexShrink: 0 }}
-              >
-                {ICONS[item.id]}
-              </svg>
-              <span
-                style={{
-                  fontSize: 12.5,
-                  fontWeight: 600,
-                  lineHeight: 1.2,
-                  color: t.textPrimary,
-                  textAlign: 'center',
-                }}
-              >
-                {item.title}
-              </span>
-              <span
-                style={{
-                  fontSize: 11,
-                  fontWeight: 500,
-                  color: t.textSecondary,
-                  fontVariantNumeric: 'tabular-nums',
-                }}
-              >
-                {item.time}
-              </span>
-            </button>
-          )
-        })}
-      </div>
+      <SquareTileGrid
+        fill
+        items={INTERVENTIONS.map((item) => ({
+          id: item.id,
+          icon: ICONS[item.id],
+          label: item.title,
+          meta: item.time,
+          selected: selected.includes(item.id),
+          onSelect: () => onToggle(item.id),
+          pressedLabel: `${item.title}, ${item.time}`,
+        }))}
+      />
     </div>
   )
 }

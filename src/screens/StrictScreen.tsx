@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useTimer } from '../hooks/useTimer'
 import type { ChromeStorage } from '../types'
 import { useTheme } from '../ui/theme'
+import { SquareTileGrid } from '../ui/SquareTileGrid'
 
 interface Props {
   storage: ChromeStorage & { update: (p: Partial<ChromeStorage>) => Promise<void> }
@@ -9,10 +10,30 @@ interface Props {
 }
 
 const DURATIONS = [
-  { min: 1, label: '1 min', sub: 'reset' },
-  { min: 10, label: '10 min', sub: 'break' },
-  { min: 20, label: '20 min', sub: 'focus' },
-  { min: 30, label: '30 min', sub: 'deep' },
+  {
+    min: 1,
+    label: '1 min',
+    sub: 'reset',
+    icon: <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />,
+  },
+  {
+    min: 10,
+    label: '10 min',
+    sub: 'break',
+    icon: <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l2.5 2.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />,
+  },
+  {
+    min: 20,
+    label: '20 min',
+    sub: 'focus',
+    icon: <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />,
+  },
+  {
+    min: 30,
+    label: '30 min',
+    sub: 'deep',
+    icon: <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />,
+  },
 ] as const
 
 // Strict session: a time-boxed commitment. Two states, one focal point each:
@@ -21,7 +42,9 @@ const DURATIONS = [
 export function StrictScreen({ storage, onEndSession }: Props) {
   const t = useTheme()
   const { now, getRemaining, formatCountdown } = useTimer()
-  const [selectedMin, setSelectedMin] = useState<number>(20)
+  // No default selection: user must actively pick a duration before start
+  // enables.
+  const [selectedMin, setSelectedMin] = useState<number | null>(null)
 
   const isActive = storage.strictSession.isActive && now < storage.strictSession.endTime
   const remaining = getRemaining(storage.strictSession.endTime)
@@ -43,14 +66,16 @@ export function StrictScreen({ storage, onEndSession }: Props) {
 
   const hasItems = storage.blockedItems.length > 0
 
-  const start = async (minutes: number) => {
-    if (!hasItems) return
+  const start = async (minutes: number | null) => {
+    if (!hasItems || minutes === null) return
     const startTime = Date.now()
     await storage.update({
       strictSession: { isActive: true, startTime, endTime: startTime + minutes * 60 * 1000 },
     })
     chrome.runtime.sendMessage({ type: 'CURFEW_RELOAD_BLOCKED_TABS' })
   }
+
+  const canStart = hasItems && selectedMin !== null
 
   const cta = {
     width: '100%',
@@ -132,61 +157,40 @@ export function StrictScreen({ storage, onEndSession }: Props) {
         <p style={{ fontSize: 11, fontWeight: 600, lineHeight: 1.3, color: t.textSecondary, margin: '0 0 6px', flexShrink: 0 }}>
           strict session
         </p>
+        {/* Single description line for the screen, directly under the
+            header and above the grid. The bottom copy is gone entirely. */}
         <p style={{ fontSize: 11, lineHeight: 1.4, color: t.textSecondary, margin: '0 0 8px', flexShrink: 0 }}>
-          nothing gets through until the timer ends.
+          you cannot bypass until the timer ends.
         </p>
-        {/* Square option grid: fixed near-square rows, CTA pinned bottom. */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridAutoRows: '86px', gap: 8 }}>
-          {DURATIONS.map((d) => {
-            const on = selectedMin === d.min
-            return (
-              <button
-                key={d.min}
-                type="button"
-                aria-pressed={on}
-                onClick={() => setSelectedMin(d.min)}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 2,
-                  overflow: 'hidden',
-                  padding: 8,
-                  borderRadius: 10,
-                  cursor: 'pointer',
-                  backgroundColor: on ? t.highlight : t.bgSurface,
-                  border: `1px solid ${on ? t.accent : t.border}`,
-                  transition: 'background-color 150ms ease-out, border-color 150ms ease-out',
-                }}
-              >
-                <span style={{ fontSize: 16, fontWeight: 700, color: on ? t.accent : t.textPrimary, fontVariantNumeric: 'tabular-nums', lineHeight: 1.2 }}>
-                  {d.label}
-                </span>
-                <span style={{ fontSize: 11, color: t.textSecondary }}>{d.sub}</span>
-              </button>
-            )
-          })}
-        </div>
+        {/* Same shared square tiles as home: left-aligned, icon top,
+            prominent label bottom with secondary meta. Fixed near-square
+            rows, CTA pinned bottom. */}
+        <SquareTileGrid
+          items={DURATIONS.map((d) => ({
+            id: String(d.min),
+            icon: d.icon,
+            label: d.label,
+            meta: d.sub,
+            selected: selectedMin === d.min,
+            onSelect: () => setSelectedMin(d.min),
+            pressedLabel: `${d.label}, ${d.sub}`,
+          }))}
+        />
       </div>
       <button
         type="button"
         onClick={() => void start(selectedMin)}
-        disabled={!hasItems}
+        disabled={!canStart}
         style={{
           ...cta,
           flexShrink: 0,
-          opacity: hasItems ? 1 : 0.45,
-          cursor: hasItems ? 'pointer' : 'not-allowed',
+          opacity: canStart ? 1 : 0.45,
+          cursor: canStart ? 'pointer' : 'not-allowed',
         }}
+        title={!hasItems ? 'add something to your blocked list first' : selectedMin === null ? 'pick a duration first' : undefined}
       >
         start session
       </button>
-      <p style={{ margin: 0, fontSize: 11, lineHeight: 1.4, color: t.textSecondary, flexShrink: 0 }}>
-        {hasItems
-          ? 'you cannot bypass until the timer ends.'
-          : 'add something to your blocked list first.'}
-      </p>
     </div>
   )
 }

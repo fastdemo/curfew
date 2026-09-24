@@ -18,7 +18,12 @@ export function HomeScreen({ storage, onToggleMaster }: Props) {
   const verdict = verdictFor(storage, now)
 
   const strictLive = verdict.kind === 'strict'
-  const checked = storage.masterToggle || strictLive
+  const scheduleLive = verdict.kind === 'schedule'
+  // Priority already established: strict > schedule > manual. A live driver
+  // locks the toggle ON and disabled — same treatment for strict and
+  // schedule, so the switch can never contradict the engine.
+  const locked = strictLive || scheduleLive
+  const checked = storage.masterToggle || locked
 
   const toggleIntervention = async (id: InterventionId) => {
     const current = storage.selectedInterventions
@@ -61,7 +66,7 @@ export function HomeScreen({ storage, onToggleMaster }: Props) {
         </p>
         <Switch
           checked={checked}
-          disabled={strictLive}
+          disabled={locked}
           onChange={onToggleMaster}
           label="quick focus"
         />

@@ -96,4 +96,17 @@ input:focus-visible,
   .curfew-mascot-icon:hover {
     transform: none;
   }
+  .curfew-wordmark:hover {
+    color: inherit;
+  }
+}
+
+/* Wordmark hover: restrained color shift to accent, matching the app's
+   150–180ms ease-out motion language. Icon pop stays icon-only. */
+.curfew-wordmark {
+  transition: color 150ms ease-out;
+}
+
+.curfew-wordmark:hover {
+  color: var(--color-accent);
 }

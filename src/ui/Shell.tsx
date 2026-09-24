@@ -75,9 +75,17 @@ export function Shell({
           className="curfew-mascot-icon"
           style={{ width: 30, height: 30, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, cursor: 'pointer' }}
         />
+        {/* Wordmark: subtle hover shift, opens the repo in a new tab,
+            never selectable. Icon keeps its own pop + potion sound. */}
         <span
-          className="font-display"
-          style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.2, color: t.textPrimary }}
+          className="font-display curfew-wordmark"
+          role="link"
+          tabIndex={0}
+          aria-label="open curfew on github"
+          title="open curfew on github"
+          onClick={() => chrome.tabs.create({ url: 'https://github.com/fastdemo/curfew' })}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') chrome.tabs.create({ url: 'https://github.com/fastdemo/curfew' }) }}
+          style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.2, color: t.textPrimary, cursor: 'pointer', userSelect: 'none' }}
         >
           curfew
         </span>
