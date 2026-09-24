@@ -66,6 +66,13 @@ body {
 }
 ::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
 
+/* Buttons don't inherit text alignment in all UA stylesheets (notably the
+   extension popup context): pin left alignment at the root so left-aligned
+   tile content can never visually center, even when labels wrap. */
+button {
+  text-align: left;
+}
+
 button:focus-visible,
 input:focus-visible,
 [tabindex]:focus-visible {

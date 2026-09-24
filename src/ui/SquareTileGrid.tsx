@@ -64,7 +64,7 @@ export function SquareTileGrid({ items, fill }: { items: SquareTileItem[]; fill?
           >
             {item.icon}
           </svg>
-          <span>
+          <span style={{ width: '100%' }}>
             <span
               style={{
                 display: 'block',
@@ -72,6 +72,7 @@ export function SquareTileGrid({ items, fill }: { items: SquareTileItem[]; fill?
                 fontWeight: 700,
                 lineHeight: 1.2,
                 color: t.textPrimary,
+                textAlign: 'left',
               }}
             >
               {item.label}
@@ -84,6 +85,7 @@ export function SquareTileGrid({ items, fill }: { items: SquareTileItem[]; fill?
                 fontWeight: 500,
                 color: t.textSecondary,
                 fontVariantNumeric: 'tabular-nums',
+                textAlign: 'left',
               }}
             >
               {item.meta}
