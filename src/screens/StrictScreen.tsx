@@ -127,13 +127,16 @@ export function StrictScreen({ storage, onEndSession }: Props) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1, minHeight: 0 }}>
-      <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1, minHeight: 0, justifyContent: 'flex-end' }}>
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
         <p style={{ fontSize: 11, fontWeight: 600, lineHeight: 1.3, color: t.textSecondary, margin: '0 0 6px', flexShrink: 0 }}>
           strict session
         </p>
-        {/* Square option grid: 2 cols, equal 1fr rows stretched to fill. */}
-        <div style={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: 8 }}>
+        <p style={{ fontSize: 11, lineHeight: 1.4, color: t.textSecondary, margin: '0 0 8px', flexShrink: 0 }}>
+          nothing gets through until the timer ends.
+        </p>
+        {/* Square option grid: fixed near-square rows, CTA pinned bottom. */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridAutoRows: '86px', gap: 8 }}>
           {DURATIONS.map((d) => {
             const on = selectedMin === d.min
             return (
@@ -145,12 +148,11 @@ export function StrictScreen({ storage, onEndSession }: Props) {
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
-                  alignItems: 'flex-start',
+                  alignItems: 'center',
                   justifyContent: 'center',
                   gap: 2,
-                  minHeight: 0,
                   overflow: 'hidden',
-                  padding: '8px 12px',
+                  padding: 8,
                   borderRadius: 10,
                   cursor: 'pointer',
                   backgroundColor: on ? t.highlight : t.bgSurface,
@@ -158,7 +160,7 @@ export function StrictScreen({ storage, onEndSession }: Props) {
                   transition: 'background-color 150ms ease-out, border-color 150ms ease-out',
                 }}
               >
-                <span style={{ fontSize: 14, fontWeight: 700, color: on ? t.accent : t.textPrimary, fontVariantNumeric: 'tabular-nums' }}>
+                <span style={{ fontSize: 16, fontWeight: 700, color: on ? t.accent : t.textPrimary, fontVariantNumeric: 'tabular-nums', lineHeight: 1.2 }}>
                   {d.label}
                 </span>
                 <span style={{ fontSize: 11, color: t.textSecondary }}>{d.sub}</span>

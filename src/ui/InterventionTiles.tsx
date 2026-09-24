@@ -61,12 +61,12 @@ export function InterventionTiles({ selected, onToggle }: TilesProps) {
               style={{
                 display: 'flex',
                 flexDirection: 'column',
-                alignItems: 'flex-start',
+                alignItems: 'center',
                 justifyContent: 'center',
-                gap: 4,
+                gap: 5,
                 minHeight: 0,
                 overflow: 'hidden',
-                padding: '8px 12px',
+                padding: 8,
                 borderRadius: 10,
                 cursor: 'pointer',
                 backgroundColor: on ? t.highlight : t.bgSurface,
@@ -74,47 +74,39 @@ export function InterventionTiles({ selected, onToggle }: TilesProps) {
                 transition: 'background-color 150ms ease-out, border-color 150ms ease-out',
               }}
             >
-              <span
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  color: on ? t.accent : t.textSecondary,
-                }}
+              <svg
+                width={17}
+                height={17}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke={on ? t.accent : t.textSecondary}
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ flexShrink: 0 }}
               >
-                <svg
-                  width={13}
-                  height={13}
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  {ICONS[item.id]}
-                </svg>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 500,
-                    color: t.textSecondary,
-                    fontVariantNumeric: 'tabular-nums',
-                  }}
-                >
-                  {item.time}
-                </span>
-              </span>
+                {ICONS[item.id]}
+              </svg>
               <span
                 style={{
-                  fontSize: 13,
+                  fontSize: 12.5,
                   fontWeight: 600,
-                  lineHeight: 1.25,
+                  lineHeight: 1.2,
                   color: t.textPrimary,
-                  whiteSpace: 'nowrap',
+                  textAlign: 'center',
                 }}
               >
                 {item.title}
+              </span>
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 500,
+                  color: t.textSecondary,
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
+                {item.time}
               </span>
             </button>
           )
