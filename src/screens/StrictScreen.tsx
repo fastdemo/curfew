@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useTimer } from '../hooks/useTimer'
 import type { ChromeStorage } from '../types'
 import { useTheme } from '../ui/theme'
+import { Screen } from '../ui/Screen'
 import { SquareTileGrid } from '../ui/SquareTileGrid'
 
 interface Props {
@@ -93,7 +94,7 @@ export function StrictScreen({ storage, onEndSession }: Props) {
     const R = 34
     const C = 2 * Math.PI * R
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <Screen>
         <div
           style={{
             display: 'flex',
@@ -147,12 +148,12 @@ export function StrictScreen({ storage, onEndSession }: Props) {
             end session
           </button>
         </div>
-      </div>
+      </Screen>
     )
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1, minHeight: 0, justifyContent: 'flex-end' }}>
+    <Screen gap={8}>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         <p style={{ fontSize: 11, fontWeight: 600, lineHeight: 1.3, color: t.textSecondary, margin: '0 0 6px', flexShrink: 0 }}>
           strict session
@@ -184,6 +185,7 @@ export function StrictScreen({ storage, onEndSession }: Props) {
         style={{
           ...cta,
           flexShrink: 0,
+          marginTop: 'auto',
           opacity: canStart ? 1 : 0.45,
           cursor: canStart ? 'pointer' : 'not-allowed',
         }}
@@ -191,6 +193,6 @@ export function StrictScreen({ storage, onEndSession }: Props) {
       >
         start session
       </button>
-    </div>
+    </Screen>
   )
 }

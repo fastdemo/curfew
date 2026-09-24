@@ -1,6 +1,7 @@
 import { useTimer } from '../hooks/useTimer'
 import type { ChromeStorage, InterventionId } from '../types'
 import { useTheme } from '../ui/theme'
+import { Screen } from '../ui/Screen'
 import { Switch } from '../ui/Switch'
 import { InterventionTiles } from '../ui/InterventionTiles'
 import { verdictFor } from '../ui/verdict'
@@ -34,7 +35,7 @@ export function HomeScreen({ storage, onToggleMaster }: Props) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1, minHeight: 0 }}>
+    <Screen gap={8}>
       <div
         style={{
           display: 'flex',
@@ -76,6 +77,6 @@ export function HomeScreen({ storage, onToggleMaster }: Props) {
         selected={storage.selectedInterventions}
         onToggle={toggleIntervention}
       />
-    </div>
+    </Screen>
   )
 }

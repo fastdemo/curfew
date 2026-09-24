@@ -1,5 +1,6 @@
 import type { ChromeStorage, ThemeId } from '../types'
 import { useTheme, type ModeSetting } from '../ui/theme'
+import { Screen } from '../ui/Screen'
 import { THEMES, themeDef, type ThemeDef } from '../ui/themes'
 import { Switch } from '../ui/Switch'
 
@@ -107,7 +108,7 @@ export function SettingsScreen({ storage, onRequirePinToggle }: Props) {
   const successDotFor = (th: ThemeDef) => (previewDark(th) ? th.dark.success : th.light.success)
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+    <Screen>
       <div>
         <p style={{ fontSize: 11, fontWeight: 600, lineHeight: 1.3, color: t.textSecondary, margin: '0 0 6px' }}>
           general
@@ -257,6 +258,6 @@ export function SettingsScreen({ storage, onRequirePinToggle }: Props) {
           })}
         </div>
       </div>
-    </div>
+    </Screen>
   )
 }

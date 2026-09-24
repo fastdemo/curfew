@@ -1,6 +1,7 @@
 import { useState, type KeyboardEvent } from 'react'
 import type { BlockedItem, ChromeStorage } from '../types'
 import { useTheme } from '../ui/theme'
+import { Screen } from '../ui/Screen'
 
 interface Props {
   storage: ChromeStorage & { update: (p: Partial<ChromeStorage>) => Promise<void> }
@@ -107,7 +108,7 @@ export function BlockedScreen({ storage }: Props) {
   } as const
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+    <Screen>
       <div>
         <div
           role="tablist"
@@ -375,6 +376,6 @@ export function BlockedScreen({ storage }: Props) {
           </div>
         )}
       </div>
-    </div>
+    </Screen>
   )
 }

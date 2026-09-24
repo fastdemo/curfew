@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { ChromeStorage } from '../types'
 import { useTheme } from '../ui/theme'
+import { Screen } from '../ui/Screen'
 import { Switch } from '../ui/Switch'
 
 interface Props {
@@ -132,7 +133,7 @@ export function ScheduleScreen({ storage }: Props) {
   } as const
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+    <Screen>
       <div>
         <p style={label}>{items.length === 0 ? 'schedules' : `schedules · ${items.length}`}</p>
         {items.length === 0 && !open ? (
@@ -356,6 +357,6 @@ export function ScheduleScreen({ storage }: Props) {
           </div>
         </div>
       )}
-    </div>
+    </Screen>
   )
 }
