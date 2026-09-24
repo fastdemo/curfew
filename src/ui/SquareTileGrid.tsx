@@ -46,6 +46,7 @@ export function SquareTileGrid({ items, fill }: { items: SquareTileItem[]; fill?
             padding: 10,
             borderRadius: 10,
             cursor: 'pointer',
+            textAlign: 'left',
             backgroundColor: item.selected ? t.highlight : t.bgSurface,
             border: `1px solid ${item.selected ? t.accent : t.border}`,
             transition: 'background-color 150ms ease-out, border-color 150ms ease-out',

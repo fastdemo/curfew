@@ -2,7 +2,7 @@ import { Intervention, InterventionId } from '../types'
 
 export const INTERVENTIONS: Intervention[] = [
   { id: 'instant', title: 'instant block', time: '0s', duration: 0 },
-  { id: 'hold', title: 'hold to complete', time: '8s', duration: 8000 },
+  { id: 'hold', title: 'press & hold', time: '8s', duration: 8000 },
   { id: 'slide', title: 'slide in out', time: '8s', duration: 8000 },
   { id: 'breathing', title: 'breathing', time: '19s', duration: 19000 },
 ]
