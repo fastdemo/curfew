@@ -29,17 +29,18 @@ export function HomeScreen({ storage, onToggleMaster }: Props) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, justifyContent: 'center', minHeight: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1, minHeight: 0 }}>
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
           gap: 10,
-          minHeight: 56,
-          padding: '8px 12px 8px 14px',
+          minHeight: 48,
+          padding: '6px 12px 6px 14px',
           borderRadius: 12,
           backgroundColor: t.bgSurface,
           border: `1px solid ${t.border}`,
+          flexShrink: 0,
         }}
       >
         <p

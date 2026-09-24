@@ -41,8 +41,7 @@ export function StrictScreen({ storage, onEndSession }: Props) {
   const remainingFrac = 1 - elapsed
   const ringLabel = formatCountdown(remaining)
 
-  const items = storage.blockedItems.length
-  const hasItems = items > 0
+  const hasItems = storage.blockedItems.length > 0
 
   const start = async (minutes: number) => {
     if (!hasItems) return
@@ -128,12 +127,13 @@ export function StrictScreen({ storage, onEndSession }: Props) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      <div>
-        <p style={{ fontSize: 11, fontWeight: 600, lineHeight: 1.3, color: t.textSecondary, margin: '0 0 6px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1, minHeight: 0 }}>
+      <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+        <p style={{ fontSize: 11, fontWeight: 600, lineHeight: 1.3, color: t.textSecondary, margin: '0 0 6px', flexShrink: 0 }}>
           strict session
         </p>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        {/* Square option grid: 2 cols, equal 1fr rows stretched to fill. */}
+        <div style={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: 8 }}>
           {DURATIONS.map((d) => {
             const on = selectedMin === d.min
             return (
@@ -144,9 +144,13 @@ export function StrictScreen({ storage, onEndSession }: Props) {
                 onClick={() => setSelectedMin(d.min)}
                 style={{
                   display: 'flex',
-                  alignItems: 'baseline',
-                  gap: 6,
-                  padding: '10px 12px',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  justifyContent: 'center',
+                  gap: 2,
+                  minHeight: 0,
+                  overflow: 'hidden',
+                  padding: '8px 12px',
                   borderRadius: 10,
                   cursor: 'pointer',
                   backgroundColor: on ? t.highlight : t.bgSurface,
@@ -169,15 +173,16 @@ export function StrictScreen({ storage, onEndSession }: Props) {
         disabled={!hasItems}
         style={{
           ...cta,
+          flexShrink: 0,
           opacity: hasItems ? 1 : 0.45,
           cursor: hasItems ? 'pointer' : 'not-allowed',
         }}
       >
         start session
       </button>
-      <p style={{ margin: 0, fontSize: 11, lineHeight: 1.4, color: t.textSecondary }}>
+      <p style={{ margin: 0, fontSize: 11, lineHeight: 1.4, color: t.textSecondary, flexShrink: 0 }}>
         {hasItems
-          ? `locks ${items === 1 ? '1 item' : `${items} items`} · you cannot bypass until the timer ends`
+          ? 'you cannot bypass until the timer ends.'
           : 'add something to your blocked list first.'}
       </p>
     </div>

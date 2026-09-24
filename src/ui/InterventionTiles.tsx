@@ -24,7 +24,7 @@ const ICONS: Record<InterventionId, ReactElement> = {
 export function InterventionTiles({ selected, onToggle }: TilesProps) {
   const t = useTheme()
   return (
-    <div>
+    <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
       <p
         style={{
           fontSize: 11,
@@ -32,14 +32,21 @@ export function InterventionTiles({ selected, onToggle }: TilesProps) {
           lineHeight: 1.3,
           color: t.textSecondary,
           margin: '0 0 6px',
+          flexShrink: 0,
         }}
       >
         interventions
       </p>
+      {/* Square tiles: 2-col grid, equal 1fr rows stretched to fill the
+          leftover frame height — no dead space below the grid. Content
+          stays vertically centered so short rows never clip. */}
       <div
         style={{
+          flex: 1,
+          minHeight: 0,
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
+          gridTemplateRows: '1fr 1fr',
           gap: 8,
         }}
       >
@@ -55,8 +62,11 @@ export function InterventionTiles({ selected, onToggle }: TilesProps) {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'flex-start',
+                justifyContent: 'center',
                 gap: 4,
-                padding: '10px 12px',
+                minHeight: 0,
+                overflow: 'hidden',
+                padding: '8px 12px',
                 borderRadius: 10,
                 cursor: 'pointer',
                 backgroundColor: on ? t.highlight : t.bgSurface,

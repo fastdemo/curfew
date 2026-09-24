@@ -262,7 +262,7 @@ export default function App() {
         onTab={(id) => setActiveTab(id as TabId)}
         mainRef={mainRef}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minHeight: '100%' }}>
           {activeTab === 'home' && (
             <HomeScreen storage={storage} onToggleMaster={handleToggleMaster} />
           )}

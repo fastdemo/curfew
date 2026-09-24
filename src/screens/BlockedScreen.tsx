@@ -10,24 +10,28 @@ type Kind = 'website' | 'keyword'
 
 const QUICK: { label: string; sites: string[] }[] = [
   {
-    label: 'social',
-    sites: ['x.com', 'instagram.com', 'tiktok.com', 'reddit.com', 'facebook.com', 'linkedin.com'],
+    label: 'socials',
+    sites: ['x.com', 'instagram.com', 'tiktok.com', 'reddit.com', 'facebook.com', 'linkedin.com', 'pinterest.com', 'threads.net', 'snapchat.com', 'discord.com', 'twitch.tv', 'bsky.app'],
   },
   {
-    label: 'video',
-    sites: ['youtube.com', 'netflix.com', 'twitch.tv', 'disneyplus.com', 'hulu.com'],
+    label: 'entertainment',
+    sites: ['youtube.com', 'netflix.com', 'twitch.tv', 'disneyplus.com', 'hulu.com', 'spotify.com', 'crunchyroll.com', 'vimeo.com', 'soundcloud.com', 'peacocktv.com', 'plex.tv', 'max.com'],
   },
   {
-    label: 'shop',
-    sites: ['amazon.com', 'ebay.com', 'etsy.com', 'temu.com', 'aliexpress.com'],
+    label: 'e-commerce',
+    sites: ['amazon.com', 'ebay.com', 'walmart.com', 'target.com', 'bestbuy.com', 'etsy.com', 'aliexpress.com', 'newegg.com', 'homedepot.com', 'ikea.com', 'costco.com', 'nike.com', 'temu.com', 'shein.com'],
   },
   {
-    label: 'play',
-    sites: ['roblox.com', 'chess.com', 'steampowered.com', 'epicgames.com', 'minecraft.net'],
+    label: 'games',
+    sites: ['roblox.com', 'steampowered.com', 'epicgames.com', 'ign.com', 'polygon.com', 'gamespot.com', 'nintendo.com', 'playstation.com', 'xbox.com', 'minecraft.net', 'chess.com', 'poki.com'],
   },
   {
     label: 'news',
-    sites: ['nytimes.com', 'bbc.com', 'cnn.com', 'theguardian.com', 'reuters.com'],
+    sites: ['cnn.com', 'nytimes.com', 'bbc.com', 'theguardian.com', 'foxnews.com', 'reuters.com', 'bloomberg.com', 'forbes.com', 'wsj.com', 'nbcnews.com', 'washingtonpost.com', 'npr.org'],
+  },
+  {
+    label: 'productivity killers',
+    sites: ['mail.google.com', 'outlook.com', 'slack.com', 'notion.so', 'docs.google.com', 'drive.google.com', 'dropbox.com', 'figma.com', 'canva.com', 'asana.com', 'trello.com', 'evernote.com'],
   },
 ]
 

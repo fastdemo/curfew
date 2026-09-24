@@ -7,8 +7,11 @@ interface Props {
   storage: ChromeStorage & { update: (p: Partial<ChromeStorage>) => Promise<void> }
 }
 
-const DAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'] as const
-const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
+// Monday-first week: columns run Mon..Sun, stored as JS day numbers.
+const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'] as const
+const DAY_IDS = [1, 2, 3, 4, 5, 6, 0] as const
+// JS day number (0=Sun..6=Sat) -> Monday-first display name.
+const DAY_NAME_BY_ID = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
 
 function short(time: string): string {
   const [h, m] = time.split(':').map(Number)
@@ -22,7 +25,7 @@ function windowLabel(s: { startTime: string; endTime: string; daysOfWeek: number
       ? 'daily'
       : s.daysOfWeek.length >= 5 && [1, 2, 3, 4, 5].every((d) => s.daysOfWeek.includes(d)) && s.daysOfWeek.length === 5
         ? 'weekdays'
-        : [...s.daysOfWeek].sort((a, b) => a - b).map((d) => DAY_NAMES[d]).join(' ')
+        : [...s.daysOfWeek].sort((a, b) => a - b).map((d) => DAY_NAME_BY_ID[d]).join(' ')
   return `${short(s.startTime)}–${short(s.endTime)} · ${days}`
 }
 
@@ -42,17 +45,23 @@ export function ScheduleScreen({ storage }: Props) {
 
   const save = async () => {
     if (!canSave) return
-    await storage.update({
-      schedules: [
-        ...items,
-        { id: crypto.randomUUID(), name: name.trim(), startTime: start, endTime: end, daysOfWeek: days, isActive: true },
-      ],
-    })
-    setName('')
-    setStart('09:00')
-    setEnd('17:00')
-    setDays([1, 2, 3, 4, 5])
-    setOpen(false)
+    if (editingId) {
+      await storage.update({
+        schedules: items.map((s) =>
+          s.id === editingId
+            ? { ...s, name: name.trim(), startTime: start, endTime: end, daysOfWeek: days }
+            : s,
+        ),
+      })
+    } else {
+      await storage.update({
+        schedules: [
+          ...items,
+          { id: crypto.randomUUID(), name: name.trim(), startTime: start, endTime: end, daysOfWeek: days, isActive: true },
+        ],
+      })
+    }
+    closeEditor()
   }
 
   const flipDay = (d: number) =>
@@ -62,6 +71,39 @@ export function ScheduleScreen({ storage }: Props) {
     await storage.update({
       schedules: items.map((s) => (s.id === id ? { ...s, isActive } : s)),
     })
+  }
+
+  // Edit flow: tapping a row loads it into the form; saving writes back to
+  // the same id (accent save), cancel/discard resets to add-mode.
+  const [editingId, setEditingId] = useState<string | null>(null)
+
+  const openEditor = (id: string | null) => {
+    if (id === null) {
+      setEditingId(null)
+      setName('')
+      setStart('09:00')
+      setEnd('17:00')
+      setDays([1, 2, 3, 4, 5])
+      setOpen(true)
+      return
+    }
+    const s = items.find((x) => x.id === id)
+    if (!s) return
+    setEditingId(s.id)
+    setName(s.name)
+    setStart(s.startTime)
+    setEnd(s.endTime)
+    setDays([...s.daysOfWeek])
+    setOpen(true)
+  }
+
+  const closeEditor = () => {
+    setOpen(false)
+    setEditingId(null)
+    setName('')
+    setStart('09:00')
+    setEnd('17:00')
+    setDays([1, 2, 3, 4, 5])
   }
 
   const remove = async (id: string) => {
@@ -123,6 +165,11 @@ export function ScheduleScreen({ storage }: Props) {
               {items.map((s, i) => (
                 <div
                   key={s.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`edit ${s.name}`}
+                  onClick={() => openEditor(s.id)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') openEditor(s.id) }}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -130,6 +177,7 @@ export function ScheduleScreen({ storage }: Props) {
                     padding: '9px 8px 9px 12px',
                     borderTop: i > 0 ? `1px solid ${t.border}` : 'none',
                     opacity: s.isActive ? 1 : 0.55,
+                    cursor: 'pointer',
                   }}
                 >
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -153,7 +201,7 @@ export function ScheduleScreen({ storage }: Props) {
                   </div>
                   <button
                     type="button"
-                    onClick={() => void remove(s.id)}
+                    onClick={(e) => { e.stopPropagation(); void remove(s.id) }}
                     aria-label={`delete ${s.name}`}
                     style={{
                       width: 26,
@@ -173,11 +221,13 @@ export function ScheduleScreen({ storage }: Props) {
                       <path d="M18 6L6 18M6 6l12 12" />
                     </svg>
                   </button>
-                  <Switch
-                    checked={s.isActive}
-                    onChange={() => void flipActive(s.id, !s.isActive)}
-                    label={`${s.name} enabled`}
-                  />
+                  <span onClick={(e) => e.stopPropagation()} style={{ display: 'flex', flexShrink: 0 }}>
+                    <Switch
+                      checked={s.isActive}
+                      onChange={() => void flipActive(s.id, !s.isActive)}
+                      label={`${s.name} enabled`}
+                    />
+                  </span>
                 </div>
               ))}
             </div>
@@ -188,7 +238,7 @@ export function ScheduleScreen({ storage }: Props) {
       {!open ? (
         <button
           type="button"
-          onClick={() => setOpen(true)}
+          onClick={() => openEditor(null)}
           style={{
             width: '100%',
             height: 38,
@@ -198,7 +248,7 @@ export function ScheduleScreen({ storage }: Props) {
             fontWeight: items.length === 0 ? 600 : 500,
             backgroundColor: items.length === 0 ? t.accent : t.bgSurface,
             color: items.length === 0 ? t.onAccent : t.textSecondary,
-            border: items.length === 0 ? 'none' : `1px dashed ${t.border}`,
+            border: items.length === 0 ? 'none' : `1px solid ${t.border}`,
           }}
         >
           + new schedule
@@ -238,14 +288,15 @@ export function ScheduleScreen({ storage }: Props) {
           <div>
             <p style={label}>days</p>
             <div style={{ display: 'flex', gap: 5 }}>
-              {DAYS.map((d, i) => {
+              {DAYS.map((d, ci) => {
+                const i = DAY_IDS[ci]
                 const on = days.includes(i)
                 return (
                   <button
                     key={i}
                     type="button"
                     aria-pressed={on}
-                    aria-label={DAY_NAMES[i]}
+                    aria-label={DAY_NAME_BY_ID[i]}
                     onClick={() => flipDay(i)}
                     style={{
                       flex: 1,
@@ -268,7 +319,7 @@ export function ScheduleScreen({ storage }: Props) {
           <div style={{ display: 'flex', gap: 8 }}>
             <button
               type="button"
-              onClick={() => setOpen(false)}
+              onClick={closeEditor}
               style={{
                 flex: 1,
                 height: 38,
