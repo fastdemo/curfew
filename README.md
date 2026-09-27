@@ -5,7 +5,7 @@ Blocks distracting websites and helps you stay locked in!
 
 ## Highlights
 
-Curfew intercepts navigation to your blocked sites and shows a friendly block screen instead, with mindfulness interventions, strict focus sessions, and automatic schedules to keep you on track.
+When enabled, Curfew adds friction to your chosen sites with a block screen instead, with mindfulness interventions, strict focus sessions, and automatic schedules to keep you on track and be productive.
 
 ## Preview
 
@@ -13,14 +13,13 @@ Curfew intercepts navigation to your blocked sites and shows a friendly block sc
 
 ## Features
 
-- **Block websites & keywords** — add sites and keywords to your blocklist, or quick-add from curated categories like socials, entertainment, games, and AI tools.
-- **Interventions** — before proceeding to a blocked site, complete a short friction exercise (instant block, press & hold, slide, breathing). Pick your favorites.
-- **Strict sessions** — start a timer where you can't access any blocked sites. No bypass, no excuses.
-- **Schedules** — set recurring windows (e.g. work hours) when blocking turns on automatically.
-- **Overlay mode** — instead of redirecting to a separate block page, overlay the block screen on top of the site itself.
-- **Usage analytics** — see how much time you spend on each site with a breakdown by day, week, or month.
-- **16 color themes** — pick from curated palettes (Curfew, Catppuccin, Dracula, Nord, and more), each with light & dark modes.
-- **PIN protection** — require a PIN before switching off, so future-you can't cheat.
+- **Block websites & keywords:** Add sites and keywords to your blocklist, or quick-add from curated categories like socials, entertainment, games, and AIs.
+- **Interventions:** Before proceeding to a blocked site, you will be forced to complete a friction exercise (instant block, press & hold, slide, breathing), or none at all.
+- **Strict sessions:** Start a timer where you can't bypass any blocked sites at all cost, for maximum focus.
+- **Schedules:** Create recurring times (e.g. work hours) when blocking turns on automatically.
+- **Usage analytics:** See how much time you spend on each site with a breakdown by day, week, or month.
+- **16 color themes:** Pick from many curated color palettes (Curfew, Catppuccin, Dracula, Nord, and more), each with light & dark modes.
+- **PIN protection:** Require a PIN before switching off, so future-you can't cheat hehe.
 
 ## Install
 
@@ -45,8 +44,8 @@ Curfew intercepts navigation to your blocked sites and shows a friendly block sc
 ## Usage
 
 1. Click the Curfew icon in the toolbar.
-2. Flip the switch to start blocking, or add sites and keywords in the Blocked tab.
-3. Pick your interventions on the home screen — these stand between you and your distractions.
+2. Toggle the switch to start blocking, or add sites and keywords in the Blocked tab.
+3. Pick your interventions on the home screen, which adds friction between you and your distractions.
 4. Start a strict session or set a schedule when you need to lock in.
 5. Tweak themes and PIN protection in the Settings tab.
 
@@ -54,9 +53,9 @@ Preferences are stored locally by the extension.
 
 ## Credits
 
-- **focusmode.app** - the main inspiration for this extension. It was great until the developers forced a paywall.
-- **iago** - a Japanese learning app. I referenced their art style for the mascot, which is based on Anko (from the anime "Call of the Night").
+- **focusmode.app** - The main source of inspiration for this extension. It was great and all until the developers forced a paywall for an extension that does basic features *(now free, with Curfew!)*.
+- **iago** - A Japanese learning app. I referenced their art style for the mascot, which is based on Anko Uguisu *(from the anime "Call of the Night")*.
 
-This is a completely open-source project and I have no intentions of profiting from this. If you're uncomfortable with any of the borrowed assets, feel free to reach out and I'll take it down!
+This is an open-source project and I have no plans for monetization. If you're uncomfortable with any of the borrowed assets, reach out and it'll be taken down swiftly. Stay productive!
 
 Made with love by **@fastdemo** <3
