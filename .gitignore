@@ -25,3 +25,5 @@ files/
 *.sw?
 tsconfig.tsbuildinfo
 .DS_Store
+
+AGENTS.md
