@@ -3,6 +3,7 @@ import type { ChromeStorage, InterventionId } from '../types'
 import { useTheme } from '../ui/theme'
 import { Screen } from '../ui/Screen'
 import { Switch } from '../ui/Switch'
+import { VerdictMark } from '../ui/VerdictMark'
 import { InterventionTiles } from '../ui/InterventionTiles'
 import { verdictFor } from '../ui/verdict'
 
@@ -49,6 +50,7 @@ export function HomeScreen({ storage, onToggleMaster }: Props) {
           flexShrink: 0,
         }}
       >
+        <VerdictMark blocking={checked} />
         <p
           style={{
             flex: 1,
