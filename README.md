@@ -30,9 +30,7 @@ chrome extension manifest v3, react, typescript, tailwind css v4, vite.
 
 ## product images
 
-<img width="1920" height="1080" alt="1" src="https://github.com/user-attachments/assets/079cb2e7-126c-4611-b562-e63d6a767051" />
-
-<img width="1920" height="1080" alt="2" src="https://github.com/user-attachments/assets/77d4e2ed-94da-4521-a08b-09b73b495ae4" />
+![curfew — block the distractions](website/images/curfew-thumb.jpg)
 
 ## credits
 
