@@ -9,7 +9,7 @@ When enabled, Curfew adds friction to your chosen sites with a block screen inst
 
 ## Preview
 
-![Curfew product thumbnail](https://github.com/fastdemo/curfew/raw/refs/heads/main/website/images/curfew-thumb.jpg)
+![Curfew product thumbnail](img/CurfewThumb.png)
 
 ## Features
 

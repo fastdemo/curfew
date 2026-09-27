@@ -258,6 +258,10 @@ export function SettingsScreen({ storage, onRequirePinToggle }: Props) {
           })}
         </div>
       </div>
+
+      <p style={{ margin: '2px 0 0', fontSize: 10.5, lineHeight: 1.4, color: t.textTertiary, textAlign: 'left' }}>
+        version {chrome.runtime.getManifest().version} • made with love by @fastdemo &lt;3
+      </p>
     </Screen>
   )
 }

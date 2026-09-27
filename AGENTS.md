@@ -6,6 +6,7 @@
 npm run build              # full build (tsc → vite → vite content → copy assets)
 npm run lint               # eslint
 npm run dev                # Vite dev server (for popup/block page preview)
+npm run pack               # rebuild zip: files/Curfew (vX.Y.Z).zip (latest only)
 ```
 
 The `build` script chains: `tsc -b` → `vite build` (popup + block + service worker) → `vite build --config vite.content.config.ts` (content script IIFE) → `cp manifest.json + public/` to `dist/`.
@@ -47,3 +48,18 @@ Manifest V3 Chrome extension with 4 entry points built with Vite + React + Tailw
 ## Loading the extension
 
 Load `dist/` folder in `chrome://extensions` as unpacked. The extension icon is `public/icons/icon128.png` (single 128×128 file used for all sizes).
+
+## Distributable zip (do this after every change)
+
+Every prompt that changes the extension ends with a fresh load-ready zip:
+
+```sh
+npm run build && npm run pack
+```
+
+- Output: `files/Curfew (vX.Y.Z).zip`, version read from `manifest.json` (single source of truth — bump it there and the name follows).
+- `files/` holds the latest build only — `pack` deletes older `Curfew (v*.zip` first.
+- The zip contains `dist/` contents at its root (manifest.json top-level): unzip anywhere and load unpacked in any Chromium browser.
+- macOS bloat is stripped (`zip -X`, dotfiles/`__MACOSX`/`.DS_Store` excluded) so the zip is clean on any OS.
+- `files/` is gitignored — it never gets committed or pushed.
+- `dist/` itself is also gitignored; never commit build output.
