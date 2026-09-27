@@ -43,7 +43,7 @@ export function HomeScreen({ storage, onToggleMaster }: Props) {
           alignItems: 'center',
           gap: 10,
           minHeight: 48,
-          padding: '6px 12px 6px 14px',
+          padding: '6px 12px 6px 7px',
           borderRadius: 12,
           backgroundColor: t.bgSurface,
           border: `1px solid ${t.border}`,

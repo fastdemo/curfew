@@ -134,18 +134,3 @@ input:focus-visible,
   35% { transform: translateY(-3px) rotate(-4deg); }
   70% { transform: translateY(0.5px) rotate(2deg); }
 }
-
-/* Verdict mark morph (home): hexagon <-> circle crossfade + scale/rotate.
-   Inline style owns opacity/transform per state; the class only owns the
-   transition so reduced-motion can silence it in one place. */
-.verdict-mark-glyph {
-  position: absolute;
-  inset: 0;
-  transition: opacity 220ms ease-out, transform 220ms ease-out;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .verdict-mark-glyph {
-    transition: none;
-  }
-}
