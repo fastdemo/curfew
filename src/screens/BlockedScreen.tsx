@@ -70,56 +70,74 @@ function splitLines(raw: string): string[] {
 
 // Blocked tab: kind switch, quick-add strip, then two boxes that ARE the
 // lists — "blocked on focus" (only while focus/schedule/strict runs) and
-// "blocked forever" (always on). Each box always mirrors storage for the
-// active kind+scope, one value per line; editing lines adds/removes live.
+// "blocked forever" (always on). Each box holds a local draft while focused
+// (so typing never fights storage); on blur the draft commits: values are
+// normalized/deduped, ids preserved for survivors, and a value typed here
+// moves from the other box (one value lives in exactly one box).
 // Quick-add chips only ever land in "blocked on focus".
 export function BlockedScreen({ storage }: Props) {
   const t = useTheme()
   const [kind, setKind] = useState<Kind>('website')
   const [openGroup, setOpenGroup] = useState<string | null>(null)
+  // Local drafts keyed by kind+scope, plus which box is being edited.
+  // update() mirrors into hook state synchronously, so storage is fresh
+  // right after commit — but the identity below is belt-and-suspenders.
+  const [drafts, setDrafts] = useState<Partial<Record<string, string>>>({})
+  const [editing, setEditing] = useState<string | null>(null)
 
   const items = storage.blockedItems
+  const boxKey = (scope: Scope) => `${kind}:${scope}`
 
-  const syncLines = (scope: Scope, raw: string) => {
+  const buildNext = (scope: Scope, raw: string, base: BlockedItem[]) => {
     const wanted = new Map<string, string>()
     for (const line of splitLines(raw)) {
       const n = normalize(kind, line)
       if (n && !wanted.has(n)) wanted.set(n, line)
     }
-    // Preserve identity for surviving rows (same kind): if the edited value
-    // already existed under the other scope, move it (keep id, set scope)
-    // instead of cloning — one value lives in exactly one box.
     const kept = new Map<string, BlockedItem>()
-    for (const item of items) {
+    for (const item of base) {
       if (item.type !== kind) continue
       if (wanted.has(item.value.toLowerCase()) && !kept.has(item.value.toLowerCase())) {
         kept.set(item.value.toLowerCase(), item)
       }
     }
-    const next = [
-      ...items.filter((i) => i.type !== kind || !wanted.has(i.value.toLowerCase())),
-      ...[...wanted.keys()].map((n) => {
-        const prev = kept.get(n)
-        // Same value under the other box moves here (id kept, scope set).
-        return prev ? { ...prev, scope } : { id: crypto.randomUUID(), type: kind, scope, value: n }
-      }),
+    // Survivors keep their existing relative order; genuinely new rows
+    // append after them in box order. New rows never sort old ones around —
+    // the box shows exactly what was typed.
+    const survivors = base.filter((i) => i.type !== kind || wanted.has(i.value.toLowerCase()))
+    const fresh = [...wanted.keys()].filter((n) => !kept.has(n))
+    return [
+      ...survivors.map((i) => (i.type === kind && scopeOf(i) !== scope ? { ...i, scope } : i)),
+      ...fresh.map((n) => ({ id: crypto.randomUUID(), type: kind, scope, value: n })),
     ]
-    void storage.update({ blockedItems: next })
+  }
+
+  const commit = (scope: Scope, raw: string) => {
+    void storage.update({ blockedItems: buildNext(scope, raw, items) })
   }
 
   const quickAdd = async (raw: string) => {
     const n = normalize('website', raw)
     if (!n) return false
     // Quick-add targets focus: drop it from forever if present (a value
-    // lives in exactly one box), skip if already in focus.
+    // lives in exactly one box), skip if already in focus. If the focus box
+    // holds an uncommitted draft (typed but not blurred), reconcile the
+    // draft first so nothing typed is lost to stale storage text.
     const inFocus = items.some((i) => i.type === 'website' && scopeOf(i) === 'focus' && i.value.toLowerCase() === n)
     if (inFocus) return false
-    await storage.update({
-      blockedItems: [
-        ...items.filter((i) => !(i.type === 'website' && i.value.toLowerCase() === n)),
-        { id: crypto.randomUUID(), type: 'website', scope: 'focus' as const, value: n },
-      ],
-    })
+    const key = `website:focus`
+    const draft = editing === key ? drafts[key] : undefined
+    const base =
+      draft !== undefined
+        ? buildNext('focus', `${draft}\n${n}`, items)
+        : [
+            ...items.filter((i) => !(i.type === 'website' && i.value.toLowerCase() === n)),
+            { id: crypto.randomUUID(), type: 'website' as const, scope: 'focus' as const, value: n },
+          ]
+    await storage.update({ blockedItems: base })
+    if (draft !== undefined) {
+      setDrafts((d) => ({ ...d, [key]: `${draft.trimEnd()}\n${n}` }))
+    }
     return true
   }
 
@@ -149,7 +167,11 @@ export function BlockedScreen({ storage }: Props) {
 
   const renderBox = (scope: Scope, title: string, placeholder: string) => {
     const scoped = items.filter((i) => i.type === kind && scopeOf(i) === scope)
-    const value = scoped.map((i) => i.value).join('\n')
+    const key = boxKey(scope)
+    // While editing, show the draft untouched; otherwise mirror storage.
+    // External writes (quick-add, the other box) refresh the draft too, so
+    // the box never shows stale lines once you tab into it.
+    const value = editing === key ? (drafts[key] ?? '') : scoped.map((i) => i.value).join('\n')
     return (
       <div>
         <p style={label}>
@@ -165,7 +187,28 @@ export function BlockedScreen({ storage }: Props) {
         >
           <textarea
             value={value}
-            onChange={(e) => syncLines(scope, e.target.value)}
+            onFocus={() => {
+              setEditing(key)
+              setDrafts((d) => ({ ...d, [key]: scoped.map((i) => i.value).join('\n') }))
+            }}
+            onChange={(e) => {
+              const raw = e.target.value
+              setDrafts((d) => ({ ...d, [key]: raw }))
+            }}
+            onBlur={(e) => {
+              const next = buildNext(scope, e.target.value, items)
+              // Clear the draft FIRST so the blur re-render (editing=null)
+              // falls through to storage text, not the stale draft — then
+              // commit. update() mirrors synchronously in the mock and in
+              // the real hook, so no flash of old lines.
+              setDrafts((d) => {
+                const c = { ...d }
+                delete c[key]
+                return c
+              })
+              setEditing((cur) => (cur === key ? null : cur))
+              void storage.update({ blockedItems: next })
+            }}
             placeholder={placeholder}
             aria-label={scope === 'focus' ? `sites blocked while focusing, one per line` : `sites blocked at all times, one per line`}
             style={box}
