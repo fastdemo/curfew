@@ -18,15 +18,11 @@ function endLabel(endTime: number): string {
   return `${h}:${m.toString().padStart(2, '0')} ${ampm}`
 }
 
-function plural(n: number, one: string, many: string): string {
-  return n === 1 ? `1 ${one}` : `${n} ${many}`
-}
-
 /**
  * The single status sentence for home (direction A). Priority matches the
  * blocking engine exactly: strict session > running schedule > masterToggle.
- * Every branch is one short line; long names/times are truncated by the
- * caller via CSS ellipsis, never wrapped.
+ * The card shows state, not stats: focus on / focus off / schedule name /
+ * strict countdown. The full schedule name shows (caller ellipsizes).
  */
 export function verdictFor(
   storage: Pick<ChromeStorage, 'masterToggle' | 'blockedItems' | 'schedules' | 'strictSession'>,
@@ -43,28 +39,12 @@ export function verdictFor(
     (s) => s.isActive && isScheduleActive([s]),
   )
   if (running) {
-    const name =
-      running.name.length > 18 ? `${running.name.slice(0, 17)}…` : running.name
-    return { kind: 'schedule', line: `on schedule · ${name}` }
+    return { kind: 'schedule', line: running.name }
   }
 
   if (storage.masterToggle) {
-    const sites = storage.blockedItems.filter((i) => i.type === 'website').length
-    const keywords = storage.blockedItems.length - sites
-    if (sites > 0 && keywords > 0) {
-      return {
-        kind: 'manual',
-        line: `blocking ${sites + keywords} items`,
-      }
-    }
-    if (sites > 0) {
-      return { kind: 'manual', line: `blocking ${plural(sites, 'site', 'sites')}` }
-    }
-    if (keywords > 0) {
-      return { kind: 'manual', line: `blocking ${plural(keywords, 'keyword', 'keywords')}` }
-    }
-    return { kind: 'manual', line: 'blocking · list is empty' }
+    return { kind: 'manual', line: 'focus on' }
   }
 
-  return { kind: 'idle', line: 'not blocking' }
+  return { kind: 'idle', line: 'focus off' }
 }

@@ -62,9 +62,16 @@ function isDuplicate(items: BlockedItem[], kind: Kind, value: string): boolean {
   return items.some((i) => i.type === kind && i.value.toLowerCase() === n)
 }
 
-// Blocked list: defines the engine's match scope. One add-row (kind switch +
-// input + add), one quick-add strip, one grouped list with dividers. The
-// count lives in the list heading only — nowhere else on this screen.
+function splitLines(raw: string): string[] {
+  return raw
+    .split(/[\n,]+/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0)
+}
+
+// Blocked list: defines the engine's match scope. One bulk box (kind switch
+// + textarea + add-all), one quick-add strip, one grouped list with
+// dividers. The count lives in the list heading only — nowhere else.
 export function BlockedScreen({ storage }: Props) {
   const t = useTheme()
   const [kind, setKind] = useState<Kind>('website')
@@ -72,7 +79,12 @@ export function BlockedScreen({ storage }: Props) {
   const [openGroup, setOpenGroup] = useState<string | null>(null)
 
   const items = storage.blockedItems
-  const dup = value.trim() ? isDuplicate(items, kind, value) : false
+  const lines = splitLines(value)
+  // Only lines that normalize to something new count as addable.
+  const addable = lines.filter((l) => {
+    const n = normalize(kind, l)
+    return n && !isDuplicate(items, kind, n)
+  })
 
   const add = async (k: Kind, raw: string) => {
     const n = normalize(k, raw)
@@ -83,12 +95,27 @@ export function BlockedScreen({ storage }: Props) {
     return true
   }
 
-  const handleAdd = async () => {
-    if (await add(kind, value)) setValue('')
+  const addMany = async (k: Kind, raws: string[]) => {
+    const seen = new Set(items.map((i) => `${i.type}:${i.value.toLowerCase()}`))
+    const next = [...items]
+    for (const raw of raws) {
+      const n = normalize(k, raw)
+      if (!n || seen.has(`${k}:${n}`)) continue
+      seen.add(`${k}:${n}`)
+      next.push({ id: crypto.randomUUID(), type: k, value: n })
+    }
+    if (next.length === items.length) return 0
+    await storage.update({ blockedItems: next })
+    return next.length - items.length
   }
 
-  const handleKey = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') void handleAdd()
+  const handleAdd = async () => {
+    const added = await addMany(kind, lines)
+    if (added > 0) setValue('')
+  }
+
+  const handleKey = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) void handleAdd()
   }
 
   const remove = async (id: string) => {
@@ -99,12 +126,15 @@ export function BlockedScreen({ storage }: Props) {
     backgroundColor: 'transparent',
     border: 'none',
     outline: 'none',
-    flex: 1,
-    minWidth: 0,
-    padding: '8px 4px 8px 10px',
+    width: '100%',
+    boxSizing: 'border-box',
+    minHeight: 148,
+    padding: '10px 12px',
     fontSize: 13,
     fontWeight: 500,
+    lineHeight: 1.6,
     color: t.textPrimary,
+    resize: 'vertical',
   } as const
 
   return (
@@ -155,8 +185,8 @@ export function BlockedScreen({ storage }: Props) {
         <div
           style={{
             display: 'flex',
-            alignItems: 'center',
-            gap: 6,
+            flexDirection: 'column',
+            gap: 8,
             marginTop: 8,
             padding: 4,
             borderRadius: 10,
@@ -164,37 +194,34 @@ export function BlockedScreen({ storage }: Props) {
             border: `1px solid ${t.border}`,
           }}
         >
-          <input
+          <textarea
             value={value}
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={handleKey}
-            placeholder={kind === 'website' ? 'example: youtube.com' : 'example: "movies"'}
-            aria-label={kind === 'website' ? 'website to block' : 'keyword to block'}
+            rows={7}
+            placeholder={kind === 'website' ? 'x.com\nyoutube.com\n67.com' : 'one keyword per line'}
+            aria-label={kind === 'website' ? 'websites to block, one per line' : 'keywords to block, one per line'}
             style={input}
           />
           <button
             type="button"
             onClick={() => void handleAdd()}
-            disabled={!value.trim() || dup}
-            aria-label="add"
+            disabled={addable.length === 0}
+            aria-label="add all"
             style={{
-              width: 32,
-              height: 32,
-              flexShrink: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              width: '100%',
+              height: 36,
               border: 'none',
               borderRadius: 7,
-              cursor: !value.trim() || dup ? 'not-allowed' : 'pointer',
-              backgroundColor: !value.trim() || dup ? t.highlight : t.accent,
-              color: !value.trim() || dup ? t.textTertiary : t.onAccent,
+              cursor: addable.length === 0 ? 'not-allowed' : 'pointer',
+              fontSize: 13,
+              fontWeight: 600,
+              backgroundColor: addable.length === 0 ? t.highlight : t.accent,
+              color: addable.length === 0 ? t.textTertiary : t.onAccent,
               transition: 'background-color 150ms ease-out',
             }}
           >
-            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
+            {addable.length === 0 ? 'add' : `add ${addable.length} ${addable.length === 1 ? 'site' : 'sites'}`}
           </button>
         </div>
       </div>
@@ -239,8 +266,16 @@ export function BlockedScreen({ storage }: Props) {
           })}
         </div>
         {openGroup && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
-            {QUICK.find((g) => g.label === openGroup)!.sites.map((site) => {
+          <div
+            style={{
+              marginTop: 8,
+              paddingTop: 8,
+              borderTop: `1px solid ${t.border}`,
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 6,
+            }}
+          >            {QUICK.find((g) => g.label === openGroup)!.sites.map((site) => {
               const blocked = isDuplicate(items, 'website', site)
               return (
                 <button
