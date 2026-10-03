@@ -115,7 +115,10 @@ export function BlockedScreen({ storage }: Props) {
   }
 
   const handleKey = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) void handleAdd()
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      void handleAdd()
+    }
   }
 
   const remove = async (id: string) => {
@@ -128,13 +131,14 @@ export function BlockedScreen({ storage }: Props) {
     outline: 'none',
     width: '100%',
     boxSizing: 'border-box',
-    minHeight: 148,
+    height: 148,
     padding: '10px 12px',
     fontSize: 13,
     fontWeight: 500,
     lineHeight: 1.6,
     color: t.textPrimary,
-    resize: 'vertical',
+    resize: 'none',
+    overflowY: 'auto',
   } as const
 
   return (
@@ -181,48 +185,6 @@ export function BlockedScreen({ storage }: Props) {
               </button>
             )
           })}
-        </div>
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 8,
-            marginTop: 8,
-            padding: 4,
-            borderRadius: 10,
-            backgroundColor: t.bgSurface,
-            border: `1px solid ${t.border}`,
-          }}
-        >
-          <textarea
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            onKeyDown={handleKey}
-            rows={7}
-            placeholder={kind === 'website' ? 'x.com\nyoutube.com\n67.com' : 'one keyword per line'}
-            aria-label={kind === 'website' ? 'websites to block, one per line' : 'keywords to block, one per line'}
-            style={input}
-          />
-          <button
-            type="button"
-            onClick={() => void handleAdd()}
-            disabled={addable.length === 0}
-            aria-label="add all"
-            style={{
-              width: '100%',
-              height: 36,
-              border: 'none',
-              borderRadius: 7,
-              cursor: addable.length === 0 ? 'not-allowed' : 'pointer',
-              fontSize: 13,
-              fontWeight: 600,
-              backgroundColor: addable.length === 0 ? t.highlight : t.accent,
-              color: addable.length === 0 ? t.textTertiary : t.onAccent,
-              transition: 'background-color 150ms ease-out',
-            }}
-          >
-            {addable.length === 0 ? 'add' : `add ${addable.length} ${addable.length === 1 ? 'site' : 'sites'}`}
-          </button>
         </div>
       </div>
 
@@ -410,6 +372,37 @@ export function BlockedScreen({ storage }: Props) {
             ))}
           </div>
         )}
+      </div>
+
+      <div>
+        <p
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            lineHeight: 1.3,
+            color: t.textSecondary,
+            margin: '0 0 6px',
+          }}
+        >
+          {addable.length === 0 ? 'add sites' : `add sites · ${addable.length} new`}
+        </p>
+        <div
+          style={{
+            padding: 4,
+            borderRadius: 10,
+            backgroundColor: t.bgSurface,
+            border: `1px solid ${t.border}`,
+          }}
+        >
+          <textarea
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            onKeyDown={handleKey}
+            placeholder={kind === 'website' ? 'x.com\nyoutube.com\n67.com' : 'one keyword per line'}
+            aria-label={kind === 'website' ? 'websites to block, one per line. enter adds them.' : 'keywords to block, one per line. enter adds them.'}
+            style={input}
+          />
+        </div>
       </div>
     </Screen>
   )
