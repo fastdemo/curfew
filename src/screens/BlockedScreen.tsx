@@ -139,7 +139,7 @@ export function BlockedScreen({ storage }: Props) {
     margin: '0 0 6px',
   } as const
 
-  const renderBox = (scope: Scope, title: string) => {
+  const renderBox = (scope: Scope, title: string, placeholder: string) => {
     const scoped = items.filter((i) => i.type === kind && scopeOf(i) === scope)
     const value = scoped.map((i) => i.value).join('\n')
     return (
@@ -158,7 +158,7 @@ export function BlockedScreen({ storage }: Props) {
           <textarea
             value={value}
             onChange={(e) => syncLines(scope, e.target.value)}
-            placeholder={kind === 'website' ? 'x.com\nyoutube.com\nopen.spotify.com' : 'one keyword per line'}
+            placeholder={placeholder}
             aria-label={scope === 'focus' ? `sites blocked while focusing, one per line` : `sites blocked at all times, one per line`}
             style={box}
           />
@@ -287,8 +287,8 @@ export function BlockedScreen({ storage }: Props) {
         )}
       </div>
 
-      {renderBox('focus', 'blocked on focus')}
-      {renderBox('always', 'blocked forever')}
+      {renderBox('focus', 'blocked on focus', kind === 'website' ? 'x.com\nyoutube.com\nopen.spotify.com' : 'one keyword per line')}
+      {renderBox('always', 'blocked forever', kind === 'website' ? 'tiktok.com\nreddit.com\nwhatsapp.com' : 'one keyword per line')}
     </Screen>
   )
 }
