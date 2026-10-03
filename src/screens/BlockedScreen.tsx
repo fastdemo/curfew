@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import type { BlockedItem, ChromeStorage } from '../types'
 import { useTheme } from '../ui/theme'
 import { Screen } from '../ui/Screen'
@@ -68,123 +68,60 @@ function splitLines(raw: string): string[] {
     .filter((s) => s.length > 0)
 }
 
-// Blocked tab: kind switch, quick-add strip, then two boxes that ARE the
-// lists — "blocked on focus" (only while focus/schedule/strict runs) and
-// "blocked forever" (always on). Each box holds a local draft while focused
-// (so typing never fights storage); on blur the draft commits: values are
-// normalized/deduped, ids preserved for survivors, and a value typed here
-// moves from the other box (one value lives in exactly one box).
-// Quick-add chips only ever land in "blocked on focus".
+// Blocked tab: kind switch, quick-add strip, then two lists that ARE the
+// boxes — "blocked on focus" (only while focus/schedule/strict runs) and
+// "blocked forever" (always on). One row per site: the value plus a ×
+// button. Add via the bottom input (Enter or the + button, one or many
+// lines pasted); remove with ×. No drafts, no debounce, no blur commits —
+// every action is one direct storage write, so nothing can be silently
+// lost. Quick-add chips only ever land in "blocked on focus".
 export function BlockedScreen({ storage }: Props) {
   const t = useTheme()
   const [kind, setKind] = useState<Kind>('website')
   const [openGroup, setOpenGroup] = useState<string | null>(null)
-  // Local drafts keyed by kind+scope, plus which box is being edited.
-  // Drafts commit on blur AND on a 800ms idle debounce after the last
-  // keystroke — closing the popup (unmount, no blur) can only lose ≤800ms
-  // of typing, never the whole session. update() mirrors into hook state
-  // synchronously, so storage is fresh right after commit. Cross-box moves
-  // are explicit (erase here + type there), never implicit: a commit only
-  // reconciles its own kind+scope and leaves every other row — including
-  // the same value under the other box — untouched.
-  const [drafts, setDrafts] = useState<Partial<Record<string, string>>>({})
-  const [editing, setEditing] = useState<string | null>(null)
+  const [entry, setEntry] = useState('')
+  const [entryScope, setEntryScope] = useState<Scope>('focus')
 
   const items = storage.blockedItems
-  const boxKey = (scope: Scope) => `${kind}:${scope}`
-  // Latest items for timer callbacks (avoids stale closures).
-  const itemsRef = useRef(items)
-  itemsRef.current = items
-  const updatedRef = useRef(storage.update)
-  updatedRef.current = storage.update
-  const timers = useRef<Partial<Record<string, ReturnType<typeof setTimeout>>>>({})
-  useEffect(() => {
-    const t = timers.current
-    return () => {
-      for (const id of Object.values(t)) clearTimeout(id)
-    }
-  }, [])
 
-  const buildNext = (scope: Scope, raw: string, base: BlockedItem[]) => {
-    const wanted = new Map<string, string>()
+  const addLines = (scope: Scope, raw: string) => {
+    const fresh: string[] = []
     for (const line of splitLines(raw)) {
       const n = normalize(kind, line)
-      if (n && !wanted.has(n)) wanted.set(n, line)
+      if (!n || fresh.includes(n)) continue
+      const exists = items.some(
+        (i) => i.type === kind && scopeOf(i) === scope && i.value.toLowerCase() === n,
+      )
+      if (!exists) fresh.push(n)
     }
-    const kept = new Map<string, BlockedItem>()
-    for (const item of base) {
-      if (item.type !== kind) continue
-      if (wanted.has(item.value.toLowerCase()) && !kept.has(item.value.toLowerCase())) {
-        kept.set(item.value.toLowerCase(), item)
-      }
-    }
-    // Only rows of THIS kind+scope are reconciled. Every other row —
-    // other kind, other box, even the same value under the other box —
-    // passes through untouched. Moving a value between boxes is explicit:
-    // erase the line here AND type it there. A commit never steals rows
-    // from the box you aren't editing.
-    const untouched = base.filter((i) => i.type !== kind || scopeOf(i) !== scope)
-    const survivors = base.filter(
-      (i) => i.type === kind && scopeOf(i) === scope && wanted.has(i.value.toLowerCase()),
-    )
-    const fresh = [...wanted.keys()].filter((n) => !kept.has(n))
-    return [
-      ...untouched,
-      ...survivors,
-      ...fresh.map((n) => ({ id: crypto.randomUUID(), type: kind, scope, value: n })),
-    ]
+    if (fresh.length === 0) return 0
+    void storage.update({
+      blockedItems: [
+        ...items,
+        ...fresh.map((value) => ({ id: crypto.randomUUID(), type: kind, scope, value })),
+      ],
+    })
+    return fresh.length
   }
 
-  const scheduleSave = (scope: Scope, key: string, raw: string) => {
-    const timersMap = timers.current
-    if (timersMap[key]) clearTimeout(timersMap[key])
-    timersMap[key] = setTimeout(() => {
-      delete timersMap[key]
-      void updatedRef.current({ blockedItems: buildNext(scope, raw, itemsRef.current) })
-    }, 800)
+  const remove = (id: string) => {
+    void storage.update({ blockedItems: items.filter((i) => i.id !== id) })
   }
 
   const quickAdd = async (raw: string) => {
     const n = normalize('website', raw)
     if (!n) return false
-    // Quick-add targets focus: skip if already in focus; a forever-row with
-    // the same value stays put (a value may live in both boxes — each box
-    // owns its own list, no stealing). If the focus box holds an
-    // uncommitted draft (typed but not blurred), reconcile the draft first
-    // so nothing typed is lost to stale storage text.
+    // Quick-add targets focus only; forever rows never affect chip state.
     const inFocus = items.some((i) => i.type === 'website' && scopeOf(i) === 'focus' && i.value.toLowerCase() === n)
     if (inFocus) return false
-    const key = `website:focus`
-    const draft = editing === key ? drafts[key] : undefined
-    const base =
-      draft !== undefined
-        ? buildNext('focus', `${draft}\n${n}`, items)
-        : [
-            ...items,
-            { id: crypto.randomUUID(), type: 'website' as const, scope: 'focus' as const, value: n },
-          ]
-    await storage.update({ blockedItems: base })
-    if (draft !== undefined) {
-      setDrafts((d) => ({ ...d, [key]: `${draft.trimEnd()}\n${n}` }))
-    }
+    await storage.update({
+      blockedItems: [
+        ...items,
+        { id: crypto.randomUUID(), type: 'website' as const, scope: 'focus' as const, value: n },
+      ],
+    })
     return true
   }
-
-  const box = {
-    backgroundColor: 'transparent',
-    border: 'none',
-    outline: 'none',
-    width: '100%',
-    boxSizing: 'border-box',
-    height: 148,
-    padding: '10px 12px',
-    fontSize: 13,
-    fontWeight: 500,
-    lineHeight: 1.6,
-    color: t.textPrimary,
-    resize: 'none',
-    overflowY: 'auto',
-  } as const
 
   const label = {
     fontSize: 11,
@@ -196,11 +133,9 @@ export function BlockedScreen({ storage }: Props) {
 
   const renderBox = (scope: Scope, title: string, placeholder: string) => {
     const scoped = items.filter((i) => i.type === kind && scopeOf(i) === scope)
-    const key = boxKey(scope)
-    // While editing, show the draft untouched; otherwise mirror storage.
-    // External writes (quick-add, the other box) refresh the draft too, so
-    // the box never shows stale lines once you tab into it.
-    const value = editing === key ? (drafts[key] ?? '') : scoped.map((i) => i.value).join('\n')
+    const submitEntry = () => {
+      if (addLines(scope, entry) > 0) setEntry('')
+    }
     return (
       <div>
         <p style={label}>
@@ -208,48 +143,125 @@ export function BlockedScreen({ storage }: Props) {
         </p>
         <div
           style={{
-            padding: 4,
-            borderRadius: 10,
+            borderRadius: 12,
+            overflow: 'hidden',
             backgroundColor: t.bgSurface,
             border: `1px solid ${t.border}`,
           }}
         >
-          <textarea
-            value={value}
-            onFocus={() => {
-              setEditing(key)
-              setDrafts((d) => ({ ...d, [key]: scoped.map((i) => i.value).join('\n') }))
+          {scoped.map((item, i) => (
+            <div
+              key={item.id}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '9px 8px 9px 12px',
+                borderTop: i > 0 ? `1px solid ${t.border}` : 'none',
+              }}
+            >
+              <span
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: t.textPrimary,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                {item.value}
+              </span>
+              <button
+                type="button"
+                onClick={() => remove(item.id)}
+                aria-label={`remove ${item.value}`}
+                style={{
+                  width: 26,
+                  height: 26,
+                  flexShrink: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: 'none',
+                  borderRadius: 6,
+                  background: 'transparent',
+                  cursor: 'pointer',
+                  color: t.textTertiary,
+                }}
+              >
+                <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          ))}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: 4,
+              borderTop: scoped.length > 0 ? `1px solid ${t.border}` : 'none',
             }}
-            onChange={(e) => {
-              const raw = e.target.value
-              setDrafts((d) => ({ ...d, [key]: raw }))
-              scheduleSave(scope, key, raw)
-            }}
-            onBlur={(e) => {
-              // Flush any pending debounce NOW (synchronous build off the
-              // blur value, not the timer's stale closure), then clear.
-              const timersMap = timers.current
-              if (timersMap[key]) {
-                clearTimeout(timersMap[key])
-                delete timersMap[key]
-              }
-              const next = buildNext(scope, e.target.value, itemsRef.current)
-              // Clear the draft FIRST so the blur re-render (editing=null)
-              // falls through to storage text, not the stale draft — then
-              // commit. update() mirrors synchronously in the mock and in
-              // the real hook, so no flash of old lines.
-              setDrafts((d) => {
-                const c = { ...d }
-                delete c[key]
-                return c
-              })
-              setEditing((cur) => (cur === key ? null : cur))
-              void updatedRef.current({ blockedItems: next })
-            }}
-            placeholder={placeholder}
-            aria-label={scope === 'focus' ? `sites blocked while focusing, one per line` : `sites blocked at all times, one per line`}
-            style={box}
-          />
+          >
+            <textarea
+              value={scope === entryScope ? entry : ''}
+              onChange={(e) => {
+                setEntryScope(scope)
+                setEntry(e.target.value)
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                  submitEntry()
+                }
+              }}
+              rows={1}
+              placeholder={placeholder}
+              aria-label={scope === 'focus' ? 'add sites blocked while focusing' : 'add sites blocked at all times'}
+              style={{
+                backgroundColor: 'transparent',
+                border: 'none',
+                outline: 'none',
+                flex: 1,
+                minWidth: 0,
+                padding: '9px 4px 9px 10px',
+                fontSize: 13,
+                fontWeight: 500,
+                lineHeight: 1.4,
+                color: t.textPrimary,
+                resize: 'none',
+                overflow: 'hidden',
+              }}
+            />
+            <button
+              type="button"
+              onClick={submitEntry}
+              disabled={!entry.trim() || scope !== entryScope}
+              aria-label="add"
+              style={{
+                width: 32,
+                height: 32,
+                flexShrink: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: 'none',
+                borderRadius: 7,
+                cursor: !entry.trim() || scope !== entryScope ? 'not-allowed' : 'pointer',
+                backgroundColor: !entry.trim() || scope !== entryScope ? t.highlight : t.accent,
+                color: !entry.trim() || scope !== entryScope ? t.textTertiary : t.onAccent,
+                transition: 'background-color 150ms ease-out',
+              }}
+            >
+              <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     )
