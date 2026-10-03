@@ -168,8 +168,9 @@ async function handleNavigation(tabId: number, url: string | undefined) {
     return
   }
 
-  // Always-on items block regardless of focus/schedule/strict.
-  const alwaysBlocked = shouldBlockUrl(url, blockedItems.filter((i) => (i as { scope?: string }).scope === 'always'), strictActive ? undefined : storage.bypasses)
+  // Always-on items block regardless of focus/schedule/strict. Recompute the
+  // match against the forever list only (matchesBlocked above ORs both).
+  const alwaysBlocked = shouldBlockUrl(url, blockedItems.filter((i) => i.scope === 'always'), strictActive ? undefined : storage.bypasses)
   const scheduleActive = isScheduleActive(schedules)
   const shouldBlock = alwaysBlocked || strictActive || scheduleActive || masterToggle
 

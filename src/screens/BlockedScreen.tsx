@@ -61,12 +61,6 @@ function scopeOf(item: BlockedItem): Scope {
   return item.scope ?? 'focus'
 }
 
-function isDuplicate(items: BlockedItem[], scope: Scope, kind: Kind, value: string): boolean {
-  const n = normalize(kind, value)
-  if (!n) return true
-  return items.some((i) => scopeOf(i) === scope && i.type === kind && i.value.toLowerCase() === n)
-}
-
 function splitLines(raw: string): string[] {
   return raw
     .split(/[\n,]+/)
@@ -92,25 +86,39 @@ export function BlockedScreen({ storage }: Props) {
       const n = normalize(kind, line)
       if (n && !wanted.has(n)) wanted.set(n, line)
     }
+    // Preserve identity for surviving rows (same kind): if the edited value
+    // already existed under the other scope, move it (keep id, set scope)
+    // instead of cloning — one value lives in exactly one box.
     const kept = new Map<string, BlockedItem>()
     for (const item of items) {
-      if (item.type !== kind || scopeOf(item) !== scope) continue
+      if (item.type !== kind) continue
       if (wanted.has(item.value.toLowerCase()) && !kept.has(item.value.toLowerCase())) {
         kept.set(item.value.toLowerCase(), item)
       }
     }
     const next = [
-      ...items.filter((i) => i.type !== kind || scopeOf(i) !== scope),
-      ...[...wanted.keys()].map((n) => kept.get(n) ?? { id: crypto.randomUUID(), type: kind, scope, value: n }),
+      ...items.filter((i) => i.type !== kind || !wanted.has(i.value.toLowerCase())),
+      ...[...wanted.keys()].map((n) => {
+        const prev = kept.get(n)
+        // Same value under the other box moves here (id kept, scope set).
+        return prev ? { ...prev, scope } : { id: crypto.randomUUID(), type: kind, scope, value: n }
+      }),
     ]
     void storage.update({ blockedItems: next })
   }
 
   const quickAdd = async (raw: string) => {
     const n = normalize('website', raw)
-    if (!n || isDuplicate(items, 'focus', 'website', n)) return false
+    if (!n) return false
+    // Quick-add targets focus: drop it from forever if present (a value
+    // lives in exactly one box), skip if already in focus.
+    const inFocus = items.some((i) => i.type === 'website' && scopeOf(i) === 'focus' && i.value.toLowerCase() === n)
+    if (inFocus) return false
     await storage.update({
-      blockedItems: [...items, { id: crypto.randomUUID(), type: 'website', scope: 'focus' as const, value: n }],
+      blockedItems: [
+        ...items.filter((i) => !(i.type === 'website' && i.value.toLowerCase() === n)),
+        { id: crypto.randomUUID(), type: 'website', scope: 'focus' as const, value: n },
+      ],
     })
     return true
   }
@@ -255,7 +263,11 @@ export function BlockedScreen({ storage }: Props) {
               gap: 6,
             }}
           >            {QUICK.find((g) => g.label === openGroup)!.sites.map((site) => {
-              const blocked = isDuplicate(items, 'focus', 'website', site)
+              // ✓ only when already in the focus box; a forever-only value
+              // still offers + (clicking moves it to focus).
+              const n = normalize('website', site)
+              const inFocus = items.some((i) => i.type === 'website' && scopeOf(i) === 'focus' && i.value.toLowerCase() === n)
+              const blocked = !n || inFocus
               return (
                 <button
                   key={site}
