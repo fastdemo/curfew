@@ -104,6 +104,16 @@ export function BlockedScreen({ storage }: Props) {
       for (const id of Object.values(t)) clearTimeout(id)
     }
   }, [])
+  // Monotonic save generation per box: every commit path (debounce or blur)
+  // takes a number, and only the newest generation is allowed to write.
+  // update() is async — without this, a slow earlier write can land after a
+  // newer one and silently restore deleted lines.
+  const generations = useRef<Partial<Record<string, number>>>({})
+
+  const saveGuarded = (key: string, gen: number, next: BlockedItem[]) => {
+    if (generations.current[key] !== gen) return
+    void updatedRef.current({ blockedItems: next })
+  }
 
   const buildNext = (scope: Scope, raw: string, base: BlockedItem[]) => {
     const wanted = new Map<string, string>()
@@ -135,9 +145,15 @@ export function BlockedScreen({ storage }: Props) {
   const scheduleSave = (scope: Scope, key: string, raw: string) => {
     const timersMap = timers.current
     if (timersMap[key]) clearTimeout(timersMap[key])
+    const gen = (generations.current[key] ?? 0) + 1
+    generations.current[key] = gen
+    // Snapshot the base NOW (synchronous): by the time the timer fires,
+    // itemsRef may already include another box's newer commit, and
+    // rebuilding off that would resurrect lines this box deleted.
+    const base = itemsRef.current
     timersMap[key] = setTimeout(() => {
       delete timersMap[key]
-      void updatedRef.current({ blockedItems: buildNext(scope, raw, itemsRef.current) })
+      saveGuarded(key, gen, buildNext(scope, raw, base))
     }, 800)
   }
 
@@ -153,6 +169,8 @@ export function BlockedScreen({ storage }: Props) {
     if (inFocus) return false
     const key = `website:focus`
     const draft = editing === key ? drafts[key] : undefined
+    const gen = (generations.current[key] ?? 0) + 1
+    generations.current[key] = gen
     const base =
       draft !== undefined
         ? buildNext('focus', `${draft}\n${n}`, items)
@@ -160,7 +178,7 @@ export function BlockedScreen({ storage }: Props) {
             ...items,
             { id: crypto.randomUUID(), type: 'website' as const, scope: 'focus' as const, value: n },
           ]
-    await storage.update({ blockedItems: base })
+    saveGuarded(key, gen, base)
     if (draft !== undefined) {
       setDrafts((d) => ({ ...d, [key]: `${draft.trimEnd()}\n${n}` }))
     }
@@ -223,13 +241,16 @@ export function BlockedScreen({ storage }: Props) {
               scheduleSave(scope, key, raw)
             }}
             onBlur={(e) => {
-              // Flush any pending debounce NOW (synchronous build off the
-              // blur value, not the timer's stale closure), then clear.
+              // Blur is the newest generation: cancel any pending debounce
+              // (its snapshot is older by construction) and write
+              // synchronously off the blur value.
               const timersMap = timers.current
               if (timersMap[key]) {
                 clearTimeout(timersMap[key])
                 delete timersMap[key]
               }
+              const gen = (generations.current[key] ?? 0) + 1
+              generations.current[key] = gen
               const next = buildNext(scope, e.target.value, itemsRef.current)
               // Clear the draft FIRST so the blur re-render (editing=null)
               // falls through to storage text, not the stale draft — then
@@ -241,7 +262,7 @@ export function BlockedScreen({ storage }: Props) {
                 return c
               })
               setEditing((cur) => (cur === key ? null : cur))
-              void updatedRef.current({ blockedItems: next })
+              saveGuarded(key, gen, next)
             }}
             placeholder={placeholder}
             aria-label={scope === 'focus' ? `sites blocked while focusing, one per line` : `sites blocked at all times, one per line`}
