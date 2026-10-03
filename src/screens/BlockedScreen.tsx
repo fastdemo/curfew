@@ -1,4 +1,4 @@
-import { useState, type KeyboardEvent } from 'react'
+import { useState } from 'react'
 import type { BlockedItem, ChromeStorage } from '../types'
 import { useTheme } from '../ui/theme'
 import { Screen } from '../ui/Screen'
@@ -69,22 +69,39 @@ function splitLines(raw: string): string[] {
     .filter((s) => s.length > 0)
 }
 
-// Blocked list: defines the engine's match scope. One bulk box (kind switch
-// + textarea + add-all), one quick-add strip, one grouped list with
-// dividers. The count lives in the list heading only — nowhere else.
+// Blocked list: defines the engine's match scope. One kind switch, one
+// quick-add strip, one massive box that IS the list for the active kind —
+// it always mirrors storage, one value per line; editing lines adds/removes
+// sites live. The count lives in the box heading only — nowhere else.
 export function BlockedScreen({ storage }: Props) {
   const t = useTheme()
   const [kind, setKind] = useState<Kind>('website')
-  const [value, setValue] = useState('')
   const [openGroup, setOpenGroup] = useState<string | null>(null)
 
   const items = storage.blockedItems
-  const lines = splitLines(value)
-  // Only lines that normalize to something new count as addable.
-  const addable = lines.filter((l) => {
-    const n = normalize(kind, l)
-    return n && !isDuplicate(items, kind, n)
-  })
+  const kindItems = items.filter((i) => i.type === kind)
+  // Text always mirrors storage for the active kind — no separate draft.
+  const value = kindItems.map((i) => i.value).join('\n')
+
+  const syncLines = (raw: string) => {
+    const wanted = new Map<string, string>()
+    for (const line of splitLines(raw)) {
+      const n = normalize(kind, line)
+      if (n && !wanted.has(n)) wanted.set(n, line)
+    }
+    const kept = new Map<string, BlockedItem>()
+    for (const item of items) {
+      if (item.type !== kind) continue
+      if (wanted.has(item.value.toLowerCase()) && !kept.has(item.value.toLowerCase())) {
+        kept.set(item.value.toLowerCase(), item)
+      }
+    }
+    const next = [
+      ...items.filter((i) => i.type !== kind),
+      ...[...wanted.keys()].map((n) => kept.get(n) ?? { id: crypto.randomUUID(), type: kind, value: n }),
+    ]
+    void storage.update({ blockedItems: next })
+  }
 
   const add = async (k: Kind, raw: string) => {
     const n = normalize(k, raw)
@@ -95,35 +112,12 @@ export function BlockedScreen({ storage }: Props) {
     return true
   }
 
-  const addMany = async (k: Kind, raws: string[]) => {
-    const seen = new Set(items.map((i) => `${i.type}:${i.value.toLowerCase()}`))
-    const next = [...items]
-    for (const raw of raws) {
-      const n = normalize(k, raw)
-      if (!n || seen.has(`${k}:${n}`)) continue
-      seen.add(`${k}:${n}`)
-      next.push({ id: crypto.randomUUID(), type: k, value: n })
-    }
-    if (next.length === items.length) return 0
-    await storage.update({ blockedItems: next })
-    return next.length - items.length
+  const handleChange = (raw: string) => {
+    syncLines(raw)
   }
 
-  const handleAdd = async () => {
-    const added = await addMany(kind, lines)
-    if (added > 0) setValue('')
-  }
-
-  const handleKey = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      void handleAdd()
-    }
-  }
-
-  const remove = async (id: string) => {
-    await storage.update({ blockedItems: items.filter((i) => i.id !== id) })
-  }
+  // Plain Enter inserts a newline (native); the box syncs on every change,
+  // so no key handling is needed at all.
 
   const input = {
     backgroundColor: 'transparent',
@@ -166,7 +160,6 @@ export function BlockedScreen({ storage }: Props) {
                 type="button"
                 onClick={() => {
                   setKind(k)
-                  setValue('')
                 }}
                 style={{
                   flex: 1,
@@ -280,111 +273,7 @@ export function BlockedScreen({ storage }: Props) {
             margin: '0 0 6px',
           }}
         >
-          {items.length === 0 ? 'blocked' : `blocked · ${items.length}`}
-        </p>
-        {items.length === 0 ? (
-          <div
-            style={{
-              padding: '18px 14px',
-              borderRadius: 12,
-              textAlign: 'center',
-              backgroundColor: t.bgSurface,
-              border: `1px solid ${t.border}`,
-            }}
-          >
-            <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: t.textPrimary }}>
-              nothing blocked yet
-            </p>
-            <p style={{ margin: '4px 0 0', fontSize: 11, lineHeight: 1.4, color: t.textSecondary }}>
-              add a site or keyword above.
-            </p>
-          </div>
-        ) : (
-          <div
-            style={{
-              borderRadius: 12,
-              overflow: 'hidden',
-              backgroundColor: t.bgSurface,
-              border: `1px solid ${t.border}`,
-            }}
-          >
-            {items.map((item, i) => (
-              <div
-                key={item.id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  padding: '9px 8px 9px 12px',
-                  borderTop: i > 0 ? `1px solid ${t.border}` : 'none',
-                }}
-              >
-                <span
-                  style={{
-                    padding: '2px 6px',
-                    borderRadius: 4,
-                    fontSize: 10,
-                    fontWeight: 600,
-                    letterSpacing: '0.04em',
-                    backgroundColor: t.highlight,
-                    color: t.textSecondary,
-                  }}
-                >
-                  {item.type === 'website' ? 'URL' : 'KEY'}
-                </span>
-                <span
-                  style={{
-                    flex: 1,
-                    minWidth: 0,
-                    fontSize: 13,
-                    fontWeight: 500,
-                    color: t.textPrimary,
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}
-                >
-                  {item.value}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => void remove(item.id)}
-                  aria-label={`remove ${item.value}`}
-                  style={{
-                    width: 26,
-                    height: 26,
-                    flexShrink: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    border: 'none',
-                    borderRadius: 6,
-                    background: 'transparent',
-                    cursor: 'pointer',
-                    color: t.textTertiary,
-                  }}
-                >
-                  <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
-                    <path d="M18 6L6 18M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div>
-        <p
-          style={{
-            fontSize: 11,
-            fontWeight: 600,
-            lineHeight: 1.3,
-            color: t.textSecondary,
-            margin: '0 0 6px',
-          }}
-        >
-          {addable.length === 0 ? 'add sites' : `add sites · ${addable.length} new`}
+          {kindItems.length === 0 ? 'blocked' : `blocked · ${kindItems.length}`}
         </p>
         <div
           style={{
@@ -396,10 +285,9 @@ export function BlockedScreen({ storage }: Props) {
         >
           <textarea
             value={value}
-            onChange={(e) => setValue(e.target.value)}
-            onKeyDown={handleKey}
+            onChange={(e) => handleChange(e.target.value)}
             placeholder={kind === 'website' ? 'x.com\nyoutube.com\n67.com' : 'one keyword per line'}
-            aria-label={kind === 'website' ? 'websites to block, one per line. enter adds them.' : 'keywords to block, one per line. enter adds them.'}
+            aria-label={kind === 'website' ? 'blocked websites, one per line' : 'blocked keywords, one per line'}
             style={input}
           />
         </div>
