@@ -5,6 +5,10 @@ export async function getStorage(): Promise<ChromeStorage> {
   const rawSettings = result.settings as Record<string, unknown> | undefined
   const cleanedSettings = rawSettings ? { ...rawSettings } : undefined
   if (cleanedSettings && 'overlayMode' in cleanedSettings) delete cleanedSettings.overlayMode
+  const blockedItems = (result.blockedItems ?? DEFAULT_STORAGE.blockedItems).map((i) => ({
+    scope: 'focus' as const,
+    ...i,
+  }))
   return {
     ...DEFAULT_STORAGE,
     ...result,
@@ -12,7 +16,7 @@ export async function getStorage(): Promise<ChromeStorage> {
     strictSession: { ...DEFAULT_STORAGE.strictSession, ...(result.strictSession as Partial<ChromeStorage['strictSession']> | undefined) },
     bypasses: result.bypasses ?? DEFAULT_STORAGE.bypasses,
     usageStats: result.usageStats ?? DEFAULT_STORAGE.usageStats,
-    blockedItems: result.blockedItems ?? DEFAULT_STORAGE.blockedItems,
+    blockedItems,
     schedules: result.schedules ?? DEFAULT_STORAGE.schedules,
     selectedInterventions: result.selectedInterventions ?? DEFAULT_STORAGE.selectedInterventions,
     masterToggle: result.masterToggle ?? DEFAULT_STORAGE.masterToggle,

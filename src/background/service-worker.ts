@@ -24,8 +24,9 @@ async function tickTracking() {
       const strictActive = storage.strictSession.isActive && Date.now() < storage.strictSession.endTime
       const matchesBlocked = shouldBlockUrl(activeUrl, storage.blockedItems, strictActive ? undefined : storage.bypasses)
       if (matchesBlocked) {
+        const alwaysBlocked = shouldBlockUrl(activeUrl, storage.blockedItems.filter((i) => i.scope === 'always'), strictActive ? undefined : storage.bypasses)
         const scheduleActive = isScheduleActive(storage.schedules)
-        const shouldBlock = strictActive || scheduleActive || storage.masterToggle
+        const shouldBlock = alwaysBlocked || strictActive || scheduleActive || storage.masterToggle
         if (shouldBlock) return
       }
     }
@@ -144,7 +145,11 @@ async function reblockTabIfNeeded(storage: Awaited<ReturnType<typeof getStorage>
   const tabs = await chrome.tabs.query({})
   for (const tab of tabs) {
     if (tab.id && tab.url && shouldBlockUrl(tab.url, storage.blockedItems, strictActive ? undefined : storage.bypasses)) {
-      await handleNavigation(tab.id, tab.url)
+      const alwaysBlocked = shouldBlockUrl(tab.url, storage.blockedItems.filter((i) => i.scope === 'always'), strictActive ? undefined : storage.bypasses)
+      const scheduleActive = isScheduleActive(storage.schedules)
+      if (alwaysBlocked || strictActive || scheduleActive || storage.masterToggle) {
+        await handleNavigation(tab.id, tab.url)
+      }
     }
   }
 }
@@ -163,8 +168,10 @@ async function handleNavigation(tabId: number, url: string | undefined) {
     return
   }
 
+  // Always-on items block regardless of focus/schedule/strict.
+  const alwaysBlocked = shouldBlockUrl(url, blockedItems.filter((i) => (i as { scope?: string }).scope === 'always'), strictActive ? undefined : storage.bypasses)
   const scheduleActive = isScheduleActive(schedules)
-  const shouldBlock = strictActive || scheduleActive || masterToggle
+  const shouldBlock = alwaysBlocked || strictActive || scheduleActive || masterToggle
 
   if (!shouldBlock) {
     const domain = getDomainFromUrl(url)
@@ -405,8 +412,22 @@ async function migrateLegacyStorage() {
   } catch { /* ignore */ }
 }
 
+// Migration: pre-scope installs have bare items (no `scope`) — they were
+// focus-only lists, so stamp them explicitly. Runs once per wake.
+async function migrateScopeFlag() {
+  try {
+    const raw = await chrome.storage.local.get('blockedItems') as { blockedItems?: { scope?: string }[] }
+    const items = raw.blockedItems
+    if (!Array.isArray(items) || items.some((i) => i && typeof i === 'object' && 'scope' in i)) return
+    await chrome.storage.local.set({
+      blockedItems: items.map((i) => ({ ...i, scope: 'focus' as const })),
+    })
+  } catch { /* ignore */ }
+}
+
 async function initOnWake() {
   await migrateLegacyStorage()
+  await migrateScopeFlag()
   await checkStrictSessionOnStart()
 
   const existing = await chrome.alarms.get('curfew-tracking')

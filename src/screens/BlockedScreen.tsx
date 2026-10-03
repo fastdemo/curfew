@@ -8,6 +8,7 @@ interface Props {
 }
 
 type Kind = 'website' | 'keyword'
+type Scope = 'focus' | 'always'
 
 const QUICK: { label: string; sites: string[] }[] = [
   {
@@ -56,10 +57,14 @@ function normalize(kind: Kind, value: string): string {
   return kind === 'website' ? normalizeWebsite(v) : v
 }
 
-function isDuplicate(items: BlockedItem[], kind: Kind, value: string): boolean {
+function scopeOf(item: BlockedItem): Scope {
+  return item.scope ?? 'focus'
+}
+
+function isDuplicate(items: BlockedItem[], scope: Scope, kind: Kind, value: string): boolean {
   const n = normalize(kind, value)
   if (!n) return true
-  return items.some((i) => i.type === kind && i.value.toLowerCase() === n)
+  return items.some((i) => scopeOf(i) === scope && i.type === kind && i.value.toLowerCase() === n)
 }
 
 function splitLines(raw: string): string[] {
@@ -69,21 +74,19 @@ function splitLines(raw: string): string[] {
     .filter((s) => s.length > 0)
 }
 
-// Blocked list: defines the engine's match scope. One kind switch, one
-// quick-add strip, one massive box that IS the list for the active kind —
-// it always mirrors storage, one value per line; editing lines adds/removes
-// sites live. The count lives in the box heading only — nowhere else.
+// Blocked tab: kind switch, quick-add strip, then two boxes that ARE the
+// lists — "blocked on focus" (only while focus/schedule/strict runs) and
+// "blocked forever" (always on). Each box always mirrors storage for the
+// active kind+scope, one value per line; editing lines adds/removes live.
+// Quick-add chips only ever land in "blocked on focus".
 export function BlockedScreen({ storage }: Props) {
   const t = useTheme()
   const [kind, setKind] = useState<Kind>('website')
   const [openGroup, setOpenGroup] = useState<string | null>(null)
 
   const items = storage.blockedItems
-  const kindItems = items.filter((i) => i.type === kind)
-  // Text always mirrors storage for the active kind — no separate draft.
-  const value = kindItems.map((i) => i.value).join('\n')
 
-  const syncLines = (raw: string) => {
+  const syncLines = (scope: Scope, raw: string) => {
     const wanted = new Map<string, string>()
     for (const line of splitLines(raw)) {
       const n = normalize(kind, line)
@@ -91,35 +94,28 @@ export function BlockedScreen({ storage }: Props) {
     }
     const kept = new Map<string, BlockedItem>()
     for (const item of items) {
-      if (item.type !== kind) continue
+      if (item.type !== kind || scopeOf(item) !== scope) continue
       if (wanted.has(item.value.toLowerCase()) && !kept.has(item.value.toLowerCase())) {
         kept.set(item.value.toLowerCase(), item)
       }
     }
     const next = [
-      ...items.filter((i) => i.type !== kind),
-      ...[...wanted.keys()].map((n) => kept.get(n) ?? { id: crypto.randomUUID(), type: kind, value: n }),
+      ...items.filter((i) => i.type !== kind || scopeOf(i) !== scope),
+      ...[...wanted.keys()].map((n) => kept.get(n) ?? { id: crypto.randomUUID(), type: kind, scope, value: n }),
     ]
     void storage.update({ blockedItems: next })
   }
 
-  const add = async (k: Kind, raw: string) => {
-    const n = normalize(k, raw)
-    if (!n || isDuplicate(items, k, n)) return false
+  const quickAdd = async (raw: string) => {
+    const n = normalize('website', raw)
+    if (!n || isDuplicate(items, 'focus', 'website', n)) return false
     await storage.update({
-      blockedItems: [...items, { id: crypto.randomUUID(), type: k, value: n }],
+      blockedItems: [...items, { id: crypto.randomUUID(), type: 'website', scope: 'focus' as const, value: n }],
     })
     return true
   }
 
-  const handleChange = (raw: string) => {
-    syncLines(raw)
-  }
-
-  // Plain Enter inserts a newline (native); the box syncs on every change,
-  // so no key handling is needed at all.
-
-  const input = {
+  const box = {
     backgroundColor: 'transparent',
     border: 'none',
     outline: 'none',
@@ -134,6 +130,42 @@ export function BlockedScreen({ storage }: Props) {
     resize: 'none',
     overflowY: 'auto',
   } as const
+
+  const label = {
+    fontSize: 11,
+    fontWeight: 600,
+    lineHeight: 1.3,
+    color: t.textSecondary,
+    margin: '0 0 6px',
+  } as const
+
+  const renderBox = (scope: Scope, title: string) => {
+    const scoped = items.filter((i) => i.type === kind && scopeOf(i) === scope)
+    const value = scoped.map((i) => i.value).join('\n')
+    return (
+      <div>
+        <p style={label}>
+          {scoped.length === 0 ? title : `${title} · ${scoped.length}`}
+        </p>
+        <div
+          style={{
+            padding: 4,
+            borderRadius: 10,
+            backgroundColor: t.bgSurface,
+            border: `1px solid ${t.border}`,
+          }}
+        >
+          <textarea
+            value={value}
+            onChange={(e) => syncLines(scope, e.target.value)}
+            placeholder={kind === 'website' ? 'x.com\nyoutube.com\nopen.spotify.com' : 'one keyword per line'}
+            aria-label={scope === 'focus' ? `sites blocked while focusing, one per line` : `sites blocked at all times, one per line`}
+            style={box}
+          />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <Screen>
@@ -182,15 +214,7 @@ export function BlockedScreen({ storage }: Props) {
       </div>
 
       <div>
-        <p
-          style={{
-            fontSize: 11,
-            fontWeight: 600,
-            lineHeight: 1.3,
-            color: t.textSecondary,
-            margin: '0 0 6px',
-          }}
-        >
+        <p style={label}>
           quick add
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -231,13 +255,13 @@ export function BlockedScreen({ storage }: Props) {
               gap: 6,
             }}
           >            {QUICK.find((g) => g.label === openGroup)!.sites.map((site) => {
-              const blocked = isDuplicate(items, 'website', site)
+              const blocked = isDuplicate(items, 'focus', 'website', site)
               return (
                 <button
                   key={site}
                   type="button"
                   disabled={blocked}
-                  onClick={() => void add('website', site)}
+                  onClick={() => void quickAdd(site)}
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -263,35 +287,8 @@ export function BlockedScreen({ storage }: Props) {
         )}
       </div>
 
-      <div>
-        <p
-          style={{
-            fontSize: 11,
-            fontWeight: 600,
-            lineHeight: 1.3,
-            color: t.textSecondary,
-            margin: '0 0 6px',
-          }}
-        >
-          {kindItems.length === 0 ? 'blocked' : `blocked · ${kindItems.length}`}
-        </p>
-        <div
-          style={{
-            padding: 4,
-            borderRadius: 10,
-            backgroundColor: t.bgSurface,
-            border: `1px solid ${t.border}`,
-          }}
-        >
-          <textarea
-            value={value}
-            onChange={(e) => handleChange(e.target.value)}
-            placeholder={kind === 'website' ? 'x.com\nyoutube.com\n67.com' : 'one keyword per line'}
-            aria-label={kind === 'website' ? 'blocked websites, one per line' : 'blocked keywords, one per line'}
-            style={input}
-          />
-        </div>
-      </div>
+      {renderBox('focus', 'blocked on focus')}
+      {renderBox('always', 'blocked forever')}
     </Screen>
   )
 }

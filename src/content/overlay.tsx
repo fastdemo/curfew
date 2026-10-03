@@ -35,8 +35,9 @@ if (window.top === window && window.location.href.startsWith('http')) {
     const strictActive = storage.strictSession.isActive && Date.now() < storage.strictSession.endTime
     const matches = shouldBlockUrl(url, storage.blockedItems, strictActive ? undefined : storage.bypasses)
     if (!matches) return
+    const alwaysBlocked = shouldBlockUrl(url, storage.blockedItems.filter((i) => i.scope === 'always'), strictActive ? undefined : storage.bypasses)
     const scheduleActive = isScheduleActive(storage.schedules)
-    const shouldBlock = strictActive || scheduleActive || storage.masterToggle
+    const shouldBlock = alwaysBlocked || strictActive || scheduleActive || storage.masterToggle
     if (shouldBlock && !shadowHost) {
       try { window.stop() } catch { void 0 }
       showOverlay(url)
@@ -81,7 +82,9 @@ chrome.storage.onChanged.addListener((changes) => {
     getStorage().then(storage => {
       if (!shadowHost) return
       const isStrictActive = storage.strictSession.isActive && Date.now() < storage.strictSession.endTime
-      if (!isStrictActive && !isScheduleActive(storage.schedules)) {
+      const url = currentOverlayUrl ?? window.location.href
+      const stillAlways = shouldBlockUrl(url, storage.blockedItems.filter((i) => i.scope === 'always'))
+      if (!stillAlways && !isStrictActive && !isScheduleActive(storage.schedules)) {
         cleanupOverlay()
       }
     })
@@ -93,7 +96,9 @@ chrome.storage.onChanged.addListener((changes) => {
     if (!s?.isActive || Date.now() >= s.endTime) {
       getStorage().then(storage => {
         if (!shadowHost) return
-        if (!storage.masterToggle && !isScheduleActive(storage.schedules)) {
+        const url = currentOverlayUrl ?? window.location.href
+        const stillAlways = shouldBlockUrl(url, storage.blockedItems.filter((i) => i.scope === 'always'))
+        if (!stillAlways && !storage.masterToggle && !isScheduleActive(storage.schedules)) {
           cleanupOverlay()
         }
       })
@@ -105,7 +110,9 @@ chrome.storage.onChanged.addListener((changes) => {
     const p = getStorage().then(storage => {
       if (!shadowHost) return
       if (storage.masterToggle || (storage.strictSession.isActive && Date.now() < storage.strictSession.endTime)) return
-      if (!isScheduleActive(storage.schedules)) {
+      const url = currentOverlayUrl ?? window.location.href
+      const stillAlways = shouldBlockUrl(url, storage.blockedItems.filter((i) => i.scope === 'always'))
+      if (!stillAlways && !isScheduleActive(storage.schedules)) {
         cleanupOverlay()
       }
     })

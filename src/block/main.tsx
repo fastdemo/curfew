@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { getStorage } from '../lib/storage'
-import { getRandomIntervention, getDomainFromUrl, isScheduleActive } from '../lib/interventions'
+import { getRandomIntervention, getDomainFromUrl, isScheduleActive, shouldBlockUrl } from '../lib/interventions'
 import { useState, useEffect } from 'react'
 import { ThemeProvider } from '../ui/ThemeProvider'
 import { applyTheme } from '../ui/theme'
@@ -114,7 +114,8 @@ export function BlockPage() {
       if (changes.masterToggle && changes.masterToggle.newValue === false) {
         getStorage().then(storage => {
           const isStrictActive = storage.strictSession.isActive && Date.now() < storage.strictSession.endTime
-          if (!isStrictActive && !isScheduleActive(storage.schedules)) {
+          const stillAlways = shouldBlockUrl(originalUrl, storage.blockedItems.filter((i) => i.scope === 'always'))
+          if (!stillAlways && !isStrictActive && !isScheduleActive(storage.schedules)) {
             window.location.assign(originalUrl)
           }
         })
@@ -125,7 +126,8 @@ export function BlockPage() {
         const newSession = changes.strictSession.newValue as { isActive: boolean; startTime: number; endTime: number } | undefined
         if (!newSession?.isActive || Date.now() >= newSession.endTime) {
           getStorage().then(storage => {
-            if (!storage.masterToggle && !isScheduleActive(storage.schedules)) {
+            const stillAlways = shouldBlockUrl(originalUrl, storage.blockedItems.filter((i) => i.scope === 'always'))
+            if (!stillAlways && !storage.masterToggle && !isScheduleActive(storage.schedules)) {
               window.location.assign(originalUrl)
             }
           })
@@ -136,7 +138,8 @@ export function BlockPage() {
       if (changes.schedules) {
         getStorage().then(storage => {
           const isStrictActive = storage.strictSession.isActive && Date.now() < storage.strictSession.endTime
-          if (!storage.masterToggle && !isStrictActive && !isScheduleActive(storage.schedules)) {
+          const stillAlways = shouldBlockUrl(originalUrl, storage.blockedItems.filter((i) => i.scope === 'always'))
+          if (!stillAlways && !storage.masterToggle && !isStrictActive && !isScheduleActive(storage.schedules)) {
             window.location.assign(originalUrl)
           }
         })

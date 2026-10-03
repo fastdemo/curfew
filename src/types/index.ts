@@ -2,6 +2,8 @@ export interface BlockedItem {
   id: string
   type: 'website' | 'keyword'
   value: string
+  /** Always-on list: blocked regardless of focus/schedule/strict. Absent in old installs = focus-only. */
+  scope?: 'focus' | 'always'
 }
 
 export interface StrictSession {
