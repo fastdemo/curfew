@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import type { BlockedItem, ChromeStorage } from '../types'
 import { useTheme } from '../ui/theme'
 import { Screen } from '../ui/Screen'
@@ -80,13 +80,27 @@ export function BlockedScreen({ storage }: Props) {
   const [kind, setKind] = useState<Kind>('website')
   const [openGroup, setOpenGroup] = useState<string | null>(null)
   // Local drafts keyed by kind+scope, plus which box is being edited.
-  // update() mirrors into hook state synchronously, so storage is fresh
-  // right after commit — but the identity below is belt-and-suspenders.
+  // Drafts commit on blur AND on a 800ms idle debounce after the last
+  // keystroke — closing the popup (unmount, no blur) can only lose ≤800ms
+  // of typing, never the whole session. update() mirrors into hook state
+  // synchronously, so storage is fresh right after commit.
   const [drafts, setDrafts] = useState<Partial<Record<string, string>>>({})
   const [editing, setEditing] = useState<string | null>(null)
 
   const items = storage.blockedItems
   const boxKey = (scope: Scope) => `${kind}:${scope}`
+  // Latest items for timer callbacks (avoids stale closures).
+  const itemsRef = useRef(items)
+  itemsRef.current = items
+  const updatedRef = useRef(storage.update)
+  updatedRef.current = storage.update
+  const timers = useRef<Partial<Record<string, ReturnType<typeof setTimeout>>>>({})
+  useEffect(() => {
+    const t = timers.current
+    return () => {
+      for (const id of Object.values(t)) clearTimeout(id)
+    }
+  }, [])
 
   const buildNext = (scope: Scope, raw: string, base: BlockedItem[]) => {
     const wanted = new Map<string, string>()
@@ -112,8 +126,13 @@ export function BlockedScreen({ storage }: Props) {
     ]
   }
 
-  const commit = (scope: Scope, raw: string) => {
-    void storage.update({ blockedItems: buildNext(scope, raw, items) })
+  const scheduleSave = (scope: Scope, key: string, raw: string) => {
+    const timersMap = timers.current
+    if (timersMap[key]) clearTimeout(timersMap[key])
+    timersMap[key] = setTimeout(() => {
+      delete timersMap[key]
+      void updatedRef.current({ blockedItems: buildNext(scope, raw, itemsRef.current) })
+    }, 800)
   }
 
   const quickAdd = async (raw: string) => {
@@ -194,9 +213,17 @@ export function BlockedScreen({ storage }: Props) {
             onChange={(e) => {
               const raw = e.target.value
               setDrafts((d) => ({ ...d, [key]: raw }))
+              scheduleSave(scope, key, raw)
             }}
             onBlur={(e) => {
-              const next = buildNext(scope, e.target.value, items)
+              // Flush any pending debounce NOW (synchronous build off the
+              // blur value, not the timer's stale closure), then clear.
+              const timersMap = timers.current
+              if (timersMap[key]) {
+                clearTimeout(timersMap[key])
+                delete timersMap[key]
+              }
+              const next = buildNext(scope, e.target.value, itemsRef.current)
               // Clear the draft FIRST so the blur re-render (editing=null)
               // falls through to storage text, not the stale draft — then
               // commit. update() mirrors synchronously in the mock and in
@@ -207,7 +234,7 @@ export function BlockedScreen({ storage }: Props) {
                 return c
               })
               setEditing((cur) => (cur === key ? null : cur))
-              void storage.update({ blockedItems: next })
+              void updatedRef.current({ blockedItems: next })
             }}
             placeholder={placeholder}
             aria-label={scope === 'focus' ? `sites blocked while focusing, one per line` : `sites blocked at all times, one per line`}
