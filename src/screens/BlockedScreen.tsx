@@ -83,7 +83,10 @@ export function BlockedScreen({ storage }: Props) {
   // Drafts commit on blur AND on a 800ms idle debounce after the last
   // keystroke — closing the popup (unmount, no blur) can only lose ≤800ms
   // of typing, never the whole session. update() mirrors into hook state
-  // synchronously, so storage is fresh right after commit.
+  // synchronously, so storage is fresh right after commit. Cross-box moves
+  // are explicit (erase here + type there), never implicit: a commit only
+  // reconciles its own kind+scope and leaves every other row — including
+  // the same value under the other box — untouched.
   const [drafts, setDrafts] = useState<Partial<Record<string, string>>>({})
   const [editing, setEditing] = useState<string | null>(null)
 
@@ -115,13 +118,19 @@ export function BlockedScreen({ storage }: Props) {
         kept.set(item.value.toLowerCase(), item)
       }
     }
-    // Survivors keep their existing relative order; genuinely new rows
-    // append after them in box order. New rows never sort old ones around —
-    // the box shows exactly what was typed.
-    const survivors = base.filter((i) => i.type !== kind || wanted.has(i.value.toLowerCase()))
+    // Only rows of THIS kind+scope are reconciled. Every other row —
+    // other kind, other box, even the same value under the other box —
+    // passes through untouched. Moving a value between boxes is explicit:
+    // erase the line here AND type it there. A commit never steals rows
+    // from the box you aren't editing.
+    const untouched = base.filter((i) => i.type !== kind || scopeOf(i) !== scope)
+    const survivors = base.filter(
+      (i) => i.type === kind && scopeOf(i) === scope && wanted.has(i.value.toLowerCase()),
+    )
     const fresh = [...wanted.keys()].filter((n) => !kept.has(n))
     return [
-      ...survivors.map((i) => (i.type === kind && scopeOf(i) !== scope ? { ...i, scope } : i)),
+      ...untouched,
+      ...survivors,
       ...fresh.map((n) => ({ id: crypto.randomUUID(), type: kind, scope, value: n })),
     ]
   }
@@ -138,10 +147,11 @@ export function BlockedScreen({ storage }: Props) {
   const quickAdd = async (raw: string) => {
     const n = normalize('website', raw)
     if (!n) return false
-    // Quick-add targets focus: drop it from forever if present (a value
-    // lives in exactly one box), skip if already in focus. If the focus box
-    // holds an uncommitted draft (typed but not blurred), reconcile the
-    // draft first so nothing typed is lost to stale storage text.
+    // Quick-add targets focus: skip if already in focus; a forever-row with
+    // the same value stays put (a value may live in both boxes — each box
+    // owns its own list, no stealing). If the focus box holds an
+    // uncommitted draft (typed but not blurred), reconcile the draft first
+    // so nothing typed is lost to stale storage text.
     const inFocus = items.some((i) => i.type === 'website' && scopeOf(i) === 'focus' && i.value.toLowerCase() === n)
     if (inFocus) return false
     const key = `website:focus`
@@ -150,7 +160,7 @@ export function BlockedScreen({ storage }: Props) {
       draft !== undefined
         ? buildNext('focus', `${draft}\n${n}`, items)
         : [
-            ...items.filter((i) => !(i.type === 'website' && i.value.toLowerCase() === n)),
+            ...items,
             { id: crypto.randomUUID(), type: 'website' as const, scope: 'focus' as const, value: n },
           ]
     await storage.update({ blockedItems: base })
@@ -333,8 +343,8 @@ export function BlockedScreen({ storage }: Props) {
               gap: 6,
             }}
           >            {QUICK.find((g) => g.label === openGroup)!.sites.map((site) => {
-              // ✓ only when already in the focus box; a forever-only value
-              // still offers + (clicking moves it to focus).
+              // ✓ only when already in the focus box. Forever rows never
+              // affect the chip state — each box owns its own list.
               const n = normalize('website', site)
               const inFocus = items.some((i) => i.type === 'website' && scopeOf(i) === 'focus' && i.value.toLowerCase() === n)
               const blocked = !n || inFocus
